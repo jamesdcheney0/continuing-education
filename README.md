@@ -15,6 +15,7 @@ Develop the following skills for approximately 1000 hours
 - Docker: Obtain Docker Certified Associate
 - Kubernetes: Obtain Kubernetes and Cloud Native Associate (KCNA) then Certified Kubernetes Administrator (CKA) 
 - Linux: Get a better grip on troubleshooting and navigating via the CLI. Develop skills and a personal wiki for vi & vim usage, performing common administrative tasks on Linux, and troubleshooting issues that arise. 
+- SQL: Would be nice to at least know a bit about it and how to make queries. Might be bundled in with the Linux learning objective 
 
 
 ## Resources
@@ -29,7 +30,7 @@ Develop the following skills for approximately 1000 hours
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
-|Jan 30, 2023|68|50||||||ABSP ch 3, ASA3 intro|
+|Jan 30, 2023|68|113||||||ABSP ch 3, ASA3 intro, AWS Technical Essentials|
 |Jan 31, 2023|||||||||
 |Feb 1, 2023|||||||||
 |Feb 2, 2023|||||||||

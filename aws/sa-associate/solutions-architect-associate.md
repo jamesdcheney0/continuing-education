@@ -14,3 +14,13 @@
 - Once past 85% on learning plan (in week 6), will qualify in the running for raffle for voucher
 - Recommend 8-9 hours/week of studying. 1.6-1.8 hours/day of studying weekdays only. Pacing helps maintain knowledge & keep committed 
 - watch for easter eggs in links in emails and weekly wed/fri chats 
+
+# AWS Technical Essentials
+- Every action made in AWS is an API call that is authenticated and authorized. 
+    - Management console, CLI, SDKs
+- Authentication: ensures the user is who they say they are
+- Authorization: what actions a user can perform
+- 'main route table' is the route table created by default \
+- NACL: firewall at the subnet-level. They're stateless; inbound and outbound ports required to be listed 
+- Instance security group: stateful; can remember connections & allow returning ephemeral responses 
+- block storage: think little pieces making up a larger file. Object: each file is a single entity 
