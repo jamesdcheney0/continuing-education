@@ -29,7 +29,7 @@ Develop the following skills for approximately 1000 hours
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
-|Jan 30, 2023|34|||||||ABSP ch 3, ASA3 intro|
+|Jan 30, 2023|68|50||||||ABSP ch 3, ASA3 intro|
 |Jan 31, 2023|||||||||
 |Feb 1, 2023|||||||||
 |Feb 2, 2023|||||||||
