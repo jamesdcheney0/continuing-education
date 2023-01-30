@@ -17,8 +17,20 @@ Develop the following skills for approximately 1000 hours
 - Linux: Get a better grip on troubleshooting and navigating via the CLI. Develop skills and a personal wiki for vi & vim usage, performing common administrative tasks on Linux, and troubleshooting issues that arise. 
 
 
+## Resources
+- Python
+    - Automate the Boring Stuff with Python - Al Sweigart (ABSP)
+
+- AWS
+    - AWS Solutions Architect - Associate Accelerator (ASA3)
+
 
 ## Time tracking
-|Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|
-|----|------|---|---------|----------|------|----------|-----|
-| Jan 30, 2023 | 
+|Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
+|----|------|---|---------|----------|------|----------|-----|--------------|
+||||||||||
+| Jan 30, 2023 | 34 |||||||ABSP ch 3, ASA3 intro|
+| Jan 31, 2023 |||||||||
+| Feb 1, 2023 |||||||||
+| Feb 2, 2023 |||||||||
+| Feb 3, 2023 |||||||||
