@@ -1,0 +1,21 @@
+terraform {
+
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+module "aws-apache" {
+  source = "./terraform-aws-apache-example"
+  server_name = "apache-example-instance"
+  instance_type = "t2.micro"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDZV2UlqnvO48F6rGCcrbpWlqV5mtdS9DhQv+T414r/NIj+EhvtEGzkrWEEuJzqrECI55MR84fY2Yw73Mx8uhCYNqpgNL4XEJSdZzpELl/h5GA3WgKHXeWsuCpkADEG3Gbr49wEpHzO1jp9mPoj9b7VS2SCJVwDe+/4GCjEZX0NTDGidHUuZyhcsPt38O3NDM9OwGKzLeBM6ts1l62U4vZ8oAmA5kSNGUNqSG10q92YidtToSSMKKn1LKxPvbUK/uBY/ZGh/nQRo6d7C19YKnT3NH6467fShXIAPqBDo6xHLhCOch4KXV7w0Kq/JBIskJ0++xNTeJsIWE4BvsqHLWpSxVqc+jC/pvMbdISZoYmcVWs+LJtpi5iwIh0fyvVRjwTMn9Sh57qKUpgqDw+LFTNuuCUmP7YWK9ygvPmvyxjFgjAnENo+kaibFI55Hihvq6CyjMEVsLH6Aj4T1DN5BBiyvmxSianRglv0HxMtWH/l0E4t4yUZ8mj3MIAmR8RIUDk="
+  my_ip = "98.168.57.5/32"
+  vpc_id = "vpc-b44a2dce"
+}
+
+output "public_ip" {
+    value = module.aws-apache.public_ip
+}
+
