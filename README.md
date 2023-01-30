@@ -13,7 +13,7 @@ Develop the following skills for approximately 1000 hours
 - Terraform: Obtain Hashicorp Terraform Associate certificate. Make some interesting and/or useful template
 - Terragrunt: Once I have the basics of terraform down, develop a greater understanding of terragrunt since it is used so much day-to-day
 - Docker: Obtain Docker Certified Associate
-- Kubernetes: Understand the differences between Kubernetes and Cloud Native Associate (KCNA) and Certified Kubernetes Administrator (CKA) and obtain the most relevant one
+- Kubernetes: Obtain Kubernetes and Cloud Native Associate (KCNA) then Certified Kubernetes Administrator (CKA) 
 - Linux: Get a better grip on troubleshooting and navigating via the CLI. Develop skills and a personal wiki for vi & vim usage, performing common administrative tasks on Linux, and troubleshooting issues that arise. 
 
 
