@@ -1,6 +1,10 @@
 # 1000 Hours
 The world at large says it takes 10,000 hours to master a skill. I am not aiming to do that here. This is to use my time more effectively by setting clear goals and accurately tracking training time. 
 
+There are 412 workdays between 1/30/2023 and 9/20/2024 (projected three years at current company), excluding weekends & holidays. That requires and average of 2.43 hours or 145 minutes a day of study to meet the goal and doesn't account for the nearly 20 days of PTO per year I'm able to take. 
+
+Worth considering: Budgeting <=$50/mo for development costs in AWS, so I'm not afraid to actually go through the examples 
+
 ## The goals
 Develop the following skills for approximately 1000 hours
 
@@ -10,7 +14,7 @@ Develop the following skills for approximately 1000 hours
 
 - Python: Develop a GUI-based program that can be used for tracking my personal FIRE stats. Instead of using a amalgamation of online calculators and excel sheets, develop something that would record and track FIRE progress, investment account balances, calculate interest return, allow for scenarios to be generated based on information, and those scenarios be able to be changed after the fact, but the data still preserved
 - AWS: Renew AWS Solutions Architect Associate certification. Obtain AWS Solutions Architect Professional certification. By April 2024, renew AWS DevOps Professional certification. 
-- Terraform: Obtain Hashicorp Terraform Associate certificate. Make some interesting and/or useful template
+- Terraform: Obtain Hashicorp Terraform Associate certificate. Make some interesting and/or useful template - e.g., make a webpage backed by lambda & RDS (or whatever is most appropriate) and develop the python function there, using the AWS CI/CD pipeline w Github integration
 - Terragrunt: Once I have the basics of terraform down, develop a greater understanding of terragrunt since it is used so much day-to-day
 - Docker: Obtain Docker Certified Associate
 - Kubernetes: Obtain Kubernetes and Cloud Native Associate (KCNA) then Certified Kubernetes Administrator (CKA) 
@@ -36,7 +40,7 @@ Develop the following skills for approximately 1000 hours
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
 |01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
-|01/31/23|||||||||
+|01/31/23|60|38|||||||
 |02/01/23|||||||||
 |02/02/23|||||||||
 |02/03/23|||||||||
