@@ -24,4 +24,4 @@ output "public_ip" {
 }
 
 # Note: this won't work unless project 1 actually has `terraform apply` performed
-# current location: 8:58:22: https://youtu.be/V4waklkBC38?t=32302
+# current location: 8:58:22: https://youtu.be/V4waklkBC38?t=32302 
