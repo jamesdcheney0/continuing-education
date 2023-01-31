@@ -25,12 +25,15 @@ Develop the following skills for approximately 1000 hours
 - AWS
     - AWS Solutions Architect - Associate Accelerator (ASA3)
 
+- Terraform
+    - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
+
 
 ## Time tracking
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
-|Jan 30, 2023|68|113||||||ABSP ch 3, ASA3 intro, AWS Technical Essentials|
+|Jan 30, 2023|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
 |Jan 31, 2023|||||||||
 |Feb 1, 2023|||||||||
 |Feb 2, 2023|||||||||
