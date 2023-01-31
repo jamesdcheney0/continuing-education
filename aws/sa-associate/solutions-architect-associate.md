@@ -2,7 +2,7 @@
 ## Links 
 - Stream: https://www.twitch.tv/aws_namer_programs 
 - Accelerator home page: https://mpa-saa-accelerator-q12023.splashthat.com/
-- Learning materials: https://explore.skillbuilder.aws/learn/lp/1651/Solution%2520Architect%2520Associate%2520Accelerator%2520-%2520Partner%2520Learning%2520Plan 
+- Learning materials: https://explore.skillbuilder.aws/learn/lp/1651/Solution%2520Architect%2520Associate%2520Accelerator%2520-%2520Partner%2520Learning%2520Plan (I usually have to click it twice and sign in twice...) 
     - Not every video in here is required for certification 
     - The hands on labs essentially book-end the learning objectives for the week. Each week of the program will also have an email come out with objectives for the week 
 
