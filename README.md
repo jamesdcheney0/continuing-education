@@ -30,13 +30,13 @@ Develop the following skills for approximately 1000 hours
 
 
 ## Time tracking
-> Note: All times in minutes. Began January 30, 2023
+> Note: All times in minutes. 
 
-|  Date  |Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
+|Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
-|Jan 30|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
-|Jan 31|||||||||
-|Feb 1|||||||||
-|Feb 2|||||||||
-|Feb 3|||||||||
+|01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
+|01/31/23|||||||||
+|02/01/23|||||||||
+|02/02/23|||||||||
+|02/03/23|||||||||
