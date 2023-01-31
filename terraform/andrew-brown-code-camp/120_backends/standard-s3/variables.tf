@@ -19,3 +19,10 @@ variable "instance_type" {
 variable "server_name" {
   type = string
 }
+
+# variable "workspace_iam_roles" {
+#   default = { # this is a map
+#     staging = "if:using:multiple:accounts::staging-iam-username-here"
+#     prod = "if:using:multiple:accounts::prod-iam-username-here"
+#   }
+# }

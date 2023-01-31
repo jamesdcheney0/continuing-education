@@ -8,6 +8,8 @@ terraform {
 
 provider "aws" {
   region = "us-east-1"
+  ## to use unique roles per workspace: 
+  # assume_role = "${var.workspace_iam_roles[terraform.workspace]}"
 }
 
 module "apache" {

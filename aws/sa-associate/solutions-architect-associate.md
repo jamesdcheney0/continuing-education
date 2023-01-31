@@ -20,7 +20,7 @@
     - Management console, CLI, SDKs
 - Authentication: ensures the user is who they say they are
 - Authorization: what actions a user can perform
-- 'main route table' is the route table created by default \
+- 'main route table' is the route table created by default 
 - NACL: firewall at the subnet-level. They're stateless; inbound and outbound ports required to be listed 
 - Instance security group: stateful; can remember connections & allow returning ephemeral responses 
 - block storage: think little pieces making up a larger file. Object: each file is a single entity 
