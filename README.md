@@ -30,6 +30,7 @@ Develop the following skills for approximately 1000 hours
 
 
 ## Time tracking
+> Note: All times in minutes
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
