@@ -25,6 +25,7 @@ Develop the following skills for approximately 1000 hours
 ## Resources
 - Python
     - Automate the Boring Stuff with Python - Al Sweigart (ABSP)
+    - Resources after having more experience in python: https://book.pythontips.com/en/latest/one_liners.html
 
 - AWS
     - AWS Solutions Architect - Associate Accelerator (ASA3)
@@ -37,11 +38,13 @@ Develop the following skills for approximately 1000 hours
 ## Time tracking
 > Note: All times in minutes. 
 
+> Note: Approximate daily recommended study time for Python (to hit 350 hours) is approximately 51 minutes. Other areas of study recommended daily study time is 94 minutes. 
+
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
 |01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
 |01/31/23|60||38|||||ABSP ch 4, ABCC|
-|02/01/23|68||33|||||ABSP ch 4, ABCC| 
+|02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
 |02/02/23|||||||||
 |02/03/23|||||||||
