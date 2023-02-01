@@ -74,6 +74,41 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
+# data "aws_subnets" "subnet_ids" {
+#   filter {
+#     name = "vpc-id"
+#     values = [var.vpc_id]
+#   }
+# }
+
+# data "aws_subnet" "subnet_ids" {
+#   for_each = toset(data.aws_subnets.subnet_ids.ids)
+#   id = each.value.id
+# }
+
+# with subnet_id              = data.aws_subnet.subnet_ids.id[0] was not working. mix of 
+# │ Error: Missing resource instance key
+# │ 
+# │   on ../../100_modules/terraform-aws-apache-example/main.tf line 95, in resource "aws_instance" "my_server":
+# │   95:   subnet_id              = data.aws_subnet.subnet_ids.id
+# │ 
+# │ Because data.aws_subnet.subnet_ids has "for_each" set, its attributes must be accessed on specific instances.
+# │ 
+# │ For example, to correlate with indices of a referring resource, use:
+# │     data.aws_subnet.subnet_ids[each.key]
+
+# and 
+
+# │ Error: Error in function call
+# │ 
+# │   on ../../100_modules/terraform-aws-apache-example/main.tf line 95, in resource "aws_instance" "my_server":
+# │   95:   subnet_id              = flatten(data.aws_subnet.subnet_ids)[0]
+# │     ├────────────────
+# │     │ data.aws_subnet.subnet_ids is object with 6 attributes
+# │ 
+# │ Call to function "flatten" failed: can only flatten lists, sets and tuples.
+
+
 data "aws_subnet_ids" "subnet_ids" {
   vpc_id = data.aws_vpc.main.id
 }

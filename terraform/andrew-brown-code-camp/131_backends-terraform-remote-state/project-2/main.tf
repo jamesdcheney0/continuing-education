@@ -10,8 +10,9 @@ provider "aws" {
 }
 
 module "apache" {
-  source        = "jamesdcheney0/apache-example/aws"
-  version       = "1.0.0"
+  # source        = "jamesdcheney0/apache-example/aws"
+  # version       = "1.0.0"
+  source        = "../../100_modules/terraform-aws-apache-example"
   vpc_id        = data.terraform_remote_state.vpc.outputs.vpc_id
   my_ip         = var.my_ip
   instance_type = var.instance_type
