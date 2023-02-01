@@ -14,6 +14,8 @@
 - Once past 85% on learning plan (in week 6), will qualify in the running for raffle for voucher
 - Recommend 8-9 hours/week of studying. 1.6-1.8 hours/day of studying weekdays only. Pacing helps maintain knowledge & keep committed 
 - watch for easter eggs in links in emails and weekly wed/fri chats 
+- get stickers by participating in chat. 
+    - call out when he says 'you guys' in chat 
 
 # AWS Technical Essentials
 - Every action made in AWS is an API call that is authenticated and authorized. 
@@ -24,3 +26,13 @@
 - NACL: firewall at the subnet-level. They're stateless; inbound and outbound ports required to be listed 
 - Instance security group: stateful; can remember connections & allow returning ephemeral responses 
 - block storage: think little pieces making up a larger file. Object: each file is a single entity 
+
+# Content Review February 1st, 2023
+David Chong (Enablement management)
+- AWS organizations: service control policies: type of organization policy that you can use to manage permissions in your organization. Offer central controls & makes sure accounts stay w/n org's access control guidelines 
+- 6 types of policies
+    - identity policy: IAM
+    - resource policy: e.g., S3, KMS, etc. Attached to resources & attached to resource in the console of that resource
+        - specifies which principal can use that resource
+- evaluating policies: start w deny. if there's a deny anywhere in the chain, then it's deny. Chain looks through explicit deny > aws orgs > resource based policies > IAM permissions boundary > session policies > identity-based policies
+- arn format: arn:partition:service:region:account-id: resource-id | resource-type/resource-id | resource-type:resource-id
