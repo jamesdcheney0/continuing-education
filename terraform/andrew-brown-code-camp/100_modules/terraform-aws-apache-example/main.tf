@@ -109,16 +109,25 @@ data "aws_ami" "ubuntu" {
 # │ Call to function "flatten" failed: can only flatten lists, sets and tuples.
 
 
-data "aws_subnet_ids" "subnet_ids" {
-  vpc_id = data.aws_vpc.main.id
+# data "aws_subnet_ids" "subnet_ids" {
+#   vpc_id = data.aws_vpc.main.id
+# }
+
+# `subnet_id              = tolist(data.aws_subnet_ids.subnet_ids.ids)[0]` works with that data module 
+
+data "aws_subnets" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
 }
 
-resource "aws_instance" "my_server" {
+resource "aws_instance" "my_server" { 
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.sg_my_server.id]
-  subnet_id              = data.aws_subnet_ids.subnet_ids.ids[0]
+  subnet_id              = tolist(data.aws_subnets.private.ids)[0]
   user_data              = data.template_file.user_data.rendered
 
   tags = {
@@ -126,3 +135,14 @@ resource "aws_instance" "my_server" {
   }
 }
 
+# this code `subnet_id = data.aws_subnet_ids.subnet_ids.ids[0]` resulted in this error
+# ╷
+# │ Error: Invalid index
+# │ 
+# │   on ../../100_modules/terraform-aws-apache-example/main.tf line 121, in resource "aws_instance" "my_server":
+# │  121:   subnet_id              = data.aws_subnet_ids.subnet_ids.ids[0]
+# │ 
+# │ Elements of a set are identified only by their value and don't have any separate index or key to select with, so it's only
+# │ possible to perform operations across all elements of the set.
+
+# finally, changing to using `tolist()[0]` worked! 
