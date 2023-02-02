@@ -34,6 +34,10 @@ Develop the following skills for approximately 1000 hours
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
     - 20230201: https://youtu.be/V4waklkBC38?t=33414 
 
+- Linux
+    - vi
+        - https://www.atmos.albany.edu/daes/atmclasses/atm350/vi_cheat_sheet.pdf
+
 
 ## Time tracking
 > Note: All times in minutes. 
@@ -46,5 +50,5 @@ Develop the following skills for approximately 1000 hours
 |01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
 |01/31/23|60||38|||||ABSP ch 4, ABCC|
 |02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
-|02/02/23|53|||||||ABSP ch 4 exercise|
+|02/02/23|53||||||53|ABSP ch 4 exercise, vi cheat sheet|
 |02/03/23|||||||||
