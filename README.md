@@ -26,13 +26,15 @@ Develop the following skills for approximately 1000 hours
 - Python
     - Automate the Boring Stuff with Python - Al Sweigart (ABSP)
     - Resources after having more experience in python: https://book.pythontips.com/en/latest/one_liners.html
+    - Look into this on freeCodeCamp.org: https://www.freecodecamp.org/learn/scientific-computing-with-python/
+    - There's also this playlist I've had saved in a browser for a while: https://www.youtube.com/watch?v=rfscVS0vtbw&list=PLWKjhJtqVAbnqBxcdjVGgT3uVR10bzTEB 
 
 - AWS
     - AWS Solutions Architect - Associate Accelerator (ASA3)
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
-    - 20230201: https://youtu.be/V4waklkBC38?t=33414 
+    - 20230202: https://youtu.be/V4waklkBC38?t=34872
 
 - Linux
     - vi
@@ -48,7 +50,7 @@ Develop the following skills for approximately 1000 hours
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
 |02/03/23|||||||||
-|02/02/23|53||||||53|ABSP ch 4 exercise, vi cheat sheet|
+|02/02/23|53||33||||53|ABSP ch 4 exercise, vi cheat sheet, ABCC|
 |02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
 |01/31/23|60||38|||||ABSP ch 4, ABCC|
 |01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
