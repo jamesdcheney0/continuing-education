@@ -8,9 +8,9 @@ Worth considering: Budgeting <=$50/mo for development costs in AWS, so I'm not a
 ## The goals
 Develop the following skills for approximately 1000 hours
 
-|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|
-|------|---|---------|----------|------|----------|-----|
-|  350 |150|   100   |    100   |  100 |    100   | 100 |
+|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Misc|
+|------|---|---------|----------|------|----------|----|
+|  350 |150|   100   |    100   |  100 |    100   | 100|
 
 - Python: Develop a GUI-based program that can be used for tracking my personal FIRE stats. Instead of using a amalgamation of online calculators and excel sheets, develop something that would record and track FIRE progress, investment account balances, calculate interest return, allow for scenarios to be generated based on information, and those scenarios be able to be changed after the fact, but the data still preserved
 - AWS: Renew AWS Solutions Architect Associate certification. Obtain AWS Solutions Architect Professional certification. By April 2024, renew AWS DevOps Professional certification. 
@@ -18,9 +18,13 @@ Develop the following skills for approximately 1000 hours
 - Terragrunt: Once I have the basics of terraform down, develop a greater understanding of terragrunt since it is used so much day-to-day
 - Docker: Obtain Docker Certified Associate
 - Kubernetes: Obtain Kubernetes and Cloud Native Associate (KCNA) then Certified Kubernetes Administrator (CKA) 
-- Linux: Get a better grip on troubleshooting and navigating via the CLI. Develop skills and a personal wiki for vi & vim usage, performing common administrative tasks on Linux, and troubleshooting issues that arise. 
-- SQL: Would be nice to at least know a bit about it and how to make queries. Might be bundled in with the Linux learning objective 
-
+- Misc
+    - Troubleshooting Linux instances
+    - Navigating Linux CLI 
+    - vi/vim
+    - Administrating Linux 
+    - Bash scripting
+    - SQL: Would be nice to at least know a bit about it and how to make queries
 
 ## Resources
 - Python
@@ -34,7 +38,7 @@ Develop the following skills for approximately 1000 hours
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
-    - 20230202: https://youtu.be/V4waklkBC38?t=34872
+        - 20230202: https://youtu.be/V4waklkBC38?t=34872
 
 - Linux
     - vi
@@ -46,7 +50,7 @@ Develop the following skills for approximately 1000 hours
 
 > Note: Approximate daily recommended study time for Python (to hit 350 hours) is approximately 51 minutes. Other areas of study recommended daily study time is 94 minutes. 
 
-|Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
+|Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Misc|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
 |02/03/23|||||||||
