@@ -47,8 +47,8 @@ Develop the following skills for approximately 1000 hours
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Linux|Resources Used|
 |----|------|---|---------|----------|------|----------|-----|--------------|
 ||||||||||
-|01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
-|01/31/23|60||38|||||ABSP ch 4, ABCC|
-|02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
-|02/02/23|53||||||53|ABSP ch 4 exercise, vi cheat sheet|
 |02/03/23|||||||||
+|02/02/23|53||||||53|ABSP ch 4 exercise, vi cheat sheet|
+|02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
+|01/31/23|60||38|||||ABSP ch 4, ABCC|
+|01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
