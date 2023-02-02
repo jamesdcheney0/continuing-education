@@ -31,8 +31,14 @@
 David Chong (Enablement management)
 - AWS organizations: service control policies: type of organization policy that you can use to manage permissions in your organization. Offer central controls & makes sure accounts stay w/n org's access control guidelines 
 - 6 types of policies
-    - identity policy: IAM
-    - resource policy: e.g., S3, KMS, etc. Attached to resources & attached to resource in the console of that resource
+    - identity-based policy: IAM
+    - resource-based policy: e.g., S3, KMS, etc. Attached to resources & attached to resource in the console of that resource
         - specifies which principal can use that resource
+    - permissions boundaries
+    - organizations SCPs: Organizations Service Control Policies
+    - ACLs
+    - session policies 
 - evaluating policies: start w deny. if there's a deny anywhere in the chain, then it's deny. Chain looks through explicit deny > aws orgs > resource based policies > IAM permissions boundary > session policies > identity-based policies
 - arn format: arn:partition:service:region:account-id: resource-id | resource-type/resource-id | resource-type:resource-id
+- https://aws.amazon.com/s3/storage-classes-infographic/ good to know details on S3. 11 9's durability for all classes 
+- s3 access points: able to make policies for each access point
