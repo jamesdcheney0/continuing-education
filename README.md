@@ -51,7 +51,7 @@ Develop the following skills for approximately 1000 hours
 > Note: Approximate daily recommended study time for Python (to hit 350 hours) is approximately 51 minutes. Other areas of study recommended daily study time is 94 minutes. 
 
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Misc|Resources Used|
-|----|------|---|---------|----------|------|----------|--- -|--------------|
+|----|------|---|---------|----------|------|----------|----|--------------|
 ||||||||||
 |02/03/23|57|49|38|||||ABSP ch 5, ASA3 exam strategy + Q&A, ABCC|
 |02/02/23|53||33||||53|ABSP ch 4 exercise, vi cheat sheet, ABCC|
