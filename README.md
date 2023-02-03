@@ -38,7 +38,7 @@ Develop the following skills for approximately 1000 hours
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
-        - 20230202: https://youtu.be/V4waklkBC38?t=34872
+        - 20230203: https://youtu.be/V4waklkBC38?t=35852
 
 - Linux
     - vi
@@ -51,9 +51,9 @@ Develop the following skills for approximately 1000 hours
 > Note: Approximate daily recommended study time for Python (to hit 350 hours) is approximately 51 minutes. Other areas of study recommended daily study time is 94 minutes. 
 
 |Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Misc|Resources Used|
-|----|------|---|---------|----------|------|----------|-----|--------------|
+|----|------|---|---------|----------|------|----------|--- -|--------------|
 ||||||||||
-|02/03/23|57|49||||||ABSP ch 5, ASA3 exam strategy + Q&A|
+|02/03/23|57|49|38|||||ABSP ch 5, ASA3 exam strategy + Q&A, ABCC|
 |02/02/23|53||33||||53|ABSP ch 4 exercise, vi cheat sheet, ABCC|
 |02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
 |01/31/23|60||38|||||ABSP ch 4, ABCC|
