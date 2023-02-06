@@ -1,10 +1,102 @@
-# Could be helpful to list functions and methods in here as they come up 
+# Introduction info
+- string concatenation: when `+` is used on two string values 
+- print() [function]: displays string value within parenthises 
+- input() [function]: waits for user to type text and press enter. String can be added inside to inform user of what to type
+- len() [function]: evaluates to the integer value of the number of characters in that string
+- comparison operators [`==`, `!=`, `<`, `>`, `<=`, `>=`]: compare two values and evaluate down to a single Boolean value. 
+- boolean operators [`and`, `or`, `not`]: used to compare Boolean values
+    - [`and`, `or`]: always take two values
+    - [`not`]: evaluates to the opposite Boolean value
+    - evaluated `not`, `and`, `or`
+
+# If statements 
+- if [statement]: 
+    - clause [the block following the if statement]: will execute if the statement's condition is `True`
+    - else [clause]: executed only when the if statement's condition is `False`
+    - elif [statement]: always follows if or elif. Provides another condition that is checked ONLY if any of the previous conditions were False. Once a statement condition is `True`, remaining `elif` or `else` are skipped 
+- while [statement]: make a block of code execute over and over again
+    - Code in clause will execute as long as while statement's condition is `True`
+    - aka `while loop` or `loop`
+- break [statement]: force program executation to break out a while loop's clause early
+    - contains the `break` keyword 
+- continue [statement]: program execution immediately jumps back to the start of the loop and reevaluates the loop's condition (by default, happens when execution reaches end of loop)
+- for [statement]: execute a block of code only a certain number of times
+    - combined with range(int) 
+    - e.g. `for i in range(5)`
+- import [statement]: must import modules before using them
+- sys.exit() [function]: cause program to terminate by calling
+- def [statement]: defines a function
+- arguments: values passed into functions by typing them between the ()
+- parameter: variable that an argument is stored in when a function is called
+- return value: value that a function call evaluates to
+- return [statement]: specify what the return value should be. Requires `return` keyword and value or expression that function should return
+- None [value]: represents the absence of a value. `None` is the only value of `NoneType` data type. 
+- keyword arguments: identified by the keyword put before them in the function call; generally used for optional parameters
+    - e.g. `print('Hello',end='')` `end=''` is the keyword argument 
+- global [statement]: can be used to modify the global variable from w/n a function
+    - e.g., w/n function: `global eggs` \ `eggs = spam` to reassign global `eggs` var
+- try [clause]: for exception handling. Put code that could potentially have an error a return and tab under `try:`
+- except [clause]: second part of exception handling. On the same column as `try:`; contains code to handle what happens when error occurs 
+
+# Lists 
+- list [data type]: a value that contains multiple values in an ordered sequence
+    - index() [list method]: can be passed a value, and if that value exists in the list, the index of the value is returned
+        - e.g. `spam.index('moose')`
+    - append() [list method]: adds argument to end of list
+        - e.g. `spam.append('moose')`
+    - insert() [list method]: insert a value at any index in the list. First argument is index for new value, second argument is new value to be inserted
+        - e.g. `spam.insert(1, 'chicken')`
+    - remove() [list method]: pass the value to be removed from the list it is called on
+        - e.g. `spam.remove('chicken')`
+    - del [statement]: delete values at an index in a list
+        - `del spam[1]`
+    - sort() [list method]: sort list of number values or lists of strings
+        - `spam.sort(reverse=True)` to sort in reverse order
+        - sorts in ASCIIbetical order (capital alphabet first, then lowercase alphabet (e.g. A, B, ... Z, a, b, ... z))
+            - `spam.sort(key=str.lower)` to sort in alphabetical order
+- list [value]: refers to the list itself 
+- items [value]: values inside a list; separated by commas 
+- index: Integery inside the square brackets that follows the list. Can only be integer values
+    - index values start at `0`
+    - `-1`: index value that refers to last index in a list
+    - `-2`: index value that refers to second-to-list index in a list (and so on)
+- slice: obtain several values from a list, in the form of a new list
+    - e.g. `[0:2]`; typed b/w square brackets w two integers seperated by `:`
+    - first integer: index where the slice starts
+    - second integer: index where the slice ends; goes up to but will not include the value at the second index
+    - shortcuts: leaving out first index is same as starting from beginning of list; leaving out second index is same as using the length of the list
+- list concatentation and replication
+    - `+` can combine two lists to create a new list value
+    - `*` used w list and integer value to replicate list 
+- for loops w lists: a for loop repeats the code block once for each value in a list or list-like value
+    - can use `range(len(<list>))` w a for loop to iterate over the indexes of a list 
+- in & not in [operator]: connect two values: a value to look for in a list and the list where it may be found. Evaluates to Boolean
+    - e.g. `spam = ['hello','hi','howdy','heyas] \ 'howdy' in spam`
+- multiple assignment trick: assign multiple variables with the values in a list in one line of code
+    - e.g. `cat = ['fat','black','loud'] \ size, color, disposition = cat`
+        - the three vars on the end would be assigned values from list cat. Both have to be the same quantity of values 
+- augmented assignment operators [`+=`, `-=`, `*=`, `/=`, `%/`]: modify value and reassign to the same variable
+    - e.g. `spam = 42 \ spam += 1 \ print(spam) \ 43`
+- method: same thing as a function, except it is 'called on' a value
+    - each data type has its own set of methods 
+- tuple [data type]: typed with () and are immutable; cannot have their values modified, appended, or removed
+    - to have only one value, place a trailing comma after the value inside the parenthese
+- list() [function]: return a list of the values presented to it
+- tuple() [function]: return a tuple of the values presented to it 
+- reference: value that points to some bit of data
+- list reference: value that points to a list
+    - when assigning a list to a variable, actually assigning list reference to variable, not straight to the reference 
+        - this means, by default what when modifying the original list (or dictionary), those changes would affect all lists based off that list (or dictionary)
+            - copy.copy() [function]: to make a duplicate copy of a mutable value like a list or dictionary, not just a list reference
+            - copy.deepcopy() [function]: if the list to copy contains lists that need to be copy, copy all of them (not their list references) with this function
+
+# Dictionaries 
 - dictionary [data type]: collection of many values using key-value pairs
-    - key() [method]: used to obtain keys from dictionary
-    - values() [method]: used to obtain values from dictionary
-    - items() [method]: used to obtain value and item pairs from dictionary 
-    - get() [method]: takes two arguments, checks to see if a value is in a dictionary and if it's not, then a value to return when the expression returns False
-    - setdefault() [method]: takes two arguments, the key to check for, and value to set at that key if the key doesn't exist
+    - key() [dicionary method]: used to obtain keys from dictionary
+    - values() [dicionary method]: used to obtain values from dictionary
+    - items() [dicionary method]: used to obtain value and item pairs from dictionary 
+    - get() [dicionary method]: takes two arguments, checks to see if a value is in a dictionary and if it's not, then a value to return when the expression returns False
+    - setdefault() [dicionary method]: takes two arguments, the key to check for, and value to set at that key if the key doesn't exist
 - pprint [module]: helpful in pretty printing of dictionaries (among other things?)
     - pprint() [function]: pretty print a dictionary's values (e.g., newline between each dictionary value, and ASCIIbetically
     - pformat() [function]: obtain the prettified text as a string value instead of dictionary
