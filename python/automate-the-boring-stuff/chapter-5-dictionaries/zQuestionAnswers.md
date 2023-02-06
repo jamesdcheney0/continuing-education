@@ -1,5 +1,5 @@
 1. `spam={}`
-2. `spma={'foo':42}`
+2. `spam={'foo':42}`
 3. dictionary indexes are defined by the user and list indexes are based on a count from 0
 4. calling `spam[foo]` on `spam = {'bar':100}` produces an error
 5. `spam = {'cat':'pet', 'cow':'cattle'}` `'cat' in spam` would return true, looking for 'cat' anywhere in the dictionary and would evaluate `True`; `'cat' in spam.keys()` would look for 'cat' only in the key: side of the key:value pair and would evaluate `True`
