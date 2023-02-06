@@ -45,5 +45,5 @@ Develop the following skills for approximately 1000 hours
         - https://www.atmos.albany.edu/daes/atmclasses/atm350/vi_cheat_sheet.pdf
 
 
-# Time tracking
+## Time tracking
 Will be done in [this](https://docs.google.com/spreadsheets/d/13z_lZF3yKjg7pEug7X30drjH-hnfWTm5yO-Jz1Ao0eg/edit#gid=394243783) google sheet until I can make a python program do it. The markdown table was liable to get hard to read and track very soon. 
