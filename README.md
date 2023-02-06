@@ -45,16 +45,5 @@ Develop the following skills for approximately 1000 hours
         - https://www.atmos.albany.edu/daes/atmclasses/atm350/vi_cheat_sheet.pdf
 
 
-## Time tracking
-> Note: All times in minutes. 
-
-> Note: Approximate daily recommended study time for Python (to hit 350 hours) is approximately 51 minutes. Other areas of study recommended daily study time is 94 minutes. 
-
-|Date|Python|AWS|Terraform|Terragrunt|Docker|Kubernetes|Misc|Resources Used|
-|----|------|---|---------|----------|------|----------|----|--------------|
-||||||||||
-|02/03/23|57|49|38|||||ABSP ch 5, ASA3 exam strategy + Q&A, ABCC|
-|02/02/23|53||33||||53|ABSP ch 4 exercise, vi cheat sheet, ABCC|
-|02/01/23|68|65|33|||||ABSP ch 4, ABCC, ASA3 content review stream| 
-|01/31/23|60||38|||||ABSP ch 4, ABCC|
-|01/30/23|68|113|35|||||ABSP ch 3, ASA3 intro, AWS Technical Essentials, ABCC|
+# Time tracking
+Will be done in [this](https://docs.google.com/spreadsheets/d/13z_lZF3yKjg7pEug7X30drjH-hnfWTm5yO-Jz1Ao0eg/edit#gid=394243783) google sheet until I can make a python program do it. The markdown table was liable to get hard to read and track very soon. 
