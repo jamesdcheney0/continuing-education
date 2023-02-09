@@ -42,3 +42,12 @@ David Chong (Enablement management)
 - arn format: arn:partition:service:region:account-id: resource-id | resource-type/resource-id | resource-type:resource-id
 - https://aws.amazon.com/s3/storage-classes-infographic/ good to know details on S3. 11 9's durability for all classes 
 - s3 access points: able to make policies for each access point
+
+# Missed knowledge check questions
+- CloudEndure Migration use EC2 and EBS
+- DataSync asynchronously xfers data b/w source & target storage 
+
+# Content Review February 8th, 2023
+- memcached: sub-millisecond latency, data partitioning, multi-threaded. Meant to be simpler
+- redis: sub-millisecond latency, data partitioning, advanced data structures, snapshots, replication, transactions, Pub/Sub. NOT multi-threaded 
+- DynamoDB: key-value. If that comes up on the exam, likely to narrow down the options (DAX, dynamoDB accelerator to up to 10x performance for DDB)
