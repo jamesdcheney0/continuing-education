@@ -92,11 +92,69 @@
 
 # Dictionaries 
 - dictionary [data type]: collection of many values using key-value pairs
-    - key() [dicionary method]: used to obtain keys from dictionary
+    - keys() [dicionary method]: used to obtain keys from dictionary
     - values() [dicionary method]: used to obtain values from dictionary
     - items() [dicionary method]: used to obtain value and item pairs from dictionary 
     - get() [dicionary method]: takes two arguments, checks to see if a value is in a dictionary and if it's not, then a value to return when the expression returns False
     - setdefault() [dicionary method]: takes two arguments, the key to check for, and value to set at that key if the key doesn't exist
+    - `dictionary[key] = value`: assign a value to a dictionary at the specified key 
 - pprint [module]: helpful in pretty printing of dictionaries (among other things?)
     - pprint() [function]: pretty print a dictionary's values (e.g., newline between each dictionary value, and ASCIIbetically
     - pformat() [function]: obtain the prettified text as a string value instead of dictionary
+
+# Manipulating Strings
+- string values begin and end w a single quote
+    - can begin and end w double quotes. W double quotes, `'` w/n string is ignored
+- escape character: allow use of characters that are otherwise impossible to put into a string
+    - `\'`: print `'`
+    - `\"`: print `"`
+    - `\t`: print tab
+    - `\n`: print newline (line break)
+    - `\\`: print `\`
+- raw strings: place `r` before the beginning quotation mark of a string 
+    - e.g. `print(r'That is Carol\'s cat.')` would return `That is Carol\'s cat.`
+- multi-line strings: begins and ends w either three single quotes or three double quotes. Any quortes, tabs, or newlines between the triple quotes are considered part of the string
+    - thus, using escape characters is optional in multi-line strings
+- multi-line comments: can be made with a multi-line string; starting and ending with triple quotes
+- strings use indexes and slices the same way lists do
+    - if an index is specified, character at that position in the string will be returned
+    - slicing a string does not modify original string
+- `in` & `not in` operators can be used with strings just like w list values
+    - e.g. `'Hello' in 'Hello world'`
+## Useful string methods
+- upper() [string method]: return a new string where all the letters in the original string have been converted to uppercase
+- lower() [string method]: return a new string where all the letters in the original string have been converted to lowercase
+    - e.g. `spam = 'Hello world!' \ spam = spam.upper() \ spam \ 'HELLO WORLD!'`
+    - helpful to deal with user input and clean it up
+        - e.g. `feeling = input() \ if feeling.lower() == 'great': \ ...` would be able to accept Great, GReat, etc and compare to `great`
+- isupper() [string method]: return `True` if the string has at least one letter and all the letters are uppercase
+- uslower() [string method]: return `True` if the string has at least one letter and all the letters are lowercase
+    - otherwise, returns false 
+- note: these methods do not change the string itself. Have to assign the method to the variable if wanting to preserve the change
+- isalpha() [string method]: return `True` if the string consists only of letters and is not blank
+- isalnum() [string method](stands for alphanumeric): return `True` if the string consists only have letters and numbers and is not blank
+- isdecimal() [string method]: return `True` if the string consists only of numeric characters and is not blank
+- isspace() [string method]: return `True` if the string consists only of spaces, tabs, and newlines and is not blank
+- istitle() [string method]: return `True` if the string consists only of words that begin with an uppercase letter followed by only lowercase letters
+- note: the isX string methods are helpful when needing to validate user input
+- startswith() [string method]: return `True` if the string value begins with the string passed to the method
+- endswith() [string method]: return `True` if the string value ends with the string passed to the method
+- join() [string method]: join list of strings together into a single string value
+    - called on a string, gets passed a list of strings, and returns a string
+    - e.g. `', '.join(['cats','rats','bats']) \ 'cats, rats, bats'`
+    - the string `join()` is called on is inserted between each string of the list argument
+- rjust(), ljust() [string method]: returns a padded version of the string they are called on, with spaces inserted to justify the text
+    - the first argument is the integer length of the justified string (includes the string, plus the amount of justification)
+        - e.g. `'Hello'.rjust(10) \ '     Hello'` - Hello is five characters, so five spaces were added to the right
+    - an optional second argument specified a fill character other than a space character
+        - e.g. `'Hello'.rjust(10, '*') \ '*****Hello'`
+- center() [string method]: centers the text, rather than justifying it
+    - e.g. `'Hello'.center(20) \ '       Hello        '` - appears the higher number is put on the right side since the `20` can easily have `len(Hello)` subtracted from it 
+- strip() [string method]: returns a string w/o any whitespace characters at the beginning or end
+- lstrip(), rstrip() [string methods]: remove whitespace characters from the left and right ends, respectively
+    - optionally, a string argument will specify which characters on the ends should be stripped 
+        - e.g. `spam = 'SpamSpamBaconSpamEggsSpamSpam' \ spam.strip('ampS') \ 'BaconSpamEggs'`
+        - the order of characters in the string passed to `strip()` doesn't matter
+- pyperclip [module]:
+    - copy() [function]: send text to clipboard 
+    - paste() [function]: copy text from clipboard to use in program
