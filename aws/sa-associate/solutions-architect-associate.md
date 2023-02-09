@@ -51,3 +51,86 @@ David Chong (Enablement management)
 - memcached: sub-millisecond latency, data partitioning, multi-threaded. Meant to be simpler
 - redis: sub-millisecond latency, data partitioning, advanced data structures, snapshots, replication, transactions, Pub/Sub. NOT multi-threaded 
 - DynamoDB: key-value. If that comes up on the exam, likely to narrow down the options (DAX, dynamoDB accelerator to up to 10x performance for DDB)
+
+# DynamoDB review
+## How DynamoDB Works
+- designed for online transaction processing (OLTP), with known request patterns 
+- online analytical processing (OLAP) loads are better handled by SQL
+- data stored in tables
+- items placed in tables
+- attributes: essential the 'key' of an item. aka partition key
+    - optionally, sort key can be defined
+    - primary key: made up of paritition (+optional sort key); must be unique
+    - supported types: number, string, binary (base64 encoded), boolean, null
+    - can use sets of numbers, strings, and binaries; sets do not preserve order
+- schema flexibility  
+- durability/availability
+    - data written at least twice in separate facilities
+    - 99.99% availability
+- eventual consistency: default behavior, w strong consistency available for each read operation. best practice to design around eventual consistency 
+- RCU (read capacity unit): consumed while reading an item up to 4KB in size each second
+    - single item can never be read at more than 3000 RCU
+    - eventually consistent reads are 1/2 cost of strongly consistent; 2 4KB EC consumes only 1 RCU
+- WCU write capacity unit: consumed while writing an item up to 1KB in size each second 
+    - updating a single attribute in an item requires writing the entire item 
+    - single item can never be read at more than 1000 WCU
+- able to burst and use 'adaptive capacity'
+### Basic item requests
+- PutItem
+- UpdateItem
+- DeleteItem (costs the same number of WCUs to delete as to create)
+- GetItem
+- BatchWriteItem/BatchGetItem
+- Scan: scans entire table; not to be done often; can consume all provisioned throughput of table if done poorly
+- Query: specify partition key & sort key expression to match 
+    - sums the size of all items in the result set & rounds to the nearest 4KB, instead of counting sizes for each individual item identified in the search
+### Indexes
+- secondary index: direct Query and Scan calls to index instead of base table
+- LSI (local secondary index): local to a particular partition key; has the same partition key as the base table 
+    - use sparingly; each index will result in add'l writes
+    - limit collection size for partition key to ~10GB of data
+- GSI (global secondary index): think of it as a completely separate table that DDB replicates to from the base table
+    - created & deleted at will
+    - generally recommended; but don't build indexes that aren't needed
+### Streams
+- strictly ordered flow of information according to the changes to the table
+- durable & kept up to 24hrs
+
+## Operating DynamoDB
+- 400 errors addressed by user
+- 500 errors problems DDB will take care of 
+- auto scales in response to actual traffic patterns 
+    - set RCU and WCU man, max, and target utilization %
+- global tables: DDB tables operated across multiple regions 
+    - 5 9's, and primary reason to use is to provide extremely low latency to global clients 
+    - multi-master, conflicts resolved w last-write-wins
+    - strong consistency not possible
+- TTL (time-to-live): expire old items to keep storage cost low. Doesn't cost WCU
+    - w/n a day or two of epoch-formatted defined time, DDB will delete for free 
+- DAX (DynamoDB Acclerator): provides an API-compatible cache for DDB tables
+    - highly-available cluster of nodes accessible w/n VPC
+    - can decrease amount of RCUs required on table and can smooth out spiky/imbalanced read loads 
+- backups
+    - manual
+    - PITR (point in time recovery): keeps 35-day rolling window of information about table 
+
+## Design Considerations
+- uniform workloads
+    - choose a partition key with an even distribution of item data and traffic across hash space. A good partition key has a high 'cardinality' - meaning lots of unique values
+        - e.g. in keeping track of user status for a mobile game, UserId would be a good partition key; CountryCode would not
+- hot and cold data
+    - can delete tables (doesn't require WCUs)
+    - consider cold tier storage which uses S3
+- items limited to 400kB
+- use optimistic locking with version number 
+
+## Assessment Review
+- facts about consistency:
+    - DAX passes strongly consistent reads through but doesn't cache them
+    - stringly consistent reads can be made via a VPC endpoint
+    - LSI and GSI both support eventually consistent reads
+    - you can make two EC reads (each up to 4KB) for one RCU
+    - all successful writes are redundantly stored and durable - there is no eventual or strong consistencyu choice to be made for writes (only reads)
+    - LSI can only be defined at time of base table creation - cannot be deleted w/o deleting base table
+    - DDB streams cannot be used to audit read activity for a table 
+    - optimistic currency control in DDB provides a form of locking; read, transformat, conditionally write, retry as required is a description of the mechanism
