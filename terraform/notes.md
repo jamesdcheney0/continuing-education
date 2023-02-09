@@ -1,106 +1,3 @@
-# Built-in Functions
-## Numeric Functions
-- abs(): gives absolute value of given number
-- floor(): returns closest whole number that is <= to given value
-- log(x,y): returns logarithm of a given number 
-- ceil(): rounds up to nearest whole number
-- min(): takes one or more numbers & returns the smallest number from the set
-- max(): takes one or more numbers & returns the largest number from the set
-- parseint(): parses given string as a representation of an int in specified base (e.g. base 2, 10, 16, etc) and returns result
-    - e.g. `parseint("100", 10) == 100`: translate 100 in base 10
-    - e.g. `parseint("FF", 16) == 255`: translate FF in hex to an int
-    - e.g. `parseint("1011111011101111", 2) == 48879`: translate binary string
-- pow(x,y): calculates an exponent by raising first argument to the power of the second argument
-- signum(): determines sign of a number (e.g. negative, zero, positive) w -1, 0, or 1
-
-## String Functions
-- chomp("str"): removes newline characters at end of str
-- format("str"): produces string by formatting a number of other values according to specification string
-    - e.g. `format("There are %d lights", 4)` returns 'There are 4 lights'
-- formatlist("str", list): produces a list of string by formatting other values according to spec string
-    - e.g. `formatlist("Hello, %s!", ["Valentina", "Ander", "Olivia", "Sam"])` returns
-            [
-                "Hello, Valentina"
-                "Hello, Ander"
-                "Hello, Olivia"
-                "Hello, Sam"
-            ]
-- indent("str"): adds a given number of spaces to beginning of all lines but the first in a multiline string
-- join("<operator>", [list]): produces a string by concatenating all elements of a list of string w <operator>
-- lower("str"): converts all cased letters in string to lowercase
-- upper("str"): converts all cased letters in string to uppercase
-- regex("str"): applies regex to a string & returns matching substrings
-- regexall("str"): applies regex to a string & returns list of all matches
-- replace("str"): replaces given string for another given substring & replaces each occurence w given replacement string
-    - e.g `replace("hello world", "/w.*d/", "everybody)` returns `'hello everybody'`
-- split("<separator>","string"): produces a list by dividing string with <separator>
-- strrev("string"): reverses characters in a string
-- substr("str",<offset>,<len>): extract a substring from string by offset & length
-    - e.g. `subset("hello world", 1, 4)` returns `ello`
-- title("str"): converts first letter in each word in string to uppercase
-- trim("str", "<characters>"): removes specified characters from start & end of string
-    - e.g. `trim("!?Hello?!", "!?")` returns `Hello`
-- trimprefix("str", "<prefix>"): removes specified <prefix> from start of string
-- trimsuffix("str", "<suffix>"): removes specified <suffix> from end of string
-- trimspace("str"): removes whitespace from start & end of string
-
-## Collection functions
-- alltrue([<bool>, <bool>]): returns true if all elements in collection are `true` or `"true"`
-- anytrue([<bool>, <bool>]): returns true if any element in collection are `true` or `"true"`
-- chunklist([<list>], <chunk>): splits a single list into fixed-size chunks, returning a list of lists
-    - e.g. `chunklist(["a", "b", "c", "d", "e"], 2)`
-    [ 
-        [
-            "a",
-            "b"
-        ]
-        ...
-    ]
-- coalesce(): takes any number of arguments and returns the first one that isn't null or an emptry string
-    - e.g. `coalesce("","a","b")` returns `a`
-- coalescelist([]): takes any number of list arguments and returns the first one that isn't empty 
-- compact([]): takes a list of strings and returns a new list w empty string elements removed
-- concat([],[]): takes two or more lists and combines them into a single list
-- contains([],<value>): determines whether a given list or set contains a given single <value> as one of it's elements; returns `true` or `false`
-- distinct([]): takes a list and returns a new list w any duplicate elements removed 
-- element([],<int>): retrieves a single element from a list
-    - e.g. `element(["a", "b", "c"], 3)` returns `a` - index value 3 doesn't exist, so it wrapped back around to the beginning
-- index([],<value>): finds the element index for a given value in a list
-    - e.g. `index(["a", "b", "c"], "b")` returns `1`
-- flatten([],[]): takes a list and replaces any elements that are lists with a flattened sequence of the list contents (turns multiple lists into one list)
-- keys({}): takes a map and returns a list containing the *keys* from that map
-- values({}): takes a map and returns a list containing the *values* of the elements in the map
-- length(<value>): determines the length of a given list, map, or string. List counts values within list, map counts number of key:value pairs, string counts number of characters 
-- lookup({},<key>, <default-value>): retrieves the value of a single element from a map, given its <key>. If the given <key> does not exist, the given <default-value> is returned
-    - e.g. `lookup({a="ay", b="bee"}, "a", "what?")` returns `ay`
-    - e.g. `lookup({a="ay", b="bee"}, "c", "what?")` returns `what?`
-- matchkeys([],[],[]): constructs a new list by taking a subset of elements from one list whose indexes match the corresponding indexes of values in another list
-    - e.g. `matchkeys(["i-123","i-abc","i-def"], ["us-west", "us-east", "us-east"], ["us-east"])` returns `["i-abc", "i-def"]`
-- merge({}, {}): takes an arbitrary number of maps or objects, and returns a single map or object that contains a merged set of elements from all arguments. For duplicates, seems to return the value of the last occurence
-    - e.g. `merge({a="b", c="d"}, {e="f", c="z"})` returns `{"a" = "b", "c" = "z", "e" = "f"}
-- one([]): takes a list, set, or tuple value w either zero or one elements. If collection is empty, one() returns null. Otherwise, one returns the first element. If there are two or more elements, then one will return an error 
-- range(<int>): generates a list of numbers using a start value, a limit value, and a step value (not all required)
-    - e.g. `range(3)` returns `[0,1,2]`
-- reverse([]): takes a sequence and produces a new sequence of the same length with all of the same elements as the given sequence but in reverse order
-    - e.g. `reverse([1,2,3])` returns `[3,2,1]`
-- setintersection([],[],[]): takes multiple sets and produces a single set containing only the elements that all of the given sets have in common; computes the intersection of the sets 
-    - e.g. `setintersection(["a", "b"], ["b", "c"], ["b", "d"])` returns `["b"]`
-- setproduct([],[]): finds all possible combinations of elements from given sets by computing the Cartesian product
-    - e.g. `setproduct(["development", "staging", "production"], ["app1", "app2"])` returns `[["development","app1"],["development", "app2"]...]`
-- setsubtract([],[]): returns a new set containing the elements from the first set that are not present in the second set; computes the relative complement of the first set in the second set 
-    - e.g. `setsubtract(["a", "b", "c"], ["a', "c"])` returns `["b"]`
-- setunion([],[]): takes multiple sets and produces a single set containing the unique elements from all the given sets
-    - e.g `setunion(["a", "b"], ["b", "c"], ["d"])` returns `["d","b","c","a"]`
-- slice([],<int>,<int>): extracts some consecutive elements from w/n a list
-    - e.g. `slice(["a", "b", "c", "d"], 1, 3)` returns `["b","c"]` 
-- sort([]): takes a list of strings and returns a new list with those strings sorted lexicographically (accounts for longer strings and can compare to shorter strings. pretty complicated concept)
-    - e.g. `sort(["e", "d", "a", "x"])` returns `["a","b","e","x"]`
-- sum([]): takes a list or set of numbers and returns the sum of those numbers. Can be int or float
-- transpose({}): takes a map of lists of strings and swaps the keys and values to produce a new map of lists and strings
-    - e.g. `transpose({"a" = ["1", "2"], "b" = ["2", "3"]})` returns `{ "1" = ["a"], "2" = ["a", "b"]...}`
-- zipmap([],[]): constructs a map from a list of keys and a corresponding list of values
-    - e.g. `zipmap(["a", "b"], [1, 2])` returns `{"a" = 1, "b" = 2}`
-
 # Review
 ## 
 - Terraform workspaces: isolate and manage multiple versions of tf state
@@ -379,3 +276,280 @@ provider: can be added w/n resource to point to specific provider alias
     - use `~>` or `>=` to version progressively
 
 ## Terraform
+- state: particular condition of cloud resources at a specific time
+    - state file: `terraform.tfstate` is created when tf is ran
+        - JSON data structure w one-to-one mapping from resource instances to remote objects
+    - CLI commands
+        - `terraform state list|mv|pull|push|replace-provider|rm|show`
+            - list resources
+            - move item w/n state
+                - changes have to be made in main.tf first, then `mv` can be used
+                - rename existing resources: `terraform state mv <resource>.<name> <resource>.<new_name>`
+                - move a resource into a module: `terraform state mv <resource>.<name> <module>.<resource>.<name>`
+                - move a module into a module: `terraform state mv <module>.<resource> <module>.<parent_module>.<resource>`
+            - pull from remote
+            - push to remote
+            - change providers
+            - remove resources from state
+            - show a resource in state
+    - terraform state backups
+        - all tf state subcommands that modify state will write a backup file
+            - read only commands will not modify
+            - tf will take current state and store in `terraform.tfstate.backup`
+                - backups can't be disabled
+- init
+    - downloads plugin dependencies (e.g. providers & modules)
+    - creates `.terraform` directory
+    - creates dependency lock file to enforce expected versions for plugins & tf
+    - must be run again when dependencies are changed or modified
+    - `tf init -upgrade|-get-plugsin-false|-plugin-dir=PATH|-lockfile=MODE`
+        - upgrade all plugins to latest compliant version
+        - skip plugin installation
+        - force plugin installation from specific directory
+        - set dependency lockfile mode
+    - dependency lock file: `.terraform.lock.hcl`
+    - state lock file: `.terraform.tfstate.lock.hcl`
+- get
+    - `terraform get`
+    - used to download and update modules in the root modules
+- debugging
+    - `terraform fmt`: rewrites tf config files to standard format & style
+    - `terraform validate`: validates syntax + arguments of tf config files in directory (automatically runs when `terraform plan|apply` are run
+    - `terraform console`: interactive shell to evaluate tf expressions
+- plan
+    - speculative plans: what's show when `terraform plan` or `terraform apply` is run w/o typing yes
+    - saved plans: `terraform plan -out=<file>.plan`: save a file of the `terraform apply` that can then be run using `terraform apply <file>.plan`
+        - won't ask for confirmation when applying file extension of .plan
+        - `<file>.plan` is a binary file that can't be read in code editor
+- apply
+    - executes actions proposed in execution plan
+    - automatic plan mode: `terraform apply` executes plan,validate, apply. Requires manually approval by default
+    - saved plan mode: `terraform apply <file>.plan` runs the plan immediately with no approval required
+- managing resource drift
+    - `terraform apply -replace`: replace resources
+        - marks resources for replacement when `terraform apply is ran`
+        - replaces taint & prompts for confirmation
+        - replaces one resource at a time 
+    - `terraform import <resource>.<resource_name> <id-of-resource-from-cloud-provider>`: import existing resources into terraform
+        - define a placeholder in config file for imported resources
+        - leave the body of the placeholder blank & manually fill after importing [DOES NOT AUTOFILL]
+        - ID of resources like vpc-XXXXX or i-XXXXXX
+        - can only import one resource at a time
+        - not all resources are able to be imported
+    - `terraform apply -refresh-only`: refresh state 
+        - reads current settings from all managed objects & updates tf state
+        - use-case: e.g. instance manually terminated. It should be terminated, but wasn't done in tf. `terraform apply` would want to make a new one. `terraform apply -refresh-only` would update the state file to recognize instance should be gone
+    - resource addressing
+        - [module path].[resource specification]
+        - `<module>.<module_name>[module_index(if applicable)].<resource_type>.<resource_name>[instance_index(if applicable)]`
+            - addresses a module w/n tree of modules, then addresses specific resource instance in module
+            - `<module>`: namespace for modules
+            - `<module_name>`: user-defined name of modules
+            - `<resource_type>`: type of resource being addressed
+            - `<resource_name>`: user-defined name for resource
+- troubleshooting
+    - language errors: `fmt`, `validate`, `version`
+    - state errors: `refresh`, `apply`, `replace`
+        - these two are easier to solve when troubleshooting
+    - core errors: `TF_LOG` to find info & report on github
+    - provider errors
+    - debugging
+        - set `TF_LOG` environment variable to `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `JSON`
+            - e.g. `TF_LOG=trace`
+            - capitalization doesn't actually matter
+        - `TF_LOG`s can be enabled separately: `TF_LOG_CORE`, `TF_LOG_PROVIDER`
+        - `TF_LOG_PATH=<path>` to choose where to log
+    - crash logs: if tf crashes in a panic, it saves a log file w debug logs from session
+- modules
+    - tf registry (only verified & official modules will show in search bar) - public modules
+        - `<namespace>/<name>/<provider>`
+        - verified modules - reviewed by hashicorp & actively maintained by contributors 
+            - unverified shouldn't necessarily be considered low quality
+    - private modules: in tf cloud (need tf login for tf cloud), or from private repos (github, etc)
+        - `<hostname>/<namespace>/<name>/<provider>`
+    - standard module structure
+        - primary entry point is the root module, and should contain `main.tf`, `variables.tf` & `outputs.tf`
+        - nested modules are optional, and must be continaed in `modules/<directory>`
+            - README w/n directory indicates module can be used on its own
+            - no README indicates module is for internal module use only
+- team workflows 
+    - core tf workflow: write > plan > apply 
+    - individual practicitioner
+        - write: write tf locally, store in github/git, run `terraform plan|validate` to test - tight feedback loop
+        - plan: commit code to local repo
+        - apply: run `terraform apply` & wait for provisioning, then commit to github
+    - team 
+        - write: write local code, stored on branch in remote repo. `terraform plan` for quick feedback loop
+            - as team grows, CI/CD process implmeneted
+        - plan: when branch is ready, pull request submitted
+        - apply: merge must be approved & merged, then code build server runs `terraform apply`
+        - team must make CI/CD pipeline, have to figure out state storage, permissions, safely store & inject secrets, and manageing multiple environments requires duplication of code
+    - terraform cloud (team workflow)
+        - write: use tf cloud as backend. Input variables stored in tf cloud. Tf cloud integrates w git to set up CI/CD; branch/commit strategy remains the same
+        - plan: pull request created & tf cloud creates speculative plan
+        - apply: after merge, tf cloud will run `terraform apply`. Team member can confirm & apply changes
+        - streamlines CI/CD effort, secures credentials, and makes it easier to audit history of multiple runs
+- backends: where & how operations are performed
+    - standard backends (including S3): only store state. External CLI required to perform tf operations
+        - third party options: AWS S3 (with state locking via DynamoDB), Azure, Google Cloud, Alibaba, etc
+            - configuring standard backend does not require tf cloud account or workspacef
+    - enhanced backends: store state and perform tf operations
+        - local backend: stores state on local filesystem (could be an EC2 instance; not necessarily only on personal computer)
+            - used by default when no backend defined
+            - local backend can be defined to a specific directory under the `terraform` backend block
+        - remote backend: uses tf cloud (or tf enterprise)
+            - when `terraform apply` performed w CLI, remote backend executes operation
+            - provider credentials need to be configured in the remote backend
+            - need to set tf cloud workspace & define in backend block. If not defined, tf will ask when operations run
+    - backend initialization
+        - `terraform init -backend-config=backend.hcl`: used when backend info is sensitive & shouldn't be in config file. `backend.hcl` in this case defines backend
+    - `terraform_remote_state` [data source]: retrieves root module output values from another tf config
+        - kinda like using outputs b/w stacks in cloudformation
+        - uses latest state snapshot from remote backend
+            - works w local & remote backend
+        - resource data & output values from nested modules NOT accessible
+            - it is possible to configure passthrough of those values in the root module
+        - user must have access to entire state snapshot, which may include sensitive info
+        - it is recommended to explicitly publish data for external consumption to a separate location instead of accessing via remote state (better because it works off live data)
+    - state locking: tf will lock state for all operations that can write state
+        - prevents other from acquiring lock & corrupting state
+        - happens automatically
+        - messages on completion or failure aren't published, only if taking too long
+        - not recommended: can be disabled
+        - not recommended: `force-unlock` can be used to unlock state if unlocking fails
+            - `force-unlock` required a unique ID. ID will be outputted if unlocking fails
+            - `-force` will skip confirmation
+    - protecting sensitive data
+        - local state: state is stored in plain-text and may contain AWS credentials
+            - don't share file w anyone. Include it on .gitignore; DON'T COMMIT STATE!
+        - remote state w tf cloud
+            - state file is in memroy & not persisted to disk
+            - state file encrypted-at-rest and -in-transit
+            - tf enterprise includes detailed audit logging for tamper evidence
+        - remote state w third-party
+            - review backend capabilities
+            - not as secure by default as tf cloud, but can be beefed up to requirements
+    - terraform ignore file (`.terraformignore`)
+        - works similar to .gitignore but used by tf cloud
+        - can only have one in the root directory
+- resource: represent infrastructure objects
+    - belogs to a provider (can be explicitly set in resource block)
+    - can create timeout blocks to timeout how long to give creation and deletion before canceling them
+
+## Complex types
+- type that groups multiple values into single value
+- collection types (group similar values)
+    - allow multiple objects of one type to be grouped together as single value
+    - element type: type of the value w/n collection
+    - list: like an array, use integer as index
+    - map: key:value, access w key
+    - set: similar to list, but no secondary index or preserved ordering
+        - all values will be the same type as the first element in the set (e.g., if the set is created with a str and a few ints, the ints will be converted to str)
+- structural types (group potentially dissimilar values)
+    - allows multiple values of distinct types to be grouped as a single value
+    - requires schema as an argument
+    - object: like a map, with more explicit keying
+    - tuple: multiple return types 
+
+# Built-in Functions
+## Numeric Functions
+- abs(): gives absolute value of given number
+- floor(): returns closest whole number that is <= to given value
+- log(x,y): returns logarithm of a given number 
+- ceil(): rounds up to nearest whole number
+- min(): takes one or more numbers & returns the smallest number from the set
+- max(): takes one or more numbers & returns the largest number from the set
+- parseint(): parses given string as a representation of an int in specified base (e.g. base 2, 10, 16, etc) and returns result
+    - e.g. `parseint("100", 10) == 100`: translate 100 in base 10
+    - e.g. `parseint("FF", 16) == 255`: translate FF in hex to an int
+    - e.g. `parseint("1011111011101111", 2) == 48879`: translate binary string
+- pow(x,y): calculates an exponent by raising first argument to the power of the second argument
+- signum(): determines sign of a number (e.g. negative, zero, positive) w -1, 0, or 1
+
+## String Functions
+- chomp("str"): removes newline characters at end of str
+- format("str"): produces string by formatting a number of other values according to specification string
+    - e.g. `format("There are %d lights", 4)` returns 'There are 4 lights'
+- formatlist("str", list): produces a list of string by formatting other values according to spec string
+    - e.g. `formatlist("Hello, %s!", ["Valentina", "Ander", "Olivia", "Sam"])` returns
+            [
+                "Hello, Valentina"
+                "Hello, Ander"
+                "Hello, Olivia"
+                "Hello, Sam"
+            ]
+- indent("str"): adds a given number of spaces to beginning of all lines but the first in a multiline string
+- join("<operator>", [list]): produces a string by concatenating all elements of a list of string w <operator>
+- lower("str"): converts all cased letters in string to lowercase
+- upper("str"): converts all cased letters in string to uppercase
+- regex("str"): applies regex to a string & returns matching substrings
+- regexall("str"): applies regex to a string & returns list of all matches
+- replace("str"): replaces given string for another given substring & replaces each occurence w given replacement string
+    - e.g `replace("hello world", "/w.*d/", "everybody)` returns `'hello everybody'`
+- split("<separator>","string"): produces a list by dividing string with <separator>
+- strrev("string"): reverses characters in a string
+- substr("str",<offset>,<len>): extract a substring from string by offset & length
+    - e.g. `subset("hello world", 1, 4)` returns `ello`
+- title("str"): converts first letter in each word in string to uppercase
+- trim("str", "<characters>"): removes specified characters from start & end of string
+    - e.g. `trim("!?Hello?!", "!?")` returns `Hello`
+- trimprefix("str", "<prefix>"): removes specified <prefix> from start of string
+- trimsuffix("str", "<suffix>"): removes specified <suffix> from end of string
+- trimspace("str"): removes whitespace from start & end of string
+
+## Collection functions
+- alltrue([<bool>, <bool>]): returns true if all elements in collection are `true` or `"true"`
+- anytrue([<bool>, <bool>]): returns true if any element in collection are `true` or `"true"`
+- chunklist([<list>], <chunk>): splits a single list into fixed-size chunks, returning a list of lists
+    - e.g. `chunklist(["a", "b", "c", "d", "e"], 2)`
+    [ 
+        [
+            "a",
+            "b"
+        ]
+        ...
+    ]
+- coalesce(): takes any number of arguments and returns the first one that isn't null or an emptry string
+    - e.g. `coalesce("","a","b")` returns `a`
+- coalescelist([]): takes any number of list arguments and returns the first one that isn't empty 
+- compact([]): takes a list of strings and returns a new list w empty string elements removed
+- concat([],[]): takes two or more lists and combines them into a single list
+- contains([],<value>): determines whether a given list or set contains a given single <value> as one of it's elements; returns `true` or `false`
+- distinct([]): takes a list and returns a new list w any duplicate elements removed 
+- element([],<int>): retrieves a single element from a list
+    - e.g. `element(["a", "b", "c"], 3)` returns `a` - index value 3 doesn't exist, so it wrapped back around to the beginning
+- index([],<value>): finds the element index for a given value in a list
+    - e.g. `index(["a", "b", "c"], "b")` returns `1`
+- flatten([],[]): takes a list and replaces any elements that are lists with a flattened sequence of the list contents (turns multiple lists into one list)
+- keys({}): takes a map and returns a list containing the *keys* from that map
+- values({}): takes a map and returns a list containing the *values* of the elements in the map
+- length(<value>): determines the length of a given list, map, or string. List counts values within list, map counts number of key:value pairs, string counts number of characters 
+- lookup({},<key>, <default-value>): retrieves the value of a single element from a map, given its <key>. If the given <key> does not exist, the given <default-value> is returned
+    - e.g. `lookup({a="ay", b="bee"}, "a", "what?")` returns `ay`
+    - e.g. `lookup({a="ay", b="bee"}, "c", "what?")` returns `what?`
+- matchkeys([],[],[]): constructs a new list by taking a subset of elements from one list whose indexes match the corresponding indexes of values in another list
+    - e.g. `matchkeys(["i-123","i-abc","i-def"], ["us-west", "us-east", "us-east"], ["us-east"])` returns `["i-abc", "i-def"]`
+- merge({}, {}): takes an arbitrary number of maps or objects, and returns a single map or object that contains a merged set of elements from all arguments. For duplicates, seems to return the value of the last occurence
+    - e.g. `merge({a="b", c="d"}, {e="f", c="z"})` returns `{"a" = "b", "c" = "z", "e" = "f"}
+- one([]): takes a list, set, or tuple value w either zero or one elements. If collection is empty, one() returns null. Otherwise, one returns the first element. If there are two or more elements, then one will return an error 
+- range(<int>): generates a list of numbers using a start value, a limit value, and a step value (not all required)
+    - e.g. `range(3)` returns `[0,1,2]`
+- reverse([]): takes a sequence and produces a new sequence of the same length with all of the same elements as the given sequence but in reverse order
+    - e.g. `reverse([1,2,3])` returns `[3,2,1]`
+- setintersection([],[],[]): takes multiple sets and produces a single set containing only the elements that all of the given sets have in common; computes the intersection of the sets 
+    - e.g. `setintersection(["a", "b"], ["b", "c"], ["b", "d"])` returns `["b"]`
+- setproduct([],[]): finds all possible combinations of elements from given sets by computing the Cartesian product
+    - e.g. `setproduct(["development", "staging", "production"], ["app1", "app2"])` returns `[["development","app1"],["development", "app2"]...]`
+- setsubtract([],[]): returns a new set containing the elements from the first set that are not present in the second set; computes the relative complement of the first set in the second set 
+    - e.g. `setsubtract(["a", "b", "c"], ["a', "c"])` returns `["b"]`
+- setunion([],[]): takes multiple sets and produces a single set containing the unique elements from all the given sets
+    - e.g `setunion(["a", "b"], ["b", "c"], ["d"])` returns `["d","b","c","a"]`
+- slice([],<int>,<int>): extracts some consecutive elements from w/n a list
+    - e.g. `slice(["a", "b", "c", "d"], 1, 3)` returns `["b","c"]` 
+- sort([]): takes a list of strings and returns a new list with those strings sorted lexicographically (accounts for longer strings and can compare to shorter strings. pretty complicated concept)
+    - e.g. `sort(["e", "d", "a", "x"])` returns `["a","b","e","x"]`
+- sum([]): takes a list or set of numbers and returns the sum of those numbers. Can be int or float
+- transpose({}): takes a map of lists of strings and swaps the keys and values to produce a new map of lists and strings
+    - e.g. `transpose({"a" = ["1", "2"], "b" = ["2", "3"]})` returns `{ "1" = ["a"], "2" = ["a", "b"]...}`
+- zipmap([],[]): constructs a map from a list of keys and a corresponding list of values
+    - e.g. `zipmap(["a", "b"], [1, 2])` returns `{"a" = 1, "b" = 2}`
