@@ -134,3 +134,69 @@ David Chong (Enablement management)
     - LSI can only be defined at time of base table creation - cannot be deleted w/o deleting base table
     - DDB streams cannot be used to audit read activity for a table 
     - optimistic currency control in DDB provides a form of locking; read, transformat, conditionally write, retry as required is a description of the mechanism
+
+# Exam Strategy: Friday, February 10th, 2023 
+- question: deploying an app in two regions, writing to a DB in it's region. The two DBs need to be eventually consistent. In conflict, queries should return most recent write 
+    - read: have to have data conflict resolution. DDB has data conflict resolution in global tables 
+    - DB schema not defined in the question
+    - asks for least admin effort. RDS is not managed; DDB is. Also eventually consistent 
+    - Using RDS w read-replicas is technically correct, but only partially - is for read-only queries - writing to multiple DB instances NOT SUPPORTED
+- Change Data Capture can be used to xfer data b/w region's DBs, but data conflict resolution is not built in
+- DO NOT READ TOO MUCH INTO THE QUESTIONS. MAKE NO ASSUMPTIONS, ONLY GO OFF THE DATA THAT IS THERE
+
+# DMS Notes
+- AWS DMS > resource management > replication instances 
+- create endpoints in AWS DMS portal 
+    - target endpoint: 
+        - when loading data into a MySQL DB by using AWS DMS, disable foreign key w `initstmt=SET FOREIGN_KEY_CHECKS=0`
+    - can test endpoints before creation
+- replication task: AWS DMS > migration > database migration tasks
+    - identify replication instance, source/target endpoint, migration type
+    - when migrating existing data & replicating ongoing changes: source MySQL database requires binary log to be enabled and set to row 
+- completing migration
+    - read & write from both DBs for a time
+    - change app config to use new db
+    - once new db is configrmed working, start deleting DMS stuff, like replication task, endpoints, replication instance 
+    - delete source db when ready
+# Auto Scaling overview 
+- auto scaling can support appliation-wide scaling; not just ec2. 
+    - Able to manage EC2 + EC2 spot fleet, ECS, Aurora, DynamoDB from same AWS AS policy. Needs to all be made in the same CloudFormation stack 
+    - all scalable resources show in the same console when using this service 
+# Application Load Balancer
+- targets can be in multiple groups 
+
+
+# Well Architected Best Practices (4hr webex class) 
+> Note: Map for each of the well-architected pillars, and best practices within [here](https://wa.aws.amazon.com/wat.map.en.html)
+> Note: Main page for well-architected framework [here](https://wa.aws.amazon.com/index.en.html) - kinda like an engineer-level overview
+> Note: AWS Well-Architected review in a more customer friendly look [here](https://aws.amazon.com/architecture/well-architected/?wa-lens-whitepapers.sort-by=item.additionalFields.sortDate&wa-lens-whitepapers.sort-order=desc&wa-guidance-whitepapers.sort-by=item.additionalFields.sortDate&wa-guidance-whitepapers.sort-order=desc)
+## General Design Principles
+- Stop guessing your capacity needs (scale automatically)
+- Test systems at production scale 
+    - able to emulate prod deployments with the 'infinite' capacity of the cloud (that is, more capacity than anyone would be willing to pay for)
+- Automate to make architectural experimentation easier
+- Allow for evolutionary architectures
+    - discard the paradigm of 'if it isn't broke, doesn't fix it' from on-prem data centers
+- Drive architectures using data
+- Improve through game days 
+## Well Architected Review
+Learn | Measure | Improve - with customer
+- Not an audit - work together to improve results
+    - everyone wins if customer has a well architected environment 
+- Not architecture astronauts (not AWS dictating what they think is best, but based on experience with other customers over time) - use practical, grounded, sensible, and proven advice
+- Not a one-time check - examine workloads continuously 
+### AWS Well-Architected tool
+- takes well-architected framework and provides a tool that asks questions & gives answers 
+- workload can refer to segments of business, from an exec perspective, e.g. CRM, shipping, etc 
+- in the console for AWA, each of the questions (there are 58 total) w/n the design principles best practices are listed and can be answered or skipped based on workload that is being evaluated 
+## Operational Excellence 
+### Design Principles
+- Perform operations as code
+- Make frequent, small, reversible changes
+- Refine operations procedures frequently
+- Anticipate failure
+- Learn from all operational failures 
+### Best Practices
+- Organization
+    - within each principle, there are links to answers to questions on how to design for each pillar
+    - E.g. https://wa.aws.amazon.com/wat.pillar.operationalExcellence.en.html, under organization header, there are three questions, OPS 1-3 that answer best practices for 'organization'
