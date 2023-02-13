@@ -38,7 +38,7 @@ Develop the following skills for approximately 1000 hours
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
-        - 20230203: https://youtu.be/V4waklkBC38?t=35852
+        - 20230203: https://youtu.be/V4waklkBC38?t=35852s
 
 - Linux
     - vi
