@@ -1,0 +1,394 @@
+# AWS Security Best Practices (4hr webex class) 
+
+## Security Overview: AWS Security Best Practices
+### Shared Responsibility Model 
+- AWS is responsible for the security *OF* the cloud
+    - AWS Foundational Services: compute, storage, database, networking
+    - AWS Global Infrastructure: AZs, Regions, Edge locations
+    - e.g., like a homebuilder, responsible for getting the home built to code
+- separated by 'line of responsibility'
+    - separation depends on the service
+        - e.g., get lots of room to FUBAR things with EC2
+        - e.g., get less room to FUBAR things with RDS
+- Customers are responsible for their security *IN* the cloud
+    - client-side data encryption, server-side data encryption, network traffic protection
+    - OS, network & firewall config
+    - platform, apps, identity & access management
+    - e.g., like a homeowner, responsible for security and maintenance of home
+- vulnerability: weakness
+- threat: exploits a vulnerability
+    - addressing threats w risk management
+        - mitigate: actions to reduce impact
+        - avoid: change the way things are done
+        - accept: leave it
+        - transfer: let someone/something else deal with it 
+- risk: potential for damage 
+### Frameworks and Standards 
+- Standards-based approach
+    - using AWS CAF (Cloud Adoption Framework), AWS Well-Architected Framework, NIST CSF (Cybersecurity Framework)
+- AWS Security Documentation [here](https://docs.aws.amazon.com/security/)
+### Establishing Best Practices 
+- CIA triad: Confidentiality, integrity, Availability
+    - Confidentiality: Amazon EBS encryption
+        - encrypting data, so folks not authorized to read it are unable to do so
+    - Integrity (aka non-repudiation): AWS CloudTrail log file validation
+    - Availability: ELB
+- Layering defenses (defense in depth)
+    - no single mechanism or security tool by itself is going to be 100% reliable
+        - multiple layers will probably stop a script kiddie and likely slow down a professional
+    - Global Concerns
+        - Route53 (+Geographic routing), CloudFront (+geographic restriction), WAF rules
+        - Network Firewall (w/n VPC)(introduced 11/2021) 
+        - Network ACL (firewall for subnet)
+        - security groups (firewall for network interfaces)
+### Compliance in AWS 
+- customer responsibilities
+    - understand what workloads must be regulated by which applicable standards
+- AWS compliance programs
+    - IT standards AWS complies w are broken out by
+        - certificatsions & attestations
+        - laws, regulations, privacy
+        - alignments & frameworks 
+    - AWS artifact - when AWS passes compliance inspections and such, the reports are posted here 
+        - reports on demand 
+        - globally available
+        - straightforward identification
+        - quick assessments
+        - continuous monitoring
+        - enhanced transparency
+
+## Securing the Network
+### Flexible and Secure
+- Starting w the VPC
+    - Network architecture is the foundation
+- Use subnets to isolate tiers of app
+- Avoid SSH or RDP b/w or w/n instances of prod
+- Designing a network
+    - monitor at boundaries
+    - subnet to create isolation
+    - connect externally through protective devices 
+#### DNS operations and security
+- Route53 with DNSSEC (Domain Name Security Extensions)
+    - helps prevent DNS attacks like DNS cache poisoning and DNS spoofing
+    - sign public hosted zones or use DNSSEC validation
+    - store private keys in AWS KMS
+    - use a single key across multiple public hosted zones 
+- Route53 Resolver DNS firewall
+    - define domain name filtering rules to control accesso to sites and block DNS-level threats
+    - customize the responses for blocked DNS queries
+    - filters on domain names (not IP addresses)
+    - filters User Datagram Protocol DNS traffic (not HTTPS, TLS, SSH, or other protocols)
+    - centralize management with AWS Firewall Manager
+        - to use FM, manage, manipulate, do w/e w/ all firewalls (except NACL)
+### Security Inside the VPC
+- Best practices
+    - layer security groups and NACLs together 
+    - use multiple AZ deployments and ELB for high availability
+    - use out-of-band management whenever possible
+        - e.g., use two ENIs and connect prod traffic to one and mgmt traffic to another
+        - or use systems manager 
+    - use Amazon CloudWatch to monitor VPC components
+    - use flow logs to capture information about traffic in VPC
+    - always use IAM to limit access to resources, including VPC & related components 
+#### network filtering methods
+    - stateless
+        - done by NACLs
+        - do not remember packet that was just inspected
+        - inspect packet on inbound AND outbound journey
+    - stateful
+        - think security groups
+        - remembers packet that was just inspected
+        - inspects packet on inbound OR outbound
+            - won't check traffic that is returning from a request that was sent out & inspected when it was sent out 
+- Network ACL (NACL) review
+    - stateless 
+    - apply to one or more subnets
+    - sequentially process rules 
+        - create rules using increments (e.g., 10, 20, 30 or 100, 200, etc. Not 1, 2, 3, 4, ...)
+    - specify source w inbound rules
+    - specify destination w outbound rules 
+    - default mode: explicit deny and implicit allow
+        - created by default when VPC is created 
+        - explicit deny: rules have to be written to cause it to deny traffic 
+    - custom NACL: have to write rules to allow specific traffic 
+    - operates at OSI layer 3
+    - best practices
+        - remember the default NACL
+        - monitor and audit NACLs for ineffecitve "deny" rules
+        - consider limitations
+            - 20 inbound rules & 20 outbound rules is the limit 
+        - remember outbound rules on NACLs
+            - e.g., HTTPS return traffic won't be 443, it'll be a high ephemeral port
+- Security Group Review
+    - default security group
+        - permits all inbound traffic from members of the same security group
+        - permits all outbound traffic
+    - custom security group
+        - permits no inbound traffic (by default; if no rules are present)
+        - permits all outbound traffic 
+    - operates at OSI layer 4
+    - best practices
+        - never keep unattached security groups
+            - accidental attachment to another instance could lead to additional attack vectors on an instance
+        - track rate of change in production environments
+            - make adjustments to SGs that are applicable to current port usage
+        - ensure that SGs do not have a large range of ports open
+            - the more ports open, more available attack vectors
+        - use ELBs w SGs to restrict access to the internet
+        - limit modifications to only certain IAM roles
+        - remember outbound rules of SGs
+- AWS Network Firewall
+    - AWS version of next generation firewall
+    - managed service that allows stateful & stateless traffic 
+    - has default route via IGW
+    - doesn't perform NAT; ingress & egress to internet depends on public IPs or EIPs associated to ENIs in the subnet
+    - filters traffic before it gets to subnet NACL or SGs
+    - operates at OSI layers 3-7
+    - default behavior: allow 
+    - sets up its own 'subnet' that traffic is filtered through - subnets set up automatically when NF is set up
+#### Building for Availability
+- Global availability
+    - 99 AZs w/n 31 regions
+- VPC & AZ availability
+    - ELB
+        - distributes traffic over gorup of resources in one or more AZs
+        - best practice: use SGs to protect 
+        - SGs work w ALB
+        - Requires some extra steps to attach SG to NLB (attach ENI, attach SG to ENI)
+            - step-by-step [here](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups)
+- management traffic best practices
+    - use add'l SGs or ENIs to control EC2 instance mgmt traffic separately from app traffic (out of band mgmt)
+    - implement specific IAM policies for change control & auditing (least privilege)
+### Security Services
+- DDoS: by default, with AWS Shield, protected at OSI layers 3 & 4 against DDoS attacks (most common attack vector)
+- Web Application Firewall (WAF)
+    - filters traffic based on following criteria:
+        - IP address origin
+        - country of origin
+        - string match or regex match in part of request
+        - size of request
+        - malicious SQL code or cross-site scripting
+    - can add counting rules - e.g., over a 5 minute period, X amount of attempts to access - block access 
+    - provided to customers using AWS Shield Advanced for no add'l cost + adds add'l DDoS protection
+    - can use WAF rules and rule groups (aka WACLs - web access control list)
+        - can use custom rules/rule groups or managed rules/rule groups
+            - can get managed rules from AWS marketplace 
+- AWS Shield
+    - standard protection
+        - available to all AWS customers at no add'l cost
+        - no visibility into service
+        - automatic detection and mitigation
+        - protection from common DDoS attacks 
+    - advanced protection
+        - access to SRT (shield response team)
+            - receive proactive support from SRT
+                - SRT provides resolution support if necessary
+                    - can get advice from team, or the team can do stuff in the event of attack (if given permission)
+                        - can file paperwork providing permissions in advance, which enables SRT to immediately respond in event of attack 
+### Third-Party Security Solutions 
+- AWS Marketplace enterprise solutions
+    - anything from the marketplace is SAFE to use in AWS - not necessarily GOOD; meets AWS security standards 
+    - solution categories
+        - network firewalls 
+        - network IDS solutions
+        - protection solutions from SaaS providers
+### Remember
+- control traffic at all layers using NACLs, SGs, AWS Network Firewall
+- availability is important part of securing VPC
+- AWS services to secure network traffic + common threats: AWS Shield standard/advanced, WAF, Firewall Manager
+- third-party solutions offered thru AWS marketplace
+
+## Amazon EC2 Security
+### Compute Hardening
+- common vulnerabilities
+    - unintentionally exposing EC2 instances to public
+    - sensitive info in metadata
+- hardening systems
+    - changing default passwords
+    - removing/disabling unnecessary software/services
+    - removal of unnecssary usernames or logins
+    - installing anti-malware & HIDS/HIPS
+    - using AWS SSM agent for access
+    - services that can help: AWS systems manager, Amazon inspector, AWS config 
+- hardening w benchmarks
+    - best practices
+        - create AMI from instance to save config as template for launching future instances
+        - or, use EC2 image builder to create & maintain images. Use benchmarks (from CIS, STIG & others) to harden common vulnerabilities & help minimize the attack surface  
+            - image builder
+                - create an image-building pipeline w user-defined recipe
+                - once image is built, tests can be run on the image based on AWS or user-defined tests 
+    - CIS benchmarks purpose
+        - use industry best practices
+        - remove guesswork in hardening
+        - consistently evalute against known baseline
+        - reduce complexity in risk management & auditing for critical, audited, and regulated systems 
+        - align closely w or map to: NIST CSF, PCI DSS, HIPPA, ISO/IEC 27000/GDPR
+### Amazon EBS Encryption
+- best practices
+    - use separate EBS volumes for OS and data
+    - encrypt volumes & snapshots
+        - encryption by default is region-specific
+        - instance can be launched w default encrypted volume if instance type supports EBS encryption
+        - don't turn on encryption by default while using automated migration services
+        - enable encryption by default: EC2 console > account attributes > settings > EBS encryption > manage
+    - understand implications of root device type for data persistence, backup, and recovery
+- KMS 
+    - get in habit of making multi-region keys if wanting to move EBS snapshots to different regions  
+    - key deletion requires a deletion period of 7-30 days 
+### Secure Management and Maintenance with AWS Systems Manager 
+- best practices 
+    - limit access & auth for connecting to instances (using session manager)
+    - securely manage instances at scale (using run command)
+    - regularly patch and update w defined maintenance windows (using patch manager)
+    - automate monitoring and remediate config drift (using state manager)
+    - secure, monitor, and rotate secrets (using AWS Secrets Manager or parameter store)
+- AWS systems manager
+    - agent-based
+        - works in AWS and on-prem
+    - session manager
+        - centralized access control to managed nodes w IAM policies
+        - no open outbound ports, don't need bastion or SSH keys
+        - logging & auditing session activity (all communications w agents are API requests)
+    - run command 
+        - manage at scale 
+        - use SSM documents, essentially a policy created that defines what run command should do
+    - state manager 
+        - maintain consistent configurations
+        - maintain visibility over system states
+        - apply configs based on policies
+        create & push alerts when drift detected
+        - query states
+    - patch manager 
+        - deploy patches at scale
+        - set up maintenance windows at regular intervals
+        - able to patch now to address zero-day issues
+        - able to test patches in nonprod env
+    - parameter store
+        - can notify of expiring secrets but cannot rotate them
+        - can be referenced from AWS CF templates
+        - supports storing values unde r aname or key, encryption of secrets, and versioning
+        - limit of 10k parameters 
+- Secrets manager
+    - all capabilities of parameters store plus
+    - provide full key rotation integration w RDS
+    - randomly generates passwords in CF and stores password in secrets manager
+    - can share secrets across different AWS accounts
+    - can exceed storage capacity of parameter store, but has costs associated w storage of secrets and API calls 
+### Detecting Vulnerabilities
+- Amazon Inspector
+    - continuously scans resources to help w the following
+        - prioritize patch remediation
+        - meet compliance requirements
+        - identify zero-day vulnerabilities
+    - works with containers, EC2, lambda
+    - integrates w AWS organizations, AWS security hub, and Amazon EventBridge 
+    - passive tool; only identifies findings 
+    - requires SSM agent to be on instances to do the inspecting 
+        - can identify unintended network exposure w/o agents, but not much else 
+- AWS Config
+    - automatically discover resources (covers lots of AWS services, not just EC2)
+    - record current state of resource
+    - track changes & collect historical record of changes (up to a period of several years)
+    - evaluate config changes against compliance policies 
+    - automate remediation activities
+    - create real-time alerts using Amazon SNS & EventBridge
+    - can only have two conformance packs at once (not available in GovCloud)
+### Using AWS Marketplace 
+- AMI security requirements (AMIs are safe, not necessarily good)
+    - must not contain known vulnerabilities or malware
+    - must use current OSs and software packages
+### Remember
+- Harden against compute vulnerabilities
+    - hardening w benchmarks (CIS, STIG)
+    - AMIs or image security
+- Protect data on instances
+    - encyprtion on EBS
+    - SSM for management and maintenance
+    - secure secrets storage
+- Detect vulnerabilities
+    - inspector
+    - config 
+
+## Monitoring and Alerting
+### logging Network Traffic
+- VPC Flow Logs
+    - capture packet metadata (source IP address, destination IP address, ports, protocol, packet size, other metadata)
+    - cannot monitor packet contents (doesn't sniff packets)
+    - not real-time; aggregates over defined period of time (1 or 10 minutes)
+    - can capture a lot of data; able to pick exactly what data to save
+        - can send to CloudWatch Logs (and enable alerts), S3, and Firehose (in account/in another account)
+        - when log format fields are selected, shows up in the order of selection 
+    - some types of traffic traversing network NOT captured by flow logs
+    - has no affect on network throughput
+- Traffic Mirroring
+    - provides detective control that allows sending traffic to out-of-band security appliances for content inspection, threa monitoring, troubleshooting
+    - detect network & security anomalies
+    - used for packet sniffing 
+### Logging User and API Traffic
+- AWS CloudTrail 
+    - automatically record and store activity logs for AWS account
+    - increase visibility into user and resource activity
+    - discover and troubleshoot security and operational issues by capturing comprehensive history of changes 
+    - by default, tracks for 7 days at a time
+        - can create custom log and send to S3 bucket for more persistent storage
+    - security benefits
+        - perform security analysis & behavior patters for users from API call history 
+        - maintain compliance w internal policies or regulatory standards
+    - best practices
+        - centralize multi-account CloudTrail logging
+            - use AWS Organizations to centralize logging
+                - from multiple regions into one S3 bucket (all regions/one-account)
+                - from multiple accounts into one account's S3 bucket
+            - AWS Control Tower centralizes logging for AWS Organizations by default 
+                - tool that allows account of multiple accounts w guard rails set up - "this account can only do X; these users can only do X"
+        - log storage
+            - use dedicated S3 bucket for CT logs
+            - implement least-privilege access to buckets where log files are stored
+            - enable MFA delete on log storage bucket 
+                - helps prevent accidental deletion (MFA box comes up when deletion attempted)
+            - limit access to "AWSCloudTrail_FullAccess" managed policy 
+        - lifecycle management
+            - configured through S3 lifecycle configuration
+                - transition to different storage tier
+                - expire (delete) object
+                - transition and expire 
+        - KMS Encryption
+            - create or use existing AWS KMS key & apply key policy to allow CloudTrail to encrypt and authorized users to decrypt 
+### Visibility with Amazon CloudWatch
+- indicators of compromise
+    - abnormal CPU utilization
+    - multiple, repeated, or irregular login attempts, 
+    - unusually high traffic at irregular hours
+    - unusual DNS requests
+    - be specific about what is reported; if everything is an emergency, nothing is an emergency (aka alert fatigue)
+- best practices
+    - KMS key config changes
+    - root user usage 
+    - console sign-in requests w/o MFA 
+- CloudTrail feeds into CloudWatch
+### Enahancing Monitoring and Alerting
+- Amazon GuardDuty
+    - continuous monitoring, analyzing resources, users, roles - monitors how customer 'does business' with AI/ML
+        - looks at VPC flow logs, CloudTrail logs, DNS logs, etc
+    - when deviations are noticed, GuardDuty notifies
+    - has to be turned on; recommended to be turned on during 'normal operations' and not when lots of changes are being made
+        - takes 7-10 days to create a good baseline, and gets better over time 
+- Security Hub
+    - 'one stop shop' giving a view into resources - consolidates and aggregates finding
+    - every service in AWS feeds into security hub 
+    - manual remediation
+    - automatic mediation
+### Auditing AWS Environment
+- AWS Audit manager
+    - assess if controls are working effectively & meeting regulatory standards (HIPAA, FEDRAMP)
+    - create audit-ready reports w little manual effort 
+### Remember
+- use service and application logging
+    - AWS CloudTrail: how did what, how they did it, when they did it
+    - VPC flow logs
+- automate response to events as much as possible
+- some key services and features include the following
+    - CloudWatch Alarms
+    - Amazon GuardDuty
+    - Security Hub 
+    - AWS Audit Manager
