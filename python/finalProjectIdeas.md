@@ -6,3 +6,7 @@
 - built in AWS, in lambda? Use TF/TG to create cloud infrastructure 
 - to-do lists built in, with timers able to be built into them
     - daily, weekly, monthly, yearly, non-time based lists 
+
+# Website that lists lyrics for small group
+- Omri was talking about a coffee & hymns night where the leader sent everyone a link to their phone, and he was able to set the song on the website, and everyone else was able to see it
+- combine that with the person who sets the song able to see the guitar tabs or piano music? 
