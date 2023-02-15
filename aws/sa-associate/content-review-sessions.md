@@ -1,0 +1,119 @@
+# Content Review February 1st, 2023
+David Chong (Enablement management)
+- AWS organizations: service control policies: type of organization policy that you can use to manage permissions in your organization. Offer central controls & makes sure accounts stay w/n org's access control guidelines 
+- 6 types of policies
+    - identity-based policy: IAM
+    - resource-based policy: e.g., S3, KMS, etc. Attached to resources & attached to resource in the console of that resource
+        - specifies which principal can use that resource
+    - permissions boundaries
+    - organizations SCPs: Organizations Service Control Policies
+    - ACLs
+    - session policies 
+- evaluating policies: start w deny. if there's a deny anywhere in the chain, then it's deny. Chain looks through explicit deny > aws orgs > resource based policies > IAM permissions boundary > session policies > identity-based policies
+- arn format: arn:partition:service:region:account-id: resource-id | resource-type/resource-id | resource-type:resource-id
+- https://aws.amazon.com/s3/storage-classes-infographic/ good to know details on S3. 11 9's durability for all classes 
+- s3 access points: able to make policies for each access point
+
+# Content Review February 8th, 2023
+- memcached: sub-millisecond latency, data partitioning, multi-threaded. Meant to be simpler
+- redis: sub-millisecond latency, data partitioning, advanced data structures, snapshots, replication, transactions, Pub/Sub. NOT multi-threaded 
+- DynamoDB: key-value. If that comes up on the exam, likely to narrow down the options (DAX, dynamoDB accelerator to up to 10x performance for DDB)
+
+# Content Review February 15th, 2023
+- AWS storage gateway
+    - set of hybrid cloud storage services: take on-prem apps, and take advantage of 'unlimited' cloud storage 
+    - use cases
+        - migrations (move backups to cloud)
+        - modernization: use on-prem file shares backed up by cloud storage
+        - continuous reinvention: low-latency access for on-prem apps to cloud data 
+    - gateway types (file, tape, volume)
+        - S3 file gateway: native file access to S3 for backups, archives, and ingest for data lakes
+        - Amazon FSx file gateway: native access to Amazon FSx for on-prem group file shares and home dirs 
+            - windows, luster, netapp ontap, openzfs 
+        - Tape Gateway: drop-in replacement for physical tape infrastructure 
+        - Volume Gateway: block storage volumes w snapshots, AWS backup integration, and cloud recovery
+- EC2 AMIs
+    - supported & maintained image provided by AWS that provides information required to launch instance 
+    - key topics
+        - EBS-backed AMI: (most common) root device is an EBS volume created from EBS snapshot
+        - instance-stored backed AMI: (ephemeral) 0olroot device for instance is instance store volume created from template stored in S3 
+- EC2 Instance Metadata
+    - data about instance that can be used to configure or manage the running instance
+    - Retrieve instance metadata from IPv4 URI: http://169.254.169.254/latest/meta-data
+- AWS Security Groups
+    - firewall for associated instances (and other services, like ELB, RDS, etc)
+    - stateful
+    - can only specify allow rules
+    - all rules evaluated at once 
+- NACLs
+    - firewall for associate subnets, controlling inbound and outbound traffic at subnet level
+    - stateless
+    - has separate inbound & outbound rules and each rule can either allow or deny traffic
+    - contains a numbered list of rules which are evaulated in order 
+- KMS encryption 
+    - managed services that makes it easy to create & control cryptographic keys that are used protect data
+    - provides the ability to create symmetric and asymmetric encryption keys
+    - uses hardware security modules that have been validated under FIPS 140-2, or are in the process of being validated, to protect keys 
+    - two types of keys 
+        - AWS-managed CMK (customer master key)
+            - cannot be deleted
+            - if lost, cannot be restored
+        - Customer-managed CMK 
+            - can be deleted
+    - keys are regional, and can be modified to be global
+- EBS encryption 
+    - boot and data volumes of EC2 instances can be encrypted
+    - protected data: data at rest in volume, data moving b/w volume & instance, snapshots created from volume, volumes created from those snapshots 
+    - other considerations
+        - when encrypting EBS resource, by default, encrypted by account's default KMS key unless a different CMK is specified 
+            - recommended to have several keys for various systems
+- AWS Monitoring and Alerting
+    - Amazon CloudWatch
+        - monitoring and management service that provides data & actionable insights for AWS, hybrid, and on-prem apps & infrastructure resources (can download agent for on-prem resources)
+        - cloudwatch metrics provided automatically for many AWS products + services
+        - can monitor custom metrics generated by apps & services
+        - cloudwatch logs
+            - monitor and troubleshoot systems and apps using existing system, app & custom log files
+        - collect > monitor > act > analyze 
+    - Amazon EventBridge
+        - serverless event bus service that can be used to connect apps w data from various sources
+            - used to queue information 
+        - "takes you from where you are to where you want to go"
+        - receives an event (indicator of change in environment), and applies a rule to route the event to a target. 
+        - rules match events to targets based on either structure of event (event pattern) or schodule
+- AWS Security
+    - Amazon CloudTrail
+        - continuously monitors and retains account activity related to actions across AWS infrastructure, giving control over storage, analysis, and remediation actions
+        - 'breadcrumb trail'
+        - use cases
+            - audit activity
+            - identify security incidents 
+                - detect unauthorized access using the Who, What and When information in CloudTrail Events
+        - key concepts
+            - records user activity and API usage across AWS services as Events
+            - "who did what, where and when?"
+    - Amazon WAF
+        - protects web apps from attacks by configuring rules that allow, block, or monitor (count) web requests based on defined conditions 
+        - deployment options
+            - CloudFront, ALB, API Gateway
+        - create rules that block bot traffic and common attack patterns such as SQL injection or cross-site scripting
+    - Amazon Shield
+        - Standard
+            - defends against most common, frequently occuring network & transport layer DDoS attack that target web site or apps
+        - Advanced
+            - managed threat protect that blocks DDoS attacks, vulnerability exploitation, and bad bots
+            - includes AWS WAF & AWS Firewall Manager at no add'l cost
+    - Amazon Macie
+        - evaluate S3 environment & provide S3 resource summary across all customer's accounts 
+        - uses ML to identify PII ("Macie loves PII")
+            - doesn't look at data specifically, but looks at type of data & flags for review 
+        - easy to turn on
+    - Amazon GuardDuty
+        - monitors AWS accounts and workloads for malicious activity & delivers detailed security findings for visibility and remediation
+        - operates independently from resources (no performance or availability degredation)
+        - pay as you go pricing; only pay as events are analyzed 
+        - key concept: analyzes CloudTrail, VPC flow logs, and AWS DNS logs
+    - Amazon Inspector
+        - continually scans EC2 and container workloads for software vulnerabilities and unintended network exposure 
+        - key concept: automated vulnerability management service that continuall scans EC2 and container workloads (like a dock inspector)
+        - integrates w security hub, eventbridge, ECR
