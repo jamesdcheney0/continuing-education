@@ -158,3 +158,108 @@
 - pyperclip [module]:
     - copy() [function]: send text to clipboard 
     - paste() [function]: copy text from clipboard to use in program
+
+# Regular Expressions
+> Note: regex matcher at http://regexpal.com/ 
+
+- Review of regex matching
+    1. import regex module w `import re`
+    1. create a regex object with the `re.compile()` function (remember to use a raw string)
+    1. pass the string to search into the regex object's `search()` method which returns a `Match` object
+    1. call the `Match` object's `group()` method to return a string of the actual matched text
+- grouping w parentheses
+    - adding parentheses will create groups in the regex
+        - e.g. `phoneNumRegex=re.compile(r'(\d{3})-((\d{3}-\d{4})')`
+    - `group()` [match object method]: grab matching text from just one group
+        - e.g. `phoneNumRegex.search('My number is 719-421-9176').group(1)` 
+        - or `mo = phoneNumRegex.search('My number is 719-421-9176') \ mo.group(1)`
+        - both return `'719'`
+    - `groups()` [match object method]: retrieve all the groups at once
+        - e.g., from the above example, calling `.groups()` would return `('719', '421-9176')`
+        - since `.groups()` returns a tuple of multiple values, the multiple-assignment trick can be used to assign each value to a separate variable
+            - e.g. `areaCode, mainNumber = mo.groups() \ print(areaCode)` would return `415`
+    - `|` (pipe): match one of many expressions
+        - when both matches occur in the searched string, the first occurrence of matching text will be returned as the `Match` object
+        - e.g. `heroRegex = re.compile(r'Batman|Tina Fey')`
+        - or `batRegex = re.compile(r'Bat(man|mobile|copter|bat)')`
+    - `?`: match zero or one of the group preceding; flags the group that precedes it as an optional part of the pattern
+        - e.g. `batRegex = re.compile(r'Bat(wo)?man')` can match `Batman` or `Batwoman`
+        - the group (in parentheses) indicates the optional part 
+    - `*` (star, asterisk): match zero or more; the group that precedes the star can occur any number of times in the text
+        - can be completely absent or repeated over and over 
+    - `+` (plus): match one or more
+        - group preceding a plus must appear at least once
+    - `{}` (curly brackets): repeat a group a specific number of times - identified by an int w/n the brackets
+        - instead of one number, a range can be specified by writing minimum, a common, and maximum b/w brackets
+            - e.g. `{3}` and `{3,5}` are both valid
+                - first one only matches three occurences
+                - second one matches three to five occurences 
+            - leave out first or second number in the brackets to leave max or min unbounded
+                - e.g. `{,5}` or `{3,}`
+    - greedy matching: default for python regex; in ambigous situations, will match for longest string possible
+    - nongreedy matching: matches the shortest string possible
+        - use a `?` after closing curly bracket to use nongreedy matching 
+            - e.g. `{3,5}?` will prefer to get three matches from string, if possible 
+    - `findall()` [match object method]: return strings of every match in the searched string 
+        - if there are no groups in regex, returns a list of strings, not a `Match` object 
+        - if there are groups in regex, returns a list of tuples
+    - shorthand character classes
+        - `\d`: match any numeric digit from 0 to 9
+        - `\D`: match any character that is *NOT* a numeric digit from 0 to 9
+        - `\w`: match any letter, numeric digit, or underscore character (think of this as matching 'word' characters)
+        - `\W`: match any character that is *NOT* a letter, numeric digit, or an underscore
+        - `\s`: match any space, tab, or newline character (think of this as matching 'space' characters)
+        - `\S`: match any character that is *NOT* a space, tab, or newline
+    - `[]`: define custom character class
+        - e.g. `vowelRegex = re.compile(r'[aeiouAEIOU]')` will match any vowel, both upper and lower case
+        - inside square brackets, normal regex syumbols are not interpreted as such; they are interpreted as raw - do not need to escape things
+        - `^`: negative character class
+            - will match all the characters that are *NOT* in the character class
+            - e.g. `consonantRegex = re.compile(r'[^aeiouAEIOU]')` will match any consonant, upper or lower case 
+    - `^`: indicate that match must occur at the beginning of the searched text
+        - placed at the start of a regex
+        - e.g. `beginsWithHello = re.compile(r'^Hello')`
+    - `$`: indicate string must end with this regex pattern
+        - placed at the end of a regex
+        - e.g. `endsWithNumber = re.compile(r'\d$')`
+    - memory aid: "carrots cost dollars" to recall order; caret comes first & dollar sign comes last 
+    - `.` (dot): wildcard; will match any character *except for a newline*
+        e.g. `atRegex = re.compile(r'.at') \ atRegex.findall()('The cat in the hat sat on the flat mat.')` returns `['cat', 'hat', 'sat', 'lat', 'mat']` - 'flat' only returned `'lat'` because only one wildcard was included
+    - `.*`: match everything and anything
+        - uses greedy mode by default; it will always try to match as much text as possible
+        - e.g. `nameRegex = re.compile(r'First Name: (.*) Last Name: (.*)') \ mo-name.Regex.search('First Name: James Last Name: Cheney') \ mo.group(1)` returns 'James'
+        - `(.*?)` to use nongreedy mode 
+    - `re.DOTALL`: second argument to use w `re.compile()`; make the dot character match *all* characters 
+    - `re.IGNORECASE` | `re.I`: second argument to use w `re.compile()`; make regex case-insensitive
+    - `sub()` [method]: subtitute new text in place of regex patterns
+        - passed two arguments
+            - string to replace any matches
+            - string for the regex
+        - e.g. `namesRegex = re.compile(r'Agent \w+') \ namesRegex.sub('CENSORED', 'Agent Alice gave the secret documents to Agent Bob.')` returns `'CENSORED gave the secret documents to CENSORED.'`
+        - can use matched text itself as part of the substitution
+            - in the first argument of `sub`, type `\1`, `\2`, `\3`, etc to mean 'enter the text of group 1, 2, 3, etc in the subtitution
+            - e.g. `agentNamesRegex = re.compile(r'Agent (\w)\w*') \ agentNamesRegex.sub(r'\1****', 'Agent Alice told Agent Carol that Agent Eve knew Agent Bob was a double agent.')` returns `A**** told C**** that E**** knew B**** was a double agent`
+                - `(\w)\w*` matches the first character in the agent name in the group `(\w)`, and captures the rest of the letters in the agent name with `\w*`, which cuts off when it encounters spaces
+                - `\1****` takes the match from the first group - the first letter of the agent's name - and replaces the name in the original string with the first letter and four asterisks
+    - `re.VERBOSE`: tell `re.compile()` to ignore whitespace and comments inside the regex string
+        - this allows the use of multiline comments
+        - trunkated e.g.: `(r''' (#text and newlines)''',re.VERBOSE)`
+    - by default, `re.compile()` can only take one value as second argument. Get around this limitation by combining `re.DOTALL`, `re.IGNORECASE`, and `re.VERBOSE` with `|`
+        - e.g., `someRegexValue = re.compile('foo', re.IGNORECASE | re.DOTALL | re.VERBOSE)`
+
+## Review of regex symbols
+- `?`: match zero or one of preceding group
+- `*`: match zero or more of the preceding group
+- `+`: match one or more of the preceding group
+- `{n}`: match exactly `n` of the preceding group
+- `{n,}`: match `n` or more of the preceding group
+- `{,m}`: match 0 to `m` of the preceding group
+- `{n,m}`: match at least `n` and at most `m` of the preceding group
+- `{n,m}?` or `*?` or `+?` performs a nongreedy match of the preceding group
+- `^spam`: string must begin with `spam`
+- `spam$`: string must end with `spam`
+- `.`: match any character, *except newline characters*
+- `\d`, `\w`, `\s` match any digit, word, or space character, respectively
+- `\D`, `\W`, `\S` match anything *except* a digit, word, or space character, respectively
+- `[abc]`: match any character between the brackets - in this case, `a`, `b`, or `c`
+- `[^abc]`: match any character that *isn't* between the brackets 
