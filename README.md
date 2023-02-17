@@ -15,7 +15,7 @@ Develop the following skills for approximately 1000 hours
 - Python: Develop a GUI-based program that can be used for tracking my personal FIRE stats. Instead of using a amalgamation of online calculators and excel sheets, develop something that would record and track FIRE progress, investment account balances, calculate interest return, allow for scenarios to be generated based on information, and those scenarios be able to be changed after the fact, but the data still preserved
 - AWS: Renew AWS Solutions Architect Associate certification. Obtain AWS Solutions Architect Professional certification. By April 2024, renew AWS DevOps Professional certification. 
 - Terraform: Obtain Hashicorp Terraform Associate certificate. Make some interesting and/or useful template - e.g., make a webpage backed by lambda & RDS (or whatever is most appropriate) and develop the python function there, using the AWS CI/CD pipeline w Github integration
-- Terragrunt: Once I have the basics of terraform down, develop a greater understanding of terragrunt since it is used so much day-to-day
+- Terragrunt: Once I have the basics of terraform down, develop an understanding of terragrunt
 - Docker: Obtain Docker Certified Associate
 - Kubernetes: Obtain Kubernetes and Cloud Native Associate (KCNA) then Certified Kubernetes Administrator (CKA) 
 - Misc
@@ -35,10 +35,12 @@ Develop the following skills for approximately 1000 hours
 
 - AWS
     - AWS Solutions Architect - Associate Accelerator (ASA3)
+    - Last day of ASA3 is 20230317. Need to get the exam scheduled the week after that, probably Monday, in person
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
         - 20230203: https://youtu.be/V4waklkBC38?t=35852s
+    - taking a break here while grinding for AWS for the next few weeks; last day of ASA3 is 20230317
 
 - Linux
     - vi
