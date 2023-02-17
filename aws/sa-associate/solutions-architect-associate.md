@@ -5,6 +5,7 @@
 - Learning materials: https://explore.skillbuilder.aws/learn/lp/1651/Solution%2520Architect%2520Associate%2520Accelerator%2520-%2520Partner%2520Learning%2520Plan (I usually have to click it twice and sign in twice...) 
     - Not every video in here is required for certification 
     - The hands on labs essentially book-end the learning objectives for the week. Each week of the program will also have an email come out with objectives for the week 
+- official AWS study channel: https://aws.amazon.com/training/twitch/
 
 ## Info
 - Twitch sessions are recorded. The instructor-led 4 hour courses are NOT recorded. 
@@ -444,3 +445,276 @@
         - change volume config
             - if adding more volumes to gateway reduces throughput, consider adding volumes to another gateway
 ## Secure and Monitor Volume Gateway
+- granting permissions
+    - resource owner: AWS account of the principal entity that authenticates the request that creates the resource 
+    - to grant resource access, gateway assumes a role that's associated w IAM policy that grants the access 
+- protecting data
+    - data encyprted in transit & in AWS cloud
+    - data on gateway cache not encrypted
+    - all data transfers b/w gateway appliance & AWS storage encrypted w SSL/TLS
+    - all data stored by Storage Gateway in S3 is encrypted with SSE-S3 (default) or SSE-KMS depending on config
+    - EBS snapshots encrypted at rest w AES-256
+    - CHAP authentication (an iSCSI protocol)
+        - authentacte b/w gateway & iSCSI initators 
+        - protects against man-in-the-middle and playback attacks by periodically verifying identity of iSCSI initator
+        - to set up, configure in Storage Gateway console & iSCSI initiator software used to connec to target 
+        - uses mutual CHAP
+
+# AWS Network Connectivity Options
+## Connectivity Concepts
+- General Concepts 
+    - multi-tier architecture
+        - often presentation > application > data
+    - multi-vpc architecture 
+    - High availability: reducing or managing failures and minimzing downtime w redundant/parallel components & eliminate single points of failure (SPOF)
+    - Hybrid network
+## Understanding AWS Network Service Offerings 
+- VPC endpoints 
+    - privately connect VPC to supported AWS services & VPC endpoint services
+    - resources w/n VPC do not require public IP address to communiate w resources outside VPC
+    - traffic b/w VPC & service do no leave Amazon network 
+    - does not require gateway, NAT, VPN, or direct connect
+    - Types of VPC Endpoints
+        - Gateway VPC Endpoints 
+            - target specific IP routes in a route table using prefix lists
+                - there are specific prefixes for the supported services 
+                    - e.g. com.amazonaws.<region>.dynamodb, com.amazonaws.region.s3
+                    - list is used for traffic destined to DynamoDB or S3
+        - interface endpoints
+            - powered by AWS PrivateLink
+            - is an ENI w private IP address from subnet CIDR range
+            - serves as entry point for traffic destined to supported AWS service or VPC endpoint service
+        - gateway load balancer (GLB) endpoint
+            - is an ENI w private IP address from subnet CIDR range
+            - entry point to intercept rtraffic and route to a service configured using GLB endpoint as target for route on route table
+                - e.g., used for security inspection 
+            - powered by AWS PrivateLink
+    - pricing
+        - charged for each hour VPC endpoint is provisioned in each AZ & each GB processed thru VPC endpoint
+- AWS PrivateLink
+    - private connection b/w VPCs & AWS services
+    - provides secure usage w/n AWS network 
+        - services establish TCP connection b/w service provider's VPC and service consumer's VPC
+    - avoids exposing traffic to public internet 
+    - benefits
+        - security
+            - provides VPCs secure & scalable way to privately connect to AWS hosted services
+            - uses private IP addresses and SGs w/n VPC
+        - simplification
+            - removes need to permit public IPs w IGWs, NAT gateways, or firewalls
+            - does not require route table modification
+            - not necessary to establish IGW, VPC peering, or transit VPC
+        - capabilities
+            - gives on-prem network private access to AWS thru Direct Connect 
+            - can make services available to other accounts or VPCs that are accessed securely as private endpoints
+                - use PrivateLink w NLB to route traffic to app, and clients can connect to any hosted app 
+    - considerations
+        - doesn't support IPv6
+        - communicates w NLB that serves traffic to instances w/n subnet, so all IP addresses logged by app will be private IP addresses from NLB; will not see IP of customer or service consumer 
+        - Activate Proxy Protocol v2 on NLB for NLB to send add'l connection info like source & destination (may require changed to app)
+        - endpoint services cannot be tagged 
+        - endpoint DNS does not resolve outside of VPC
+        - endpoint services available in the region which they are created & can be accessed in remote regions using inter-region VPC peering
+    - DNS
+        - endpoint-specific regional DNS hostname
+            - automatically generated & includes unique endpoint identifier, service identifier, region, and `vpce.amazonaws.com` in its name
+        - zonal-specific DNS hostname
+            - can generate zonal-specific DNS hostname for each AZ that endpoint is available in. Hostname includes AZ in its name
+            - support cross-zone load balancing
+            - regional data xfer chanrges might apply for data xferred b/w AZs
+        - private DNS hostname
+            - can use private DNS hostname to alias the auto created regional-specific or zonal-specifc DNS names
+- VPC peering
+    - networking connection b/w two VPCs that allows private traffic routing
+    - benefits
+        - HA
+            - it's not gateway or reliant on physical hardware; simply helps facilitate xfer of data 
+        - inter-region VPC peering: establish peering relationships b/w VPCs across regions 
+            - uses IP addresses w/o requiring gateways, VPN connections, or other network appliances
+            - traffic encrypted w no SPOF or bandwidth bottleneck & never transverses public internet 
+        - can peer b/w different accounts 
+    - scenarios 
+        - full sharing of resources b/w all VPCs
+            - requires *EACH* VPC to be connected to another VPC, one at a time, and all those links have to be maintained
+        - partial sharing of centralized resources
+            - e.g., VPCs communicate w one security VPC, and each one only has to maintain that one connection 
+    - non-valid peering configs
+        - overlapping CIDR blocks
+        - transitive peering
+            - peering from A to B and B to C does not grant A to C
+        - edge-to-edge routing thru gateway or private connection
+            - if any VPC in peering has the following, can't extend peering to that connection
+                - VPN connection or direct connection to corporate network
+                - internet connection thru IGW
+                - internet connection thru NAT
+                - gateway VPC endpoint to AWS service
+    - pricing
+        - no charge for setting up or running. Data xfer is charged per GB for send & receive, regardless of AZs involved 
+- AWS Direct Connect (DC)
+    - private, reliable connection from AWS to physical facility
+    - fully integrated & redundant service 
+    - offers consistent performance w reduced bandwidth cost 
+    - speed
+        - offers physical connections of 1, 10, 100 Gbps
+            - 100 Gbps available only in select locations 
+        - supports Link Aggregation Control Protocl (LACP), which allows multiple dedicated physical connections to be grouped into Link Aggregation Groups (LAGs)
+            - max 2 100 Gbps connections in a LAG, or 4 connections with port speeds <100 GbPs
+            - each connection counts toward overall connection limit for region
+            - all connections in the LAG must terminate at same Direct Connect endpoint 
+    - network requirements
+        - network must be co-located w existing Direct Connect location
+            - customer deploys router & supporting networking equipment to location w physical uplink to AWS
+            - router at DC location connected to AWS router using cross-connect 
+        - working w Direct Connect partner
+            - DC partner provides physical equipment to connect to AWS router at Partner's physical location
+            - physical link used to config DC service to connect on-prem to AWS
+        - working w independent service provider to connect to Direct Connect 
+        - technical requirements
+            - network must use single-mode fiber
+                - 1000BASE-LX transceiver for 1-Gb ethernet
+                - 10GBASE-LR transceiver for 10-Gb ethernet
+                - 100GBASE-LR4 for 100 Gb
+            - port auto-negotiation must be deactivated
+                - port speed & full-duplex mode must be configured manually
+            - 802.1Q VLAN encapsulation must be supported across entire connection
+            - device must support BGP and BGP MD5 authentication
+            - (optional) can configure Bidirectional Forwarding Detection (BFD) on network. Asynchronous BFD automatically activated for DC virtual interfaces, but not on-prem until configured on physical device
+    - LOA-CFA (Letter of Authorization and Connecting Facility Assignment)
+        - must be signed for each new physical connection individually from the DC console 
+        - used to show operater of facility hosting AWS router that request approved to use AWS router
+    - Virtual interface types
+        - private virtual interface
+            - permits traffic to be routed to any VPC resource in the same private IP space as the virutal interface
+        - public virtual interface
+            - permits traffic to be routed to any VPC or AWS regional resouce w a public IP address in same region
+        - transit virtual interface
+            - permits traffic to be routed to any VPC or AWS regional resouce routable thru AWS Transit Gateway in same regaion
+    - pricing
+        - pay for what is used; no minimum fee
+            - port hour
+                - determined by connection type (dedicated or hosted) and capacity
+            - outbound data xfer
+                - charged per GB
+- AWS Site-to-Site VPN
+    - enables securely connect on-prem network to Amazon VPC (e.g. branch office site)
+    - based on IPsec technology
+    - each tunnel terminates in different AZ on AWS side, but must terminate on the same customer gateway on the customer side 
+    - customer gateway
+        - resource created & configured in AWS that represents on-prem gateway
+        - contains info about type of routing, BGP, ASN, and other info
+    - customer gateway device
+        - physical device or software app on customer side of connection
+    - virtual private gateway
+        - VPN concentrator on AWS side
+    - transit gateway
+        - transit hub used to interconnect VPCs and on-prem networks
+        - have to use this or VPG
+    - limitations
+        - IPv6 partially supported; dualstack thru separate tunnels for inner traffic
+        - IPv6 for outer tunnel connections not supported
+        - does not support Maximum Transmission Unit (MTU discovery)
+            - greatest MTU available on inside tunnel interface is 1,399 bytes
+        - throughput of all AWS S2S VPN connections limited
+            - when terminating on VPG, only one tunnel of pair can be active & carries max of 1.25 Gbps, which is closer to 1 Gbps IRL
+            - when terminate on TG, both tunnels in pair can be active & carry max of 2.5 Gbps. IRL, closer to 2 Gbps
+            - each flow (e.g., TCP stream) will be limited to max 1.25 Gbps (IRL 1 Gbps)
+        - max packets per second (PPS) per tunnel: 140,000
+        - AWS S2S VPN terminating on TG supports equal-cost multi-path routing (ECMP) and multi-exit discriminator (MED) across tunnels in same different connections
+            - ECMP only supported with TG VPN config
+            - MED is used to ID primary tunnel for S2S VPN connections that use BGP
+            - BFD not supported on AWS S2S VPN; it IS supported on DC
+        - uses public IPv4 addresses & require public virtual interface to transport over DC
+            - AWS S2S VPN over private DC not yet available 
+        - for globally distributed apps, accelerated S2S VPN option provides connection to global AWS backbone thru AWS Global Accelerator
+            - Cannot use global S2S VPN w DC public virtual interface 
+        - recommended to avoid overlapping CIDR blocks 
+    - pricing
+        - AWS S2S VPN
+            - connection per hour (varies by region)
+            - data xfer out charges (based on EC2 on-demand pricing)
+        - Accelerated S2S VPN
+            - connection per hour (varies by region)
+            - data xfer out charges (based on EC2 on-demand pricing)
+            - hourly charges for two AWS Global Accelerators per VPN connection
+            - data xfer out premium (DT-Premium) fees
+                - depends on source region & edge location (based on Global Accelerator pricing)
+- AWS Client VPN
+    - enabled secure connection for users to AWS or on-prem networks (e.g. remote employees)
+    - managed client-based VPN based on openVPN technology
+    - client VPN endpoint
+        - VPN admin creates & configs Client VPN endpoint in AWS
+        - admin controls networks & resources that are accessible when connection is made 
+    - client VPN application
+        - software app used to connect to client VPN endpoint & establish connection
+    - client VPN endpoint config file
+        - provided to user by VPN admin
+        - info about endpoint & certs required to establish connection
+        - loaded into chosen VPN client app 
+    - limitations
+        - supports IPv4 only
+        - Security Assertion Markup Language (SAML) 2.0-based federated authentication only works w AWS provided client v1.2.0 or later
+        - SAML integration w AWS SSO requires workaround. Better implementation being worked on
+        - client CIDR ranges must be at least /22 and not greater than /12
+        - client VPN endpoint does not support subnet associations in a dedicated tenancy VPC
+        - client VPN *NOT* compliant with FIPS
+        - client CIDR range cannot overlap w local CIDR of VPC where associated subnet is located
+            - cannot overlap any routes manually added to client VPN endpoint route table
+        - portion of addresses in client CIDR range is used to support availability of client VPN endpoint; recommended to use CIDR block that contains twice the number of required IP addresses
+        - client CIDR range cannot be changed after creating client VPN endpoint
+        - subnets associated w client VPN endpoint must be in same VPC
+        - cannot associate multiple subnets from same AZ w client VPN endpoint
+        - ACM certs not supported w mutual auth since private key can't be extracted
+            - can use ACM server as server-side cert
+            - generate client-side cert when user has key or use AWS Certificate Manager Private Certificate Authority (ACM PCA) that gives private keys 
+                - if customer authenticating based on AD or SAML, can use gneral ACM-generated cert b/c only server cert is required 
+    - monitoring
+        - cloudwatch
+        - can do basic posture assessment w Lambda
+    - pricing
+        - charged for number of active client connections per hour & number of subnets associated to Client VPN per hour
+        - any client connection that is less than an hour is also prorated for the hour
+- AWS Transit Gateway
+    - HA and scalable service that provides interconnectivity b/w VPCs and on-prem network
+    - w/n region, provides option for consolidating & centrally managing routing b/w VPCs w hub-and-spoke network architecture 
+    - b/w regions, supports inter-region peering w other transit gateways 
+        - facilitates routing network traffic b/w VPCs of different regions over AWS global backbone 
+        - traffic not routed over the internet 
+    - key concepts
+        - supported attachments
+            - one or more VPCs
+            - compatible Software-Defined Wide Area Network (SD-WAN) appliance
+            - DC gateway
+            - peering connection w another TG
+            - VPN connection to a TG
+        - TG MTU
+            - 8,500 bytes for
+                - VPC connections
+                - DC connections
+                - connects w other TGs
+                - peering connections
+            - 1,500 bytes for
+                - VPN connections 
+        - TG route table
+            - has default route table 
+            - can optionally have add'l route table
+            - includes dynamic & static routes that decide next hop based on destination IP of packet
+            - target of routes can be any TG attachment
+        - Associations
+            - each attachment associated w exactly one RT
+            - each RT can be associated w zero or many attachments 
+        - route propogation 
+            - VPC, VPN connection, or DC gateway can dynamically propagate routes to TG RT
+                - DC attachment: routes are propogated to TG RT by default
+                - VPC: must create static routes to send traffic to TG
+                - VPN or DC gateway: routes propagated from TF to on-prem router using BGP
+                - peering attachment: must create static route in TG RT to point to peering attachment
+    - inter-regional peering
+        - two types of peering connection for VPCs in different regions: VPC peering, TG peering
+            - both are one-to-one
+            - TG are simpler network design & consolidated mgmt 
+    - pricing
+        - charges for number of connections per hour and per GB of data processed
+            - see AWS TG pricing page 
+- peering vs TG:
+    - peering is cheaper and less latency
+    - TG is less complex 
