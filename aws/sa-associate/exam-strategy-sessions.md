@@ -9,4 +9,7 @@
     - asks for least admin effort. RDS is not managed; DDB is. Also eventually consistent 
     - Using RDS w read-replicas is technically correct, but only partially - is for read-only queries - writing to multiple DB instances NOT SUPPORTED
 - Change Data Capture can be used to xfer data b/w region's DBs, but data conflict resolution is not built in
-- DO NOT READ TOO MUCH INTO THE QUESTIONS. MAKE NO ASSUMPTIONS, ONLY GO OFF THE DATA THAT IS THERE
+- DO NOT READ TOO MUCH INTO THE QUESTIONS. MAKE NO ASSUMPTIONS, ONLY GO OFF THE INFO THAT IS THERE
+
+# Exam Strategy: Friday, February 17th, 2023 
+- got all the questions right, and they made sense in context of what I've been studying this week 
