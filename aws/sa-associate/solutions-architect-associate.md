@@ -203,3 +203,244 @@
         - request: data written: up to max $125/gateway/mo. $0.01/GB to write data, first 100 GB free 
         - transfer out from storage gateway to on-prem gateway has tiers of charges 
     - if storage gateway is an appliance, also charge associated with the physical appliance 
+- Planning & Designing Deployment
+    - deploy on prem on VM, with hardware device, or create with AMI for EC2 
+    - once deployed, must communicate w storage gateway service for mgmt & data movement
+        - connectivity via
+            - public endpoint
+            - VPC endpoint
+            - FIPS (federal information processing standard) 140-2 compliant endpoint for GovCloud workloads 
+        - provide IP address that's either public or accessible w/n current network
+        - generate activation key w console & use instead of ip
+    - recommended to allocate at least 20% of exisitng file store size as cache storage 
+        - max supported size of local cache for gateway on VM is 64TiB
+    - Adding file shares
+        - after gateway is created & activated
+        - can be mounted to linux or windows
+        - each file share is associated w a unique S3 bucket or unique prefix on the same bucket 
+            - file metadata (such as ownership) stored as S3 object metadata cannot be mapped across different protocols 
+    - additional considerations
+        - verify region supports file gateway
+        - file gateway stores file data in any region where buckets for file shares are located 
+        - s3 storage classes
+            - s3 standard
+            - s3 intelligent-tiering
+            - s3 standard-IA
+            - s3 one zone-IA
+            - recommended to write directly to standard & use lifecycle policies to transition object to other classes 
+- working w S3 file gateway
+    - read, writes, updates
+        - all data xfer'd b/w gateway and AWS is encrypted using SSL. Data xfers done through HTTPS. Objects encrypted w SSE-S3 and optionally SSE-KMS
+        - reads
+            - when client reads from gateway, uses NFS or SMB
+            - for client read requests, cache is checked, and if not there, then fetched from S3 using 'byte-range gets' to better use bandwidth 
+            - storage gateway service retrieves data from S3 & sends to gateway appliance. Appliance receives data, stores in local cache & provides to client 
+        - writes
+            - when client writes to gateway, stored locally. Data is compressed asynchronously, changed data uploaded 
+            - uses multipart uploads to asynchronously update objects 
+        - write updates
+            - gateway uses multipart uploads and copy put, so only changed data is uploaded to S3, and data in the cloud is used to create new version of the object 
+    - managing the gateway
+        - adding file share
+            - when created, there are no shares
+            - max of 10 shares
+            - each share needs to be connected to S3 bucket & given access via IAM role w trust policy
+        - file share health: available | creating | updating | deleting | force_deleting | unavailable
+        - file share actions 
+            - after creating file share, can't change bucket, access point, or VPC endpoint settings
+            - can edit S3 storage class, edit name, export as read-write or read-only, refresh cache and more 
+                - s3 request pricing applies to cache refresh
+            - what can be changed is dependent on whether using NFS or SMB
+            - storage gateway can invoke EventBridge when file operations are completed 
+        - multi-writer best practices (when multiple gateways or fileshares write to same S3 bucket)
+            - configure S3 bucket so that only one fie share can write to it 
+                - multiple readers is fine, but it's recommended to have multiple clients write to file gateway, and one write gateway communicate w S3 
+            - configure separate, unique object prefix for each file share to avoid writing to the same objects simulatenously 
+        - upload notification: notifies when all files written to file share are uploaded to S3 
+- secure & monitor gateway
+    - use IAM identities & policies 
+        - storage gateway file share has an IAM role attached, and bucket may have bucket policy as well
+            - needs a trust policy (e.g., "Action": "sts:AssumeRole") and permissions policy
+            - api actions: ActivateGateway | AddCache | CreateNFSFileShare | ListFileShares | RefreshCache
+    - protecting your data 
+        - data in the cache is not encrypted
+        - data encrypted in transit and in the cloud 
+        - NFS
+            - on the file share, can limit access to specific clients/networks by IP
+            - permit read-only or read-write access
+            - activate user permission squashing
+        - SMB
+            - limit access for AD users only or authenticating guest access 
+                - if guest access authentication is configured, POSIX is used for permissions
+            - setting file share visibility to read-only or read-write
+            - controlling file/dir access by POSIX (portable operating system interface), or fine grained permissions using Windows ACLs
+        - access to S3
+            - write IAM user policies to govern access
+            - write specific bucket policies
+            - use S3 block public access to limit public access
+            - restrict access to specific actions w S3 object lock & setting guess MIME type and requester pays
+    - monitoring and alerting
+        - CloudWatch to monitor health of gateway & file shares
+        - EventBridge to notify when file ops are done
+        - AWS CloudTrail to track user activity
+
+# Amazon S3 Volume Gateway
+- provides cloud-backed iSCSI block storage volumes to on-prem apps
+- when activated, gateway storage volumes created
+    - mapped to on-prem DAS (direct attached storage) or SAN (storage attached network) disks
+    - start w new disks or disks already in use
+- modes
+    - cached volume
+        - primary data stored in S3 & retain frequently accessed data locally in cache. Reduces cost for primary (on-prem) storage and gives low-latency access to frequently used data
+        - data that is modified is moved to upload buffer, and prepared for asynchronous upload to S3 
+        - requires cache storage & upload buffer
+    - stored volume
+        - store data locally & asynchonously back up point-in-time snapshots to S3 
+        - provides durable & affordable offsite backups 
+        - only available w on-prem host platform options 
+        - only requires an upload buffer (no cache storage)
+- to prepare data for upload, gateway stores incoming data in upload buffer, a staging area
+    - use DAS or SAN disks for working storage
+    - gateway uploads data from upload buffer via SSL to storage gateway in AWS, then stored in S3 as EBS snapshots 
+- snapshots of storage volumes can be taken
+    - incremental; only capture changes since last snapshot
+    - can initiate on schedule or one-time basis
+    - to recover, restore EBS snapshot to on-prem gateway storage volume 
+- decision factors to use volume gateway
+    - want to centrally manage & automate volume snapshots
+    - volume sizes steady & predictable
+        - volume resizing not supported
+            - to decrease storage, new gateway must be created & data migrated to new gateway
+            - to increase storage, add new disks to the gateway; can't expand disks previously allocated 
+    - are processes that require reading all data on the entire volume used? E.g. virus scans 
+        - use stored mode
+    - not able to access snapshot data using S3 console or APIs
+        - cannot access via S3 console; must use storage gateway or EBS management console 
+- pricing
+    - pay only for what is used
+    - charged based on amount of data xferred out of AWS, type & amount of storage used, requests made
+        - if storage gateway deployed via hardware appliance, also cost of appliance 
+## Planning & Designing a Volume Gateway Deployment
+- Overview
+    - Cached volume
+        - use S3 as primary data storage
+        - frequently accessed data is cached on premesis
+        - can range from 1 GiB to 32 TiB
+        - each gateway configured for cached volumes can support up to 32 volumes for max 1,024 TiB (1 PiB)
+        - use cases
+            - custom file shares
+                - good for apps w large dataset, but app only needs low-latency access to a subset of that data at a given time
+            - migrating app data into S3 & transition to EC2
+    - Stored Volume 
+        - data stored locally & backed up asyncronously to S3
+        - take one-time or scheduled snapshots
+        - good for durable off-site backups
+            - quick to restore EBS snapshot to EC2
+        - range from 1 GiB to 16 TiB
+        - each gateway configured for stored volumes supports to up 32 volumes for max volume storage of 512 TiB (.5 PiB)
+        - can only do stored volume on prem
+        - use cases
+            - block storage backups
+                - e.g. dataset has large working set that can't be split up & need low latency access all the time
+            - migrations or phased migrations
+            - cloud-based disaster recovery
+    - deploying
+        - on prem
+            - download VM from AWS 
+            - purchase hardware appliance 
+        - on AWS
+            - deploy storage gateway AMI in EC2
+                - supported for cached volume
+        - gateway appliance sizing
+            - determine number of total volumes & capacity needed
+            - estimate app & workload volume
+                - minimum requirement
+                    - cache storage: minimum of 150 GiB for cached volume
+                    - upload buffer storage: minimum of 150 GiB for cached & stored volume
+                    - best practice to increase performance is to allocate multiple local disks for cache storage w at least 150 GiB storage
+                        - no cache storage allocated for stored volumes 
+    - connectivity b/w gateway appliance & service 
+        - public endpoint
+        - VPC endpoint
+        - FIPS 140-2 compliant endpoint for GovCloud 
+    - network considerations
+        - requires the following ports: 443 | 80 | 53 (DNS) | 22 | 123 (NTP) | 3260 (iSCSI)
+    - adding volumes to gateway appliance
+        - cache volume
+            - use console to provision storage volumes backed by S3 
+            - can also use API or SDK
+            - mount those storage volumes to on-prem app servers as iSCSI devices
+        - stored volume
+            - map to on-prem DAS or SAN disks
+                - start w new disks or disks already holding data
+            - mount those storage volumes to on-prem app servers as iSCSI devices 
+    - additional considerations 
+        - region
+            - verify region supports volume gateway; must be selected before deploying gateway
+            - EBS snapshots initially stored in region where volume gateway is created  
+                - can back up snapshots in other regions using cross-region copy in AWS backup
+        - recommended to configure CHAP (Challenge-Handshake Authentication Protocol) to access iSCSI
+## Working with Volume Gateway
+- reads, writes, and updates 
+    - reads
+        - cached volumes
+            - if data is in cache volume, served locally & no latency
+            - if not incache, compressed data from S3 retreived & sent to gateway appliance
+            - appliance decompresses, stored in local cache, & provides to app (known as read-through cache - app always requests data from cache)
+        - stored volumes 
+            - 100% of data on volumes stored locally. all reads come directly from virtual appliance or SAN on local disk
+    - writes
+        - cached volumes
+            - data written to local volume cache in native format
+            - gateway compresses and encrypts data as it moves from cache to upload buffer
+            - upload buffer provided so that performance not impacted when reading/writing to cache
+            - as write happens, data goes into cache and is write-back; get local ack quickly w low latency & high thruput
+            - from upload buffer, data xfer'd to AWS
+        - stored volumes
+            - happen directly to the disk & immediately acknowledged
+            - when snapshot created, data will then be moved to AWS
+            - data compressed & encrypted when moved to upload buffer
+            - data securely xfer'd to S3
+    - working w iSCSI initators 
+        - iSCSI (small computer system interface)
+            - facilitate data xfer's over intranets & manage storage over long distances
+            - applications (called initiators) can send SCSI commands to storage devices (called targets) on remote servers 
+        - for volume gateway, iSCSI targets are volumes
+            - part of that includes connecting to those targets, customizing iSCSI settings, and configuring CHAP
+        - iSCSI initiator
+            - client component; sends requests to target
+            - can be implmemented in hardware or software; storage gateway only supports software initiators 
+        - iSCSI target
+            - server component that receives and responds to requests from initators 
+            - each volume exposed as target
+            - connect one initiator to each target 
+- working w volumes
+    - once gateway is running, add volumes to associate w gateway
+    - volume recovery point
+        - point in time in which all data of volume is consistent and can be snapshotted or cloned
+    - recovery options
+        - volume clone
+            - cloning from exisitng volume is faster & more cost effective that creating EBS snapshots
+        - EBS snapshots
+    - expanding volume size
+        - automatic resizing not supported
+            - create a snapshot of the volume desired & use snapshot to create new volume of a larger size
+            - use cached volume to be expanded to clone a new a new volume of a larger size 
+- managing gateway  
+    - managing bandwidth for gateway
+        - by default, gateway has no rate limits on upload or download
+        - can throttle upload throughput from gateway to AWS or download throughput from AWS to gateway
+            - gateway console > actions > edit bandwith rate limit 
+- optimizing cost & performance 
+    - volume storage is billed only for amount of data stored on volume, not size of created volume
+        - best practice: delete older volumes & snapshots that are no longer needed
+            - deleting a volume does not automatically delete associated snapshots 
+            - to reduce storage costs, delete snapshots > 30 days old 
+    - performance recommendations
+        - optimize iSCSI settings to achieve higher I/O
+            - choose 256 KiB for MaxReceiveDataSegmentLength and FirstBurstLength and 1 MiB for MaxBurstLength
+        - back gateway virtual disks w separate physical disks
+            - e.g., don't provision local disks for upload buffer & cache storage that use same physical disk
+        - change volume config
+            - if adding more volumes to gateway reduces throughput, consider adding volumes to another gateway
+## Secure and Monitor Volume Gateway
