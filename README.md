@@ -35,7 +35,9 @@ Develop the following skills for approximately 1000 hours
 
 - AWS
     - AWS Solutions Architect - Associate Accelerator (ASA3)
-    - Last day of ASA3 is 20230317. Need to get the exam scheduled the week after that, probably Monday, in person
+        - Last day of ASA3 is 20230317. Need to get the exam scheduled the week after that, probably Monday, in person
+    - AWS Solutions Architect - Pro
+        - AWS Power Hour Architect Pro: https://pages.awscloud.com/GLOBAL-other-T2-AWS-Power-Hour-Architecting-Pro-2023-reg.html?did=tc_card&trk=tc_card 
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
