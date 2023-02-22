@@ -40,7 +40,7 @@ Develop the following skills for approximately 1000 hours
         - AWS Power Hour Architect Pro: https://pages.awscloud.com/GLOBAL-other-T2-AWS-Power-Hour-Architecting-Pro-2023-reg.html?did=tc_card&trk=tc_card 
 
 - Terraform
-    - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
+    - Andrew Brown from ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABEP)
         - 20230221: got bored here, and started scrubbing through for just slide info: https://youtu.be/V4waklkBC38?t=40736 
         - 20230221: terraform and consul: https://youtu.be/V4waklkBC38?t=44710 
     - taking a break here while grinding for AWS for the next few weeks; last day of ASA3 is 20230317
