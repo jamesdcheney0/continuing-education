@@ -41,7 +41,8 @@ Develop the following skills for approximately 1000 hours
 
 - Terraform
     - Andrew Brown from Code Camp with ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABCC)
-        - 20230203: https://youtu.be/V4waklkBC38?t=35852s
+        - 20230221: got bored here, and started scrubbing through for just slide info: https://youtu.be/V4waklkBC38?t=40736 
+        - 20230221: terraform and consul: https://youtu.be/V4waklkBC38?t=44710 
     - taking a break here while grinding for AWS for the next few weeks; last day of ASA3 is 20230317
 
 - Linux
