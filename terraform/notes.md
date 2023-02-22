@@ -553,3 +553,397 @@ provider: can be added w/n resource to point to specific provider alias
     - e.g. `transpose({"a" = ["1", "2"], "b" = ["2", "3"]})` returns `{ "1" = ["a"], "2" = ["a", "b"]...}`
 - zipmap([],[]): constructs a map from a list of keys and a corresponding list of values
     - e.g. `zipmap(["a", "b"], [1, 2])` returns `{"a" = 1, "b" = 2}`
+
+## Encoding and Decoding Functions
+- functions that will encode and decode for various formats 
+- base64encode/decode
+- textencodebase64/decode
+- yamlencode/decode
+- jsonencode/decode
+- base64gzip
+- urlencode: used for making URL links 
+- csvdecode 
+
+## Filesystem Functions
+- abspath(): converts string containing filesystem path & converts to absolute path
+    - e.g. `abspath(path.roo)` might return something like `/home/user/some/terraform/root`
+- dirname(): takes string containing filesystem path & removes file name portion from it
+- basename(): takes a string containing filesystem path & removes directory path 
+- pathexpand(): expands path into an absolute. 
+    - e.g., `pathexpand("~/.ssh/id_rsa")`, expands to include the specific name of the home dir 
+- file(): reads contents of file at given path & returns as string
+- fileexists(): determines file's existence
+- fileset(): enumerates a set of regular file names given a path and pattern
+    - e.g. `fileset(path.module, "files/*.txt")` returns `["files/hello.txt","files/world.txt",]`
+- filebase64(): reads contents of file at given path & returns as base64-encoded string
+- templatefile(): reads file at given path & uses it as a template using a supplied set of template vars
+    - e.g., 
+    ```
+    backends.tpl: 
+    %{ for addr in ip_addrs ~}
+    backend ${addr}:${port}
+    %{ endfor ~}
+    ```
+    `templatefile("${path.module}/backends.tpl, { port = 8080, ip_addrs = ["10.0.0.1","10.0.0.2"]})` 
+    returns
+    `backend 10.0.0.1:8080`
+    `backend 10.0.0.2:8080`
+
+## Date & Time Functions
+- formatdate(time format, RFC 3339 time code): converts a timestamp into a different time format; variety of formats available
+    - e.g., RFC 3339 format: `2019-10-12T07:20:50.52Z`
+- timeadd(RFC 3339, <time to add><m/h/d>), time to add, amount of time; minutes/hours/days
+- timestamp(), returns a UTC timestamp string in RFC 3339 format 
+
+## Hash & Crypto Functions
+- generates hashes and cryptographic strings
+- bcrypt(<string>): hash cannot be reversed 
+- bash64sh256, 512
+- filebase64sha256, 512
+- filemd5
+- filesha1, 256, 512
+- md5
+- rsadecrypt
+- sha1, 256, 512
+- uuid, uuid v5
+
+## IP Network Functions
+- cidrhost(): calculates a full host IP address for a given host number w/n a given IP network address prefix 
+    - e.g. `cidrhost("10.12.127.0/20", 268)` returns `10.12.113.12` - basically, split the given address into X parts, and return an IP address of one of those parts
+- cidrnetmask(): converts an CIDR-formatted IPv4 address into subnet mask address
+    - e.g. `cidrnetmask("172.16.0.0/12")` returns `255.240.0.0`
+- cidrsubnet(<address>, <network-segments>, <hosts>): calculates a subnet address w/n given IP network address prefix 
+    - e.g. `cidrsubnet('172.16.0.0/12, 4, 2)` returns `182.18.0.0/16`
+- cidrsubnets(): calculates a sequence of consecutive IP address ranges w/n define CIDR prefix
+    - e.g. `cidrsubnets('10.1.0.0/16, 4, 4, 8, 4)` returns `['10.1.0.0/20','10.1.16.0/20','10.1.32.0/24','10.1.48.0/20]`
+
+## Type Conversion Functions 
+- can(): evaluates a given expression & returns boolean indicating whether expression produced a result w/o errors
+- defaults(): used w input variables w type contrains of object types or collections of object types that include optional attributes
+- nonsensitive(): takes a sensitive value & returns a copy of that value w the sensitive marked removed
+- sensitive(): takes any values & returns a copy of it marked so tf will treat as sensitive (same meaning & behavior as for sensitive input variables)
+- tobool(): converts its argument to a boolean value
+- tomap(): converts its argument to a map value
+- toset(): converts its argument to a set value (set: all same type)(unlikely to come across)
+- tolist(): converts its argument to a list value (list: all different types allowed)
+- tonumber(): converts argument to int
+- tostring(): converts argument to a set string value
+- try(): evaluates all its argument expressions in turn & returns the result of the first one that does not produce any errors 
+
+# Terraform Cloud
+- app that helps teams use tf together 
+- available as hosted service at app.terraform.io
+- features
+    - manage state files
+    - history of previous runs
+    - history of previous states
+    - easy & secure variable injection
+    - tagging
+    - run ttriggers 
+    - specify any version of tf per workspace
+    - global state sharing
+    - commenting on runs
+    - notifications via webhooks, email, slack
+    - organization and workspace level permissions (requires paid access to manage)
+    - policy as code (via sentinel policy sets)
+    - MFA
+    - SSO (at business tier)
+    - cost estimation (at teams & governance tier)
+    - integrations w ServiceNow, splunk, k8s, custom run tasks 
+- terminology
+    - organization: collection of workspaces
+    - workspaces: represents unique environment or stack
+    - teams: composed of multiple members & can be assigned to (a) workspace(s)
+    - runs: single run of the tf run environment that is operating an execution plan
+        - UI, API, or CLI driven
+- run workflows
+    - version control workflow
+        - UI/VCS driven (user interface & version control system)
+        - integrated w specific branch in VCS
+        - plans generated when pull requests submitted
+        - run triggered when merge occurs to branch
+    - CLI-driven workflow
+        - runs triggered by user running tf CLI commands locally on personal machine
+    - API-driven workflow   
+        - not directly associated w VCS
+        - third-party tool/system triggers runs via config file using tf cloud API
+            - config file is bash scripted packaged in archive (.tar.gz)
+            - pushing a 'configuration version'
+- organization-level permissions 
+    - manage resources or settings across organization
+    - manage policies: manage org's Sentinel policies
+    - manage policy overrides: override soft-mandatory policy checks
+    - manage workspaces: create + administer workspaces
+    - manage VCS settings: manage VCS providers & SSH keys w/n org
+    - organization owners
+        - at least one, can have more
+        - has every available perm + owner-only
+        - owner-only permissions 
+            - publish private modules
+            - invite users to org
+            - manage team membership
+            - view secret teams
+            - manage org permissions
+            - manage all org settings
+            - manage org billing
+            - delete org
+            - manage agent 
+- workspace-level permissions 
+    - manage resource & settings for specific workspace
+    - general workspace permissions
+        - granual workspace permissions
+        - applied to user via custom workspace perms
+            - read runs
+            - queue plans
+            - apply runs
+            - lock + unlock workspaces
+            - download sentinel mocks
+            - read variable
+            - read + write variables
+            - read state outputs
+            - read state versions
+            - read + write state versions 
+    - fixed permission sets
+        - premade permissions for quick assignment 
+            - read
+                - read runs
+                - read variables
+                - read state versions
+            - plan
+                - queue plans
+                - read variables
+                - read state versions
+            - write
+                - apply runs
+                - lock + unlock workspaces
+                - download sentinel mocks
+                - read + write variables
+                - read + write state versions 
+    - workspace admin
+        - role that grants all level of perms and some workspace-admin-only perms:
+            - read + write workspace settings
+            - set or remove workspace perms of any team
+            - delete workspace
+- API tokens
+    - supports three types: user, team, organization tokens
+    - organization API tokens
+        - have perms across entire org
+        - each org can have one valid API token
+        - use when setting up org for first time programmitically; not for general-purpose use
+    - team API tokens 
+        - allow access to the workspaces that team has access to - not tied to specific user
+            - has same access level to workspaces the team has access to 
+        - each team can have one valid API token at a time
+        - any team member can generate or revoke their team's token
+            - when new is generated, old immediately becomes invalid
+        - meant for performing API operations on workspaces
+    - user API tokens
+        - flexible b/c they inherit perms from user they're associate w
+        - can be used for real user or service acct 
+- API tokens access levels 
+    - terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
+- Private registry
+    - publish private modules for org w/n private registry
+    - helps share tf modules across org
+        - supports:
+            - module versioning
+            - searchable + filterable list of available modules
+            - config designer
+        - all users in org can view private module registry
+    - authentication
+        - user token or team token for authentication
+        - use `terraform login` to obtain user token
+        - to use team token, must be set in tf CLI config file
+- cost estimation (teams + governance plan & above)
+    - provides monthly cost of resources displayed alongside tf runs
+    - only available for specific cloud resources w/n AWS, Azure, and GCP
+        - ~15 services in AWS, ~20 services in Azure, 3 services in GCP
+    - can use sentinel policy to force runs to be under a particular cost 
+- workflow options
+    - choose any version of tf for a workspace 
+    - share state globally across org
+    - can choose to auto approve runs 
+- migrating default local state
+    - to migrate tf project that only uses default workspace
+        - create workspace in tf cloud
+        - replace tf config w remote backend
+        - run `terraform init` and copy existing state by typing `yes`
+- VCS integration
+    - github, github (oauth), github enterprise, gitlab, gitlab EE/CE, butbucket cloud, bitbucket server & data center, azure devops service, azure devops server 
+- run environment
+    - when tf cloud executes `terraform plan` it runs them in its own Run Environment
+    - single-use linux machine running on x86_64 arch & details of internal implementation not know
+    - automatically-injected env vars
+        - TFC_RUN_ID
+        - TFC_WORKSPACE_NAME
+        - TFC_WORKSPACE_SLUG
+        - TFC_CONFIGURATION_VERSION_GIT_BRANCH
+        - TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA
+        - TFC_CONFIGURATION_VERSION_GIT_TAG
+        - can be accessed by defining `variable TFC_RUN_ID {}`
+- terraform cloud agents (paid feature of business plan)
+    - communicate w isolated, private, or on-prem infrastructure
+    - agent arch is pull-based; no inbound connectivity required
+        - provisioned agents will poll tf cloud for work & execute that work locally
+        - supports only x86_64 linux OS
+        - can run agent w/n docker using tf agent docker container
+        - support tf version 0.12+
+        - requires 4GB free disk space (for temp local copies) and 2 GB memory
+        - needs ability to make outbound requests on 443 to:
+            - app.terraform.io
+            - registry.terraform.io
+            - releases.hashicorp.com
+            - archivist.terraform.io
+
+# Terraform Enterprise
+- self-hosted distribution of tf platform
+- benefits
+    - no resource limits
+    - add'l enterprise-grade architectural features
+        - audit logging
+        - SAML SSO
+- requirements
+    - operational mode: how data should be stored 
+        - external services
+            - postgres
+            - cloud blob storage (S3, etc) - not part of the server
+        - mounted disk
+            - persistent disk mounted to VM
+            - postgres
+        - demo
+            - all data stored on instance, using ephemeral data stores - not recommended for prod use
+    - credentials
+        - tf enterprise license from hashicorp
+        - TLS cert + private key - must prove own TLS cert
+    - linux instance
+        - debian, ubuntu, RHEL, centos, Amazon linux, oracle linux 
+        - hardware requirements
+            - 10GB+ disk space on root
+            - 40GB+ disk space for docker data dir (default /var/lib/docker)
+            - 8GB+ system memory
+            - 4+ CPU cores  
+- air-gapped environments
+    - network security measure to ensure computer network physically isolated from unsecure networks
+    - supported by the 'air gap bundle' from hashicorp
+- tf cloud features and pricing 
+    - Open-Source Software (OSS)
+        - IaC, workspaces, variables, runs, resource graph, providers, modules, public module registry
+    - Cloud - as the list goes down, the one beneath it has all the things listed above plus the new listing 
+        - Free
+            - remote state, VCS connection, workspace mgmt, secure var storage, remote runs, private module registry
+            - 1 current run
+            - $0 up to 5 users
+        - Teams
+            - team management, cost estimation
+            - 2 current runs 
+            - $20/user/mo
+        - Teams & Governance
+            - sentinel policy as code management
+            - $70/user/mo
+        - Business
+            - SSO, audit logging
+            - self-hosted agents
+            - config designer, servicenow integration
+            - unlimited current runs 
+            - cost: contact sales
+    - Self-hosted
+        - enterprise
+            - all of the above, although no self-hosted agents 
+            - cost: contact sales
+
+# Workspaces 
+- manage multiple environments or alternate state files
+    - think of them like different branches in git repository
+    - workspaces are technically equivalent to renaming state file
+- variants
+    - CLI workspaces
+        - a way of managing alternate state files (locally or via remote backends)
+    - tf cloud workspaces 
+        - act like completely separate working directories
+- by default, there is a single workspace in local backend called default
+- internals
+    - local state
+        - tf stores workspace states in terraform.tfstate.d dir
+        - small teams may commit to repos, not best practice
+    - remote state
+        - workspace files stored directly in backend
+- current workspace interpolation
+    - reference current workspace name via `terraform.workspace` 
+- multiple workspaces
+    - tf config has backend that defines how operations are executed & where persistent data (e.g. tf state) is stored 
+    - supported by the following backend
+        - AzureRM, Consul, COS, GCS, k8s, local, anta, Postgres, Remote, S3
+    - certain backends support multiple workspaces
+        - allows multiple states to be associated w a single config
+- tf cloud workspaces 
+    - have to create an organization, then can create workspaces 
+    - can see a history of previously held states (aka snapshots)
+- tf cloud run triggers
+    - connect local workspace to one or more workspaces in tf cloud
+    - allows runs to queue automatically in workspace upon successful apply of runs in any of the source workspaces
+        - can connect each workspace with up to 20 source workspaces
+    - designed for workspaces that rely on info or infra produced by other workspaces
+    - if tf config uses data sources to read values that might be changed by other workspaces, run triggers allow explicitly specify external dependency 
+        - 'if this workspace runs successfully, then run this other workspace'
+- CLI commands
+    - only affects local workspaces 
+    - `terraform workspace list`: list all existing workspaces
+        - current workspace indicated w `*`
+    - `terraform workspace show`: show current workspace
+    - `terraform workspace select <name>`: switch to target workspace
+    - `terraform workspace new <name>`: create and switch to workspace
+    - `terraform workspace delete <name>`: delete target workspace 
+- differences
+    - local
+        - tf config stored on disk
+        - variables: as .tfvars files, cli arguments, or via shell
+        - state: store on disk or in remote backend
+        - credentials & secrets entered in shell env or entered at prompts  
+    - cloud
+        - tf config in VCS or uploaded via CLI
+        - variables: set in tf cloud workspace
+        - state: stored in tf cloud workspace
+        - credentials & secrets stored as sensitive variables
+
+# Sentinel
+- embedded policy-as-code framework integrated w tf platform
+    - code written to automate regulatory or governance policies
+- features
+    - embedded
+    - fine-grained, condition-based policy
+    - multiple enforcement levels
+    - external information
+    - multi-cloud compatible
+- paid service part of Team & Governance upgrade package
+- benefits of policy as code
+    - sandboxing: able to create guardrails
+    - codification
+    - version control
+    - testing: syntax & behavior can easily be validated
+    - automation
+- language: all policies written using sentinel language; designed to be non-programmer and programmer friendly
+- development: provides CLI for dev & testing
+- testing: provides test framework designed for automation
+- lots of policy examples for various providers provided by terraform
+- have to import policy language functions in main.tf file 
+- can be integrated w tf via tf cloud as part of IaC pipeline b/w plan & apply stages 
+
+# Packer
+- developer tool to provision build image that will be stored in repo 
+- using a build image before deploying provides
+    - immutable infrastructure
+    - VMs in fleet are all one-to-one in config
+    - faster deploys for multiple servers after each built
+    - earlier detection and intervention of package changes or depreciation of old technology
+- configures machine or container via packer template, using HCL
+- template file
+    - source - required, e.g. EBS-backed AMI; stored in AWS under EC2 images
+    - build: allows config scripts
+        - wide range of provisioners supported: chef, puppet, ansible, powershell, bash, salt
+    - post-provisioners: run after image is built
+        - can be used to upload artificates or re-package 
+- integrating w tf
+    - two steps
+        - build image; packer is not a service, but a development tool; must manually run packer or automate image building w build server running packer 
+        - referencing image: once image is built, can be referenced as data source 
+            - for AWS AMI, can match on regex & select most recent 
