@@ -263,3 +263,62 @@
 - `\D`, `\W`, `\S` match anything *except* a digit, word, or space character, respectively
 - `[abc]`: match any character between the brackets - in this case, `a`, `b`, or `c`
 - `[^abc]`: match any character that *isn't* between the brackets 
+
+# Reading and Writing Files
+- os.path.join() [function]: pass string values of individual file and folder names in path & string of file path using correct path separators returned
+    - .e.g. `os.path.join('usr','bin','spam')` would return usr/bin/spam on macOS
+    - helpful to create strings for filenames
+- os.getcwd() [function]: get current working directory as string value
+- os.chdir() [function]: change current working directory
+- absolute path: always begins w root folder
+- relative path: relative to the program's current working directory 
+    - `./` at the beginning of a relative path is optional
+- os.makedirs() [function]: create new directories with python
+    - will create any necessary intermediate folders to ensure full path exists 
+- os.path [module]: contains functions related to filenames and file paths
+- os.path.abspath(path) [function]: return a string value of absolute path of argument
+    - easy way to convert a relative path into an absolute path
+- os.path.isabs(path) [function]: will return `True` if argument is an absolute path and `False` if not
+- os.path.relpath(path, start) [function]: returns string of relative path from the `start` to `path`
+    - if start not provided, current working directory is used as start path
+- os.sep [variable]: set to the correct folder-separating slash for the computer running the program
+- os.path.dirname(path) [function]: return a string of everything that comes before the last slash in the path argument
+    - collects directory information from file path
+- os.path.basename(path) [function]: return a string of everything that comes after the last slash in the path argument
+    - collects file name/extension from file path
+- os.path.split() [function]: get a tuple value of os.path.dirname() and os.path.basename()
+    - note: split does not take a file path and return a list of strings for each folder 
+        - to do that (like how the os.path.join works, but in reverse), use split() string method and split on the string in os.sep
+- os.path.getsize(path) [function]: return size in bytes of file in path argument
+- os.listdir(path) [function]: return a list of filename strings for each file in the path argument
+    - note: this function is in the os module, not os.path
+- os.path.exists(path) [function]: return `True` if file or folder in path argument exists and `False` if not
+- os.path.isfile(path) [function]: return `True` if path argument exists and is a file and `False` if not
+- os.path.isdir(path) [function]: return `True` if path argument exist and is a folder and `False` if not
+
+## File Reading and Writing
+- open() [method]: pass a string path indicating file to open
+    - can be either absolute or relative path
+    - returns a `File` object
+    - e.g. `helloFile = open('/Users/jamescheney/spam/spam/eggs/spam/spam.txt')`
+    - opens the file in 'reading plaintext' mode (aka read mode)
+        - can explicitly specify read mode with a second argument of `r`, but it is the default mode
+        - cannot write to a file opened in read mode
+- read() [method]: returns string of what is stored in the file that `open()` was performed on
+    - e.g. `helloFile.read()`
+- readlines() [method]: get a list of string values from file - one string for each line of text 
+- write mode: overwrite existing file and start from scratch
+    - pass `w` as the second argument to `open()`
+- append mode: append text to the end of existing file
+    - pass `a` as the second argument to `open()`
+- if filename passed to open() does not exist, write and append mode will create new, blank file
+- close() [method]: after reading or writing a file, call the `close()` method before opening the file again 
+
+## Saving Variables with shelve Module 
+- shelve [module]: save variables in Python programs to binary shelf files
+    - enables program to restore data to variables from the hard drive
+    - `import shelve` to read & write data using `shelve` module
+- shelve.open() [function]: pass it a filename argument and store returned shelf value in a variable
+    - can make changes to shelf value as if it were a dictionary
+- close() [function(?)]: save changes to shelf value and close
+- shelf values can be read and written once opened 
