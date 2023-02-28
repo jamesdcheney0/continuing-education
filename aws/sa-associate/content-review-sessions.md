@@ -117,3 +117,56 @@ David Chong (Enablement management)
         - continually scans EC2 and container workloads for software vulnerabilities and unintended network exposure 
         - key concept: automated vulnerability management service that continuall scans EC2 and container workloads (like a dock inspector)
         - integrates w security hub, eventbridge, ECR
+
+# Content Review February 22nd, 2023
+- networking fundamentals week 
+- VPC: logically isolated section of AWS cloud 
+    - OSI model: 'Please Do Not Touch Steve's Pet Alligator' 
+        - Physical - Data - Network - Transport - Session - Presentation - Application layers 
+    - route tables direct traffic out of VPC toward
+        - IGW
+        - VPG
+        - VPCe
+        - Direct Connect (DC)
+        - VPC peering
+        - Transite Gateway (TG)
+    - subnets named public when connected to IGW
+- VPC endpoints
+    - interface endpoint
+        - collection of interfaces w private IP addresses that allows access to specific services to keep traffic within private network
+        - entry point of traffic to supported service, requires an ENI
+            - connect to services like API gateway, CFN, CloudWatch/Events/Logs, etc - lots and lots of services 
+        - uses privatelink 
+    - gateway endpoint
+        - targets specific IP routes in VPC route table, in form of prefix list, for traffic to DynamoDB or S3 
+        - does *NOT* use privatelink 
+- VPC peering
+    - routing governed with rout tables; not all subnets need to connect to each other 
+- Route53
+    - 100% availability SLA
+    - features
+        - DNS failover
+        - latency-based routing
+        - geo-based routing
+        - weighted round robin 
+- Direct Connect (DX): securely link on-prem env to AWS
+    - connect w 1/10 Gb ethernet fiber-optic connection 
+    - at volume, over time, more affordable than snowmobile 
+    - often used for hybrid connections, and can also be used for data transfers 
+    - several weeks to a few months to set up DX, since it's a physical connection that needs to be laid 
+        - shorter timeframe: use AWS snow family or S3 transfer accelerator
+    - adding redundancy
+        - BGP routing for redundancy
+            - border gateway protocol (aka best gate protocol)
+        - AWS VPN can also be used as a backup path 
+        - can have multiple DX connections to different AWS sites for HA (double the cost though)
+    - DX gateway
+        - can connect to multiple VPCs
+- Transit Gateway 
+    - can connect 1000's of VPCs
+    - can connect VPCs and on-prem w single gateway (via DX gateway)
+    - hub-and-spoke design 
+        - hub tells spokes where to go
+    - up to 50 Gbps per VPC connection (burst connection)
+- Global Accelerator: improve availability & performance of global services 
+    - client traffic ingresses via closest available Edge location to get them into AWS network 
