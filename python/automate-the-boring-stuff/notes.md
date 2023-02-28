@@ -1,3 +1,6 @@
+# macOS notes
+- run `python3.11 -m pip install <pythonModule>` to install python modules and them be used by .py or the interactive terminal. `pip install <pythonModule>` hasn't been working
+
 # Introduction info
 - string concatenation: when `+` is used on two string values 
 - print() [function]: displays string value within parenthises 
