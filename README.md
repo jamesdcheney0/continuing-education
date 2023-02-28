@@ -30,7 +30,9 @@ Develop the following skills for approximately 1000 hours
 - Python
     - Automate the Boring Stuff with Python - Al Sweigart (ABSP)
     - Resources after having more experience in python: https://book.pythontips.com/en/latest/one_liners.html
-    - Look into this on freeCodeCamp.org: https://www.freecodecamp.org/learn/scientific-computing-with-python/
+    - Started freeCodeCamp: Scientific Computing w Python - Python for everybody (py4e) 20230223: 
+        - https://www.py4e.com/
+        - Current location: https://www.freecodecamp.org/learn/scientific-computing-with-python/python-for-everybody/iterations-more-patterns
     - There's also this playlist I've had saved in a browser for a while: https://www.youtube.com/watch?v=rfscVS0vtbw&list=PLWKjhJtqVAbnqBxcdjVGgT3uVR10bzTEB 
 
 - AWS
@@ -40,10 +42,11 @@ Develop the following skills for approximately 1000 hours
         - AWS Power Hour Architect Pro: https://pages.awscloud.com/GLOBAL-other-T2-AWS-Power-Hour-Architecting-Pro-2023-reg.html?did=tc_card&trk=tc_card 
 
 - Terraform
-    - Andrew Brown from ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABEP)
-        - 20230221: got bored here, and started scrubbing through for just slide info: https://youtu.be/V4waklkBC38?t=40736 
-        - 20230221: terraform and consul: https://youtu.be/V4waklkBC38?t=44710 
-    - taking a break here while grinding for AWS for the next few weeks; last day of ASA3 is 20230317
+    - Andrew Brown from ExamPro - https://www.youtube.com/watch?v=V4waklkBC38&t (ABEP) - finished 20230222
+    - Certification exam scheduled for 20230224
+    - reviewed [this](https://medium.com/bb-tutorials-and-thoughts/250-practice-questions-for-terraform-associate-certification-7a3ccebe6a1a) article (BB tutorial)
+    - After getting cert, start working on intro to terragrunt
+    - BECAME HASHICORP CERTIFIED: TERRAFORM ASSOCIATE ON 20230224! 
 
 - Linux
     - vi
