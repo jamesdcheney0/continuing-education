@@ -947,3 +947,99 @@ provider: can be added w/n resource to point to specific provider alias
         - build image; packer is not a service, but a development tool; must manually run packer or automate image building w build server running packer 
         - referencing image: once image is built, can be referenced as data source 
             - for AWS AMI, can match on regex & select most recent 
+
+# Consul
+- service networking platform
+    - useful w micro-service or service-oriented architecture w 100s-1000s of services 
+    - provides
+        - service discovery - central registry for service in network
+            - allows for direct communication w no SPOF via load balancers
+        - service mesh - managing network traffic b/w services
+            - 'middleware'-type communication layer on top of container apps
+        - app config capabilities 
+- integrations w tf
+    - remote backend
+        - consul has key value (KV) store for config storage
+    - consul provider
+
+# Hashicorp Vault
+- for securely accessing secrets from multiple secrets data stores
+- provides unified interface
+    - to any secrets
+        - includes AWS secrets, consul key value, Google Cloud KMS, etc
+    - provide tight access control
+        - Just-in-Time (JIT): reduce attack surface based on range of time
+        - Just enough Privilege (JeP): reducing attack surface by providing least-permissive permissions
+    - records detailed audit log for tamper evidence 
+- deployed to VMs in a cluster 
+- integration w tf
+    - when devs need credentials, e.g. aws credentials, instead of local storage, using JIT credentials injected at the time of `terraform apply` using data sources 
+    - injection via data source
+        - vault service provisioned
+        - vault engine config'd - e.g. AWS secrets engine
+        - vault creates a machine user for AWS
+        - vault will generate short-lived AWS credentials from machine user
+            - new credentials supplied every time `terraform apply` is ran
+        - vault will manage & apply AWS policy
+        e.g.
+        ```
+        data "vault_aws_access_credentials" "creds" {
+            backend     = data.terraform_remote_state.admin.outputs.backend
+            role        = data.terraform_remote_state.admin.outputs.role
+        }
+
+        provider "aws" {
+            region      = var.region
+            access_key  = data.vault_aws_access_credentials.creds.access_key
+            secret_key  = data.vault_aws_access_credentials.creds.secret_key
+        }
+        ```
+- tf cloud uses vault behind the scenes, and not bespoke like the comments above 
+
+# Atlantis
+- open-source developer tool to automate tf pull requests
+- helps automate infrastructure-as-code
+- creators of Atlantis now work at HashiCorp & maintains the project, which is something of an alternative to tf cloud
+
+# CDK for tf
+- AWS Cloud Development Kit (CDK) imperative IaC tool
+    - only intended for AWS cloud; generates CloudFormation templates
+- CDK for Terraform is standalone project by HashiCorp that allows use of CDK, and instead of CFN, it creates tf templates
+    - allows use of CDK tooling to define IaC resources for any provider
+
+# Gruntwork
+- software company that builds DevOps tools that extend/leverages tf
+- IaC library: 300k+ lines of reusable, tested IaC code for various tf providers
+- terragrunt: thin wrapper that provides extra tools for keeping configs dry (don't repeat yourself), working w multiple tf modules & managing remote state
+    - Don't-Repeat-Yourself: programming methodology to abstract repeated code into function, modules, or libraries (often in isolate files) to reduce code complexity effort & errors 
+- terratest: testing framework for infrastructure provisioned w tf
+    - perform unit test & integration tests on infro
+    - test infrastructure by temporarily deploying it, validating results, and tearing down test env 
+    - written in GoLang 
+- gruntwork landing zone for AWS: collection of baselines for multi-account security on AWS
+- gruntwork pipelines: security-first approach to CI/CD pipeline for infrastructure
+- gruntwork reference architecture: opinionated, tested, best-practices way to assembly code from the IaC library 
+    - paid service 
+
+# Testing in Terraform
+- e2e tests > integration tests > unit tests > static analysis (> actually meant to indicate 'greater than')
+    - static analysis
+        - test code w/o deploying
+        - tflint, terraform validate, terraform pan, terraform-compliance, sentinel
+    - unit tests
+        - testing a single module (need to divide modules into small units of work)
+        - terratest, kitchen-terraform, inspec
+    - integration tests
+        - test multiple IaC modules working together
+        - terratest
+    - e2e
+        - must setup persistent test env
+        - gruntwork reference architecture 
+
+
+# Bhargav Bachina 250 Terraform Questions Review
+- `terraform fmt` only works on .tf and .tfvars files
+- `terraform show` shows current state of applied infrastructure by reading from terraform.tfstate
+- `terraform state list` list all resources from state 
+- `terraform state show <resource>` list information about specific resource
+- 'resource spec' is essentially the name of the resource defined in tf; e.g. it refers to `<resource_type>.<resource_name>[<resource_index]`
