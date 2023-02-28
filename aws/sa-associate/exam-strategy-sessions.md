@@ -13,3 +13,13 @@
 
 # Exam Strategy: Friday, February 17th, 2023 
 - got all the questions right, and they made sense in context of what I've been studying this week 
+
+# Exam Strategy: Friday, February 24th, 2023 
+- reporting app on EC2 runs behind ALB. Instances run in Autoscaling group across multiple AZs. for complex reports, app can take up to 15 minutes to respond to request. SA concerned that users will receive errors if report request is in process during scale-in event
+    - sticky sessions are an ALB thing, unrelated to autoscaling. Do not force instances that the sessions are attached to remain healthy; do not affect autoscaling scale-in decisions 
+    - cooldown period prevents autoscaling from making decisions about further scale-down or scale-up deicions, but doesn't consider established sessions & allow instances to stay up longer 
+    - increase the deregistration delay timeout for target group of instances to greater than 900 seconds - this is the only one that forces instances to stay up for a while before terminating 
+- IPv6 is supported by NAT gateway and egress-only IGW 
+- use IaC for software app. Wants to test app before send traffic to them & looking for efficient
+    - use AWS CFN w parameter set to staging value in a separate environment other that prod (can't use snapshot deletion policy w CFN, doesn't snapshot all resources, and being able to just roll back stack if update fails is missing the point of the testing)
+    - route53 failover routing: think DR
