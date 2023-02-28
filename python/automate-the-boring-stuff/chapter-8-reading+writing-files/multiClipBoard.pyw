@@ -21,4 +21,5 @@ elif len(sys.argv) == 2:
 mcbShelf.close() 
 
 
-# not sure how to actually make this useful on 
+# not sure how to actually make this useful 
+# Figure out how to run a python program and send it arguments 
