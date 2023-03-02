@@ -52,3 +52,20 @@
 - loop idioms - how to construct loops 
     - making 'smart' loops
         - computers have to iterate once at a time. Have to figure out how to process the data, do something with it, and move on. Look at e.g. in ./python-for-everybody/exercise-5/largestNumber.py
+- counting in a loop
+    - examples of this and other counting functions are in ./exercise-5/counting.py
+- `is`, `is not`
+    - implies 'is the same as'; 'is not the same as'
+    - similar to, but strong than ==
+    - e.g. `0 == 0.0` returns `True`, `0 is 0.0` returns `False`
+    - use `is` on booleans and `None` types
+
+# Chapter 6: Strings
+- string: sequence of characters 
+- looking inside strings
+    - can get at any single character in string using index specified in square brackets 
+    - index must be integer and starts at zero
+- `len()` (built-in function)
+    - provides length of list 
+- generally best to use `for` loop instead of `while` loop - for loops are more elegant
+    - for decides when to run the loop & if it needs to keep being run
