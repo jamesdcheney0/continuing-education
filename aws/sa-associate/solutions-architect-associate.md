@@ -1,8 +1,6 @@
 # AWS SA Associate Accelerator
 ## Links 
-- Stream: https://www.twitch.tv/aws_namer_programs 
-- Accelerator home page: https://mpa-saa-accelerator-q12023.splashthat.com/
-- Learning materials: https://explore.skillbuilder.aws/learn/lp/1651/Solution%2520Architect%2520Associate%2520Accelerator%2520-%2520Partner%2520Learning%2520Plan (I usually have to click it twice and sign in twice...) 
+(I usually have to click it twice and sign in twice...) 
     - Not every video in here is required for certification 
     - The hands on labs essentially book-end the learning objectives for the week. Each week of the program will also have an email come out with objectives for the week 
 - official AWS study channel: https://aws.amazon.com/training/twitch/
@@ -718,3 +716,562 @@
 - peering vs TG:
     - peering is cheaper and less latency
     - TG is less complex 
+
+# Data Analytics on AWS
+## AWS Data Analytics Stack Portfolio
+- Four layers of AWS data analytics portfolio
+    - layer 1 (bottom): Data movement
+        - AWS DMS, Snow family, Kinesis Data Firehose, Kinesis Data Streams, Managed streaming for Apache Kafka
+    - layer 2: data lake infrastructure & management
+        - S3/glacier, Lake Formation, Glue
+    - layer 3: analytics
+        - Redshift, EMR (Spark & Presto), Glue (Spark & Python), Athena, Elasticsearch Service, Kinesis Data Analytics
+    - layer 4 (top): data visualization, engagement, and ML
+        - Data Exchange, QuickSight, Pinpoint, SageMaker, Comprehend, Polly, Lex, Rekognition, Translate
+## Data Migration Options 
+- AWS data migration options
+    - move to the cloud w Direct Connect, Storage Gateway, S3 transfer acceleration, Snowball, Kinesis Data Firehose, DMS
+- Modernizing a data warehouse w Redshift 
+    - data warehouse aka OLAP (online analytical processing) defined:
+        - store data that has strict data types that conform to a schema w rows & columns in denormalized (adding precomputed redundant data to an otherwise normalized RDB) table 
+        - central repository of curated data from different sources
+        - benefits
+            - better decision-making
+            - consolidated data from many sources
+            - improved dat quality, consistency, accuracy
+            - access to historical intelligence
+            - improved performance 
+    - problems w on-prem data warehousing
+        - difficult to scale
+        - hardware slow to procure
+        - complex upgrades are the norm
+        - high overhead admin costs
+        - expensive licensing/support and limited number of users/data
+        - propriety formats that don't support newer open data formats lead to data silos 
+        - data not cataloged & unreliable quality
+        - difficulty in integration
+    - Redshift: fully managed cloud data warehouse
+        - key features
+            - optimized for high performance
+            - support for open file formats
+            - petabyte-scale capability
+            - support for complex queries and analytics, w data visualization tools
+            - secure end-to-end encryption + certified copmliance
+            - 99.9% SLA
+            - based on open source Postgre DB
+            - cost efficient
+        - performance features
+            - massively parallel processing
+                - takes large job, breaks into smaller tasks & distributes tasks to multiple compute nodes
+            - columnar storage 
+                - data from each column stored together + data can be accessed faster w/o scanning & sorting all other columns & improves performance
+            - shared-nothing architecture
+                - independent & resilient nodes w/o dependencies; improves scalability
+        - architecture
+            - managed service; cluster runs in AWS-managed internal VPC
+            - leader node resides in customers VPC & provides access endpoint
+            - consists of leader node + one or more compute nodes 
+            - client app only interacts w leader node using JDBC (Java DB Connectivity) or ODBC (Open DB Connectivity) protocols
+        - resizing approaches
+            - elastic resize
+                - existing cluster modified to add or remove nodes in two stages
+                    - stage 1: cluster temp unavailable while metadata migrated, usually completes in minutes. Session connections held & queries remain queued
+                    - stage 2: session connections reinstated, queries resume; cluster available for R/W operations
+            - classic resize
+                - one+ hours to complete, depending on data size. Stream all data from original cluster to new cluster. During resize, OG cluster in read-only mode. Customer charged for only one cluster 
+        - three available nodes
+            - RA3 (redshift analytics)
+                - latest & recommended node type
+                - flexible; customers grow & pay for compute & storage independently
+                - uses combo of SSD for hot & S3 for cold data; efficient & high performance
+                - based on AWS Nitro System w high-speed networking for fast access to S3
+            - DC2 (dense computing)
+                - uses high-performance local SSD storage
+            - DS2 (dense storage)
+                - comes w local hard disk drive storage; considered legacy & generally not recommended
+        - management interfaces
+            - console, CLI, SDKs, SQL tools, redshift query API
+        - differentiating features
+            - federated query
+                - integrate queries on live data in RDS & Aurora PostgreSQL + quries w redshift & Amazon data lake 
+                - intelligent optimizers pushes & distributes some computing directly into remove operational DBs to reduce data moved over network
+                - benefits
+                    - query operational DBs directly, apply transformations on the fly, load data into target tables w/o complex ETL pipelines
+            - lake house architecture 
+                - run queries in redshift to join w other data in S3 data lake w/o moving or transforming data
+                    - customers can query open file formats directly in S3 & write it back
+                - use SQL statements to combine & process data across data stores
+                - run quries on live data in operationsl DBs w/o data loading + ETL pipelines 
+        - migrating to Redshift 
+            - AWS provides WQF (workload qualification framework) service, which uses AWS SCT (schema conversion tool) to collect info from legacy data warehouse & generate reports:
+                - workload assessment based on: complexity, size of migration effort, technology used
+                - recommendation on migration strategies
+                - step-by-step instructions for migration
+                - assessment of migration effort based on team size + member roles 
+            - AWS SCT
+                - redshift extracts data thru local migration agents
+                - data optimized for redshift & saved in local files
+                - files loaded to S3 (via network or snow family) and then to redshift 
+    - Data Lakes 
+        - one motivating factor for customers to migrate to cloud & modernize data analytics is to have all their data in one place & in a single repository
+        - defined
+            - stores all structured, semi-structured, unstructured, and binary data at unlimited scale
+            - holds curated & raw data
+            - uses AWS data analytics tools for analytics
+            - increase pace of innovation by extracting insights from data
+            - enabled more organizational agility
+            - reduces cost & delivers results w predictive analytics and ML
+        - secure data lakes
+            - S3 provides scalable, durable object storage & is foundational to building data lake
+## Data services
+- AWS Glue
+    - fully-managed, ETL (extract, transform, load) service
+    - simplifies and automates difficult & time-consuming data discovery, conversion, mapping + job scheduling tasks
+    - pointed to data stored in data lake or other data stores
+    - Glue discovers data & stores metadata in AWS Glue Data Catalogue
+        - once catalogued, data searchable + available for ETL
+    - four main components
+        - AWS Glue Data Catalogue
+            - Hive metastore comp0atible w enhanced functionality
+            - crawlers automatically extract metadata + create tables
+            - integrates w Athena, EMR, + more
+        - Job Authoring
+            - generates ETL code
+            - build on open frameworks (Python, Scala, Apache Spark)
+            - dev-centric editing, debug + sharing
+        - Running jobs
+            - run on serverless Spark platofmr
+            - flexible scheduling, job monitoring, alerting
+        - Job workflow
+            - orchestrate triggers, crawlers, jobs
+            - author + monitor flows w integrated alerting
+    - Glue Data Catalogue
+        - unified metadata repository across RDBs, AWS RDS, Redshift lake house, S3
+        - benefits
+            - single view into data, regardless of storage location
+            - automatically classify data in central, searchable list
+            - track data evolution using schema versioning
+            - query data w Athena or Redshift Spectrum 
+                - use catalogue w standard SQL language to query any data store
+            - hive metastore (central repo of Apache Hive metadata) compatible
+    - AWS Glue crawlers
+        - automatically build + sync customer's data catalog
+        - scans sources like RDS, redshift, DDB, data lakes & constructs data catalog using pre-built classifiers for open source formats & data types, like JSON, CSV, Parquet 
+        - performs following tasks
+            - classifies data to determine format, schema, associated properties of raw data
+                - custom classifiers can be created
+            - group data into tables or partitions based on crawler heuristics
+            - write metadata to AWS Glue Data Catalog that's referenced by analytics tools to discover, understand, query data
+            - customers configure how crawler adds, updates + delete tables & partitions
+            - can schedule on demand or regularly at specific interval
+- AWS Data Exchange 
+    - helps engineers subscribe to third-party data to reduce integration issues 
+    - benefits
+        - find diverse data in one place
+            - 1k+ data products, 80+ data providers 
+            - includes free datasets + subscription datasets 
+        - analyze data
+            - dl of copy of data to S3
+            - combine, analyze + model w existing data 
+        - access third-part data
+            - streamlined access to data
+            - minimize legal reviews & negotiations 
+            - immediate access upon subscribing 
+- Amazon Athena
+    - interactive query services that can analyze data in S3 using std SQL
+    - to use, point to data in S3, define schema, and query w std SQL
+    - most results delivered w/n seconds
+    - features
+        - no setup costs
+        - pay per query
+            - save 30-90% on query costs w compression
+        - Open source
+            - SQL interface, JDBC/ODBC drivers, multiple formats, compression types, complex joins + data types
+        - streamlined
+            - serverless; zero infra, zero admin, integrated w QuickSight
+- AWS Lake Formation
+    - simplifies process of building secure data lake
+    - automates steps to set up data lake w few steps in unified process (reduces process from months [on-prem] to days [cloud])
+    - four stages
+        - ingest + organize
+            - automates create dataing lake + data ingestion
+        - secure + control
+            - sets up fine-grained access control & data governance
+        - collaborate + use
+            - search + data discovery w Data Catalog metadata
+            - to protect data, access checked against set policies
+        - monitor + audit
+            - based on data access & governance policies, alert notifications raised on policy violation + logged
+    - many integrated services: Glue, Athena, Redshift Spectrum, QuickSight Enterprise Edition, EMR
+        - builds on AWS Glue 
+    - uses Blueprints, AWS Glue, and security services to build
+        - fully managed data lake
+            - integrates w AWS security, storage, analysis, and ML services
+        - powerful data cleansing
+            - can optionally cleanse data to remove dupes, fill in missing values, link records, remove data errors
+        - automated data ingestion
+            - supports batch + stream data ingestion into S3
+        - centralized access control
+            - defines access permissions, including table, row, and column-level control + encryption policies for data at rest & in transit
+            - can use varieety of AWS analytic & ML services to access data lake. All access secured, governed, auditable
+        - customers create workflow based on predefined Blueprints which is used by CloudFormation to create Glue workflow
+    - benefits
+        - builds data lake + customers can use AWS data analytics tools w secure data to extract value faster
+        - all users can run analytics based on access, at any scale securely & cost-effectively
+        - comprehensive set of integrated tools enables every user equally
+        - centralized management of fine-grained permissions helps security officers
+        - simplified ingest & cleaning helps data engineers
+        - cost effective, durable storage + global replication ability
+- QuickSight
+    - cloud powered BI service that can deliver insights to everyone in org
+    - benefits
+        - scalable
+            - from 10 to 10k+ users in minutes
+            - pay-as-you-go
+        - pay for use
+            - pay monthly or annually
+            - pay-per-session pricing; no up-front costs 
+        - serverless & fully managed 
+            - create dashboards quickly 
+            - deploy globally w/o provisioning servers
+        - fully integrated 
+            - secure + private access to AWS data
+            - integrated w S3 data lake & IAM
+            - can use API & embed in apps & share w others 
+    - serverless data lakes + analytics 
+        - GUI can be used to analyze and visualize data
+        - uses Athena & Redshift spectrum among others, depending on Glue Data Catalogue
+## Data Analytics Solution 3: Amazon Kinesis
+- Streaming data
+    - data generated continuously by thousands of data source that send data records simultaneously and in small sizes 
+    - examples
+        - log files from customers using mobile or web apps
+        - ecommerce purchase
+        - in-game player activity
+        - info from social networks
+        - financial trading floors
+        - geospace services
+        - telemetry from connected devices or instrumentation in data centers 
+    - must be processed sequentially & incrementally on record-by-record basis or over sliding time windows 
+    - uses for real-time analytics 
+        - value of data, in most cases, diminishes over time
+        - anything over a few minutes is considered batch-oriented analytics 
+    - enabling real-time analytics 
+        - source
+            - devices and/or apps that produce real-time data at high velocity
+        - stream ingestion
+            - data from 10s of 1000s of data sources must be ingested & written to single stream
+            - requires ability to scale a solution to keep up
+        - stream storage
+            - data stored in order received for set duration & can be replayed indefinitely during this time
+        - stream processing
+            - records in storage processed by real-time apps to generate real-time analytics, run real-time ETL & deliver data to destination
+        - destination
+            - output of stream processing sent to + consumed by another AWS service or an app
+    - challenges
+        - difficult to set up
+        - difficult to achieve HA
+        - error prone + complex to manage
+        - tricky to scale
+        - integration requires deevelopment
+        - expensive to maintain
+- AWS streaming data solutions
+    - Amazon Kinesis
+        - family of analytics services for streaming data
+        - services straightforward to set up, configure and use
+        - HA & durable, fully managed & scalable
+        - core services
+            - Kinesis Data Streams
+                - capture & store data streams
+            - Kinesis Data Firehose
+                - load streaming data into streams, data lakes, warehouses
+            - Kinesis Data Analytics
+                - analyze data streams in real-time
+            - Amazon Managed Streaming for Apache Kafka
+                - fully managed service for Apache Kafka
+    - Amazon Kinesis Data Streams (KDS, DS)
+        - massively scalable, highly durable data ingestion + processing service for real-time streaming
+        - features 
+            - collected data available w/n 70 ms
+            - real-time analytics w dashboards, anomaly detection, dynamic pricing
+            - data synchronously replicated across 3 AZs in region & stored up to 7 days
+            - serverless; scale to handle MB or TB each hour & 1,000s to 1,000,000s of PutRecords per second
+            - no upfront cost; pay-as-you-go pricing
+        - how it works
+            - capture and send data in real-time -> ingest & store data streams for processing > build custom, real-time apps (using K Data Analytics, Spark on EMR, EC2, Lambda) -> analyze stream data w BI tools 
+            - sources
+        - architecture
+            - data producers: ec2 instances, client, mobile client, traditional server
+            - data stream: process & store data 
+                - shard: temporary holding space to accumulate data until processed
+                    - base throughput unit of Kinesis data stream
+                    - contains sequence of records ordered by arrival time
+                    - ingestion throughput of 1,000 records each second or 1 MB each second
+                    - data record
+                        - unit of data stored in Kinesis stream
+                    - data blob
+                        - data of interest that producer adds to stream
+                    - partiion key
+                        - meaningful identifier for click stream or timestamp
+                    - sequence #
+                        - unique identifier 
+            - data consumer 
+                - Kinesis Data Firehouse, ec2 instance, Kinesis Data anlytics
+                - can consume or store or pass on to other storage space
+        - provisioning
+            - when provisioned, must calculate how many shards their app needs
+            - volume & velocity of data records must be estimated
+            - shard count can be increased
+            - choice of partition key impacts number of shards 
+    - Kinesis Data Firehose (KDF, DF)
+        - reliably loads streaming data into data lakes & stores + analytics tools 
+        - can capture, transform, and load streaming data into S3, Redshift, Elasticsearch Service, Splunk
+        - enables near real-time analytics w existing BI tools & dashboards already in use
+        - fully managed, scales automatically to match throughput of customer data 
+        - how it works
+            - capture & send data -> prepare & load data (w KDF) continuously to selected destinations -> durably store for analytics (use S3, Redshift, Elasticsearch, Splunk) -> analyze stream data w analytics tools 
+    - Data Streams vs Firehose
+        - processing time: DS on ms scale; DF on second time-scale; 60-900 seconds 
+        - stream storage + duration
+            - DS: shards; default 24h up to 7 days
+            - DF: max buffer size 128 MB, max time 900 seconds
+        - data transformation & conversion
+            - DS: none
+            - DF: Lambda, Glue
+        - data producer
+            - same; Kinesis Agent, apps using Kinesis Producer Library (KPL), SDK for Java, Cloudwatch Logs + Events, AWS IoT
+        - data consumer
+            - DS: Lambda, Kinesis Data Analytics, DF, Apps using Kinesis Client Library (KCL) and SDK for Java
+            - DF: Lambda, Kinesis Data Analytics, DF, Apps using KCL + SDK for Java, S3, Redshift, Amazon ES, Splunk, 
+        - data compression
+            - DS: none
+            - DF: gzip, Snappy, Zip, or none
+        - when to use
+            - Data Stream
+                - data stream app that ingests massive amounts of data
+                - millisecond response time
+                - massively scalable
+                - data storage from hours to days
+                - e.g. real-time gaming
+            - Data Firehose 
+                - data stream app that requires near-real-time response in seconds
+                - performing data augmentation, transformation, or compression
+                - must save data to S3, Redshift, ES, Splunk, or send to K Data Analytics
+                - e.g. log analytics captured in small batch nodes 
+    - Amazon Kinesis Data Analytics (KDA, DA)
+        - efficient way to analyze streaming data
+        - gain actionable insights
+        - respond to business + customer needs in real-time
+        - quickly build SQL queries or Java apps
+        - takes care of everything required to run real-time apps nearly continuously
+        - how it works
+            - input
+                - streaming source for app
+                - map input to in-app data stream so data flows from source into in-app data stream
+                - data then can be processed from in-app data stream using app code
+            - app code
+                - series of Java operators or SQL statements
+                - app can split in-app data stream into multiple streams & apply different logic to separate streams
+            - output
+                - where app code write after completing processing 
+                - e.g stored in S3 or Redshift 
+            - capture streaming data w MSK, KDS, KDF, other sources -> query & analyze streaming data w KDA -> send process data to analytics tools to create alerts & respond in real-time
+
+## Data Analytics Solution 4: Data Governance
+- challenges of data in data lakes
+    - securing data
+    - auditing data usage
+    - managing data access
+    - safeguarding senitive data & PII
+    - maintaining regulations and mandates 
+- Amazon Macie
+    - helps protect PII data
+    - full managed data security + privacy service
+    - uses ML + pattern matching to discover & protect sensitive data in AWS
+    - Enable (in console or w API call) -> automatically generate inventory of S3 bucket & details on the bucket security -> analyzes bucket w ML to discover sensitive info -> generates findings & sends to CloudWatch Events 
+        - Provides inventory of buckets, including
+            - which ones aren't encrypted
+            - which ones are publicly accessible
+            - which ones are shared w AWS accounts
+    - search & filter findings in console
+        - send to CloudWatch Events for integration w existing workflow & event mgmt systems
+    - data identifiers
+        - financial
+        - personal
+        - national
+        - medical
+        - credentials & secrets 
+    - DIDL (de-identified data lake) on AWS
+        - architectural approach to help orgs use data while reducing risks of managing it
+        - benefits
+            - reduce risk: remove PII before entering data lake
+            - understand data: create data catalogue of lake
+            - reduce compliance costs: automate discovery, classification, de-identification, and monitoring of data in org
+            - turn data into an asset: enable broader set of governed analytic & ML use cases
+        - how it works (masking PII data)
+            - masking obscures part or all of a column value
+            - fake values replace column values
+                - not the same as encryption or hashing; simply replaces real info with fake info (e.g., instead of 'Just talked to Carlos Salazar' that same entry shows 'Just talked to Jane Doe')
+## Data Analytics Solutions 5: Insights & Monetization w ML
+- ML fueled by data, and data lakes are great sources
+- also erquires high-performance compute power + flexible independent scaling of storage and compute
+- AWS analytics tools can process raw data into ML-friendly data & store in lake to be processed by ML
+- ML requires
+    - more data: collect all types of data
+    - flexibility: define schema during analysis
+    - scalability: storage/compute need to scale well and independently
+    - data transformation & processing: process w/o moving data
+    - security: network, identity, encryption, compliance 
+- Amazon SageMaker
+    - fully managed service that provides dev the ability to build, train, deploy ML models
+    - runs a managed Jupyter Notebook app; notebooks used for common problems 
+    - SageMaker Debugger: unified interface for analysis, debugging, discovery, alerts
+    - SageMaker Experiements: one-click training, hyperparameter optimization
+    - streamlines deploying ML model to prod
+## Technical Engagement
+### Data Flywheel
+1. Move and store data in the cloud
+2. Move and manage all workloads in the cloud
+3. Build data-driven apps (3 and 4 are almost a fork between 2 and 5, working parallel, not necessarily serially)
+4. Analyze with data lake architectures
+5. Innovate with Machine Learning 
+
+### Six-Phase Strategy for Implementing Data Analytics Solutions 
+- Data analytics in the cloud assessment 
+    - assess where customer is at in the journey; e.g., if they need to be convinced of AWS usefulness, available services, etc
+- Use case identification
+- Architecture and data migration
+- Proof of concept delivery
+    - POC best practices
+        - common pitfalls
+            - incorrectly scoped project
+                - if project not properly scoped, there's a lack of clarity on what POC should deliver
+                - results oversold & effort underestimated
+                - mitigation:
+                    - create well-documented SOW (statement of work); all parties should agree before work begins
+                    - demonstrate value by solving customer's key pain points in specific timeframe + budget w/o overcommitting 
+                    - offer workshop services to deepend relationship + trust w customer's IT team
+
+            - lack of skills to complete POC
+                - if customer's technical teams are lacking the right skills, can be challenging to complete poc
+                - mitigation:
+                    - work with AWS PDM (partner development manager) to educate technical teams 
+    - Delivering successful POC
+        - clearly identify the end goal
+            - use case should address customer's key challenges w/n specific period; there shouldn't be an exepctation of 'silver bullet'
+        - aim for optimal architecture up-front 
+            - use tools that align with current skillset if a steep learning curve would otherwise be required 
+        - ID criteria + metrics that measure success
+            - all parties must agree on clear criteria
+    - Success factors
+        - get committment from customer & c-level sponsor to keep team moving
+        - create well-scoped SOW
+        - use PSA (partner solutions architect) to review POC + SOW
+        - have well-defined deliverables
+        - identify all AWS services for the POC
+        - use agile dev processes
+        - track risks & have contingency plan
+        - use AWS PDM/PSM to ID POC funding programs 
+- App tuning + optimization
+- Migration from POC to products 
+
+### Well-Architected Review using the Analytics Lens
+- 10 design principles 
+    - automate data ingestion to handle big data 
+    - design ingestion for failures and duplicates 
+    - preserve original source data 
+        - keeping raw data helps repeat ETL process in event of failure 
+    - describe data w metadata
+        - capture metadata during ETL process; document + automate
+    - establish data lineage 
+        - track data origin + flow b/w data systems 
+    - use right ETL tool for the job
+        - streamline workflow b/w source + destination 
+    - orchestrate ETL workflows 
+        - automate ETL
+        - chain ETL jobs to keep workflow smooth & track + debug failures 
+    - tier storage appropriately
+        - based on format & access pattern
+    - secure, protect, and manage entire analytics pipeline
+    - design for scalable + reliable analytics pipelines 
+        - this way, volume or velocity of data doesn't impact prod pipelines 
+
+# AWS Security Fundamentals
+- Design principles
+    - implment strong identity foundation (least privilege)
+    - enable traceability in real-time
+    - apply security at all layers (defense-in-depth)
+    - automate security best practices with IaC
+    - protect data in transit and at rest with encryption + access control
+    - enforce the principle of least privilege 
+    - prepare for security events; establish an incedent management process 
+- AWS Shared Responsibility Model
+    - AWS is responsible for protecting global infrastructure that runs all services offered in AWS Cloud ('security OF the cloud')
+    - customer is responsible for securing data, OS, networks, platforms, & all resources created in AWS cloud ('security IN the cloud')
+        - responsible for CIA (confidentiality, integrity, availability) triad 
+## Security OF the Cloud
+- Data Center Security
+- Compliance and Governance 
+    - AWS communicates about security + control env by
+        - obtaining industry certs + third party attestations
+        - publish info about AWS security + control practices in whitepapers & website content
+        - provide certs, reports, other docs to AWS customers under NDA (as required)
+        - provide security features + enablers + compliance playbook & mapping docs for compliance programs 
+    - running workloads on AWS does not automatically make workload compliant 
+        - only have to certify customer apps + arch to ensure compliance; all underlying AWS stuff is already compliant 
+    - AWS Artifact
+        - no-cost, self-serve portal for access to security + compliance reports + online agreements 
+## Security IN the Cloud
+- Identity and Access Mgmt
+    - AWS IAM
+        - careful mgmt of access creds is foundation of securing resources in cloud 
+    - additional services for IAM
+        - AWS Secrets Manager
+        - AWS IAM Identity Center (Formerly Single Sign-On)
+        - AWS STS
+        - AWS Directory Service
+        - AWS Organizations 
+    - Amazon Cognito
+        - add user sign-up, sign-in + access controls to web + mobile apps 
+        - define roles & map users to diff roles so app can only access authorized resources 
+        - sign-in directly w Cognito or via third party
+- Detective Controls 
+    - AWS CloudTrail
+        - track API call history for changes to AWS resources 
+        - route events + info reflecting potentially unwanted changes into a proper workflow 
+        - can trigger automated actions for remediation
+    - Auditing on AWS
+        - S3 Server Access Logs 
+            - contain details about requests: 
+                - request type
+                - resources requested
+                - date/time of request 
+        - ELB Access Logs 
+            - detailed info about each request sent to LB
+                - client IP address
+                - latencies
+                - server responses
+            - analyze traffic patterns + troubleshoot issues 
+        - Cloudwatch Logs + Events 
+            - Logs
+                - monitor + troubleshoot OS + apps in AWS env
+                - monitor logs for specific phrases, patterns, values
+            - Events
+                - track overall activity level of CW rule collection 
+        - VPC Flow Logs     
+            - ensure network access config'd properly
+            - capture info about IP traffic going in/out of network interfaces + subnets 
+        - CloudTrail
+            - history of API calls to account made via console, CLI, SDKs, or other AWS services 
+    - Additional AWS Services for Detective Controls
+        - GuardDuty
+            - intelligent threat detection service
+            - continuously monitor + protect AWS acct's and workloads 
+            - uses ML to detect anomalies
+            - monitors unusual API calls + direct threats like compromised instances 
+        - Trusted Advisor
+            - inspects AWS env + make recommendations based on best practices to save money, improve performance, tighten security gaps 
+        - Security Hub
+            - single view of high-priority security alerts + compliance status across AWS accts 
+    - AWS Config
+        - continuous monitoring + assessment service to detect non-compliant configs in almost real-time
