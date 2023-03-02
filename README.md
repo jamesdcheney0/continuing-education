@@ -38,6 +38,9 @@ Develop the following skills for approximately 1000 hours
 - AWS
     - AWS Solutions Architect - Associate Accelerator (ASA3)
         - Last day of ASA3 is 20230317. Need to get the exam scheduled the week after that, probably Monday, in person
+        - learning materials: https://explore.skillbuilder.aws/learn/lp/1651/Solution%2520Architect%2520Associate%2520Accelerator%2520-%2520Partner%2520Learning%2520Plan 
+        - Stream: https://www.twitch.tv/aws_namer_programs 
+        - Accelerator home page: https://mpa-saa-accelerator-q12023.splashthat.com/
     - AWS Solutions Architect - Pro
         - AWS Power Hour Architect Pro: https://pages.awscloud.com/GLOBAL-other-T2-AWS-Power-Hour-Architecting-Pro-2023-reg.html?did=tc_card&trk=tc_card 
 
