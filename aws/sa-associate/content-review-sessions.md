@@ -170,3 +170,136 @@ David Chong (Enablement management)
     - up to 50 Gbps per VPC connection (burst connection)
 - Global Accelerator: improve availability & performance of global services 
     - client traffic ingresses via closest available Edge location to get them into AWS network 
+
+# Content Review March 1st, 2023 (Creighton in again) (+15 minutes)
+- decoupling and messaging 
+    - SQS
+        - fully-managed message queue 
+        - enables decoupling & scaling
+        - Queue Types
+            - FIFO (first in first out)
+                - support up to 300 TPS (transactions per second) w/o batching & 3,000 TPS w batching 
+                - enahnce messages b/w apps when order of ops is critical
+            - Standard queue
+                - support unlimited throughput by adding as many concurrent producers as needed 
+                - app must be able to process messages that arrive more than once and out of order 
+    - SNS
+        - fully managed pub/sub messaging, SMS, email, mobile push notifications
+        - fully-managed messaging service for app-to-app and app-to-person communication
+        - benefits
+            - simplify + reduce costs w message filtering & batching
+            - ensure accuracy w message ordering and deduplication
+            - capture & fan out events from AWS services
+                - fanout scenario
+                    - when a message published to SNS topic is replicated and pushed to multiple endpoints, like KDA, SQS, HTTP(S) endpoints, lambda functions 
+                    - allows for parallel asynchronous processing 
+    - Lambda
+        - run code w/o thinking about servers 
+        - serverless, event-driven compute service 
+        - can be triggered from 200+ AWS services & SaaS 
+        - only pay for what is used 
+        - execution models
+            - synchronous (push) - could use API gateway
+            - asynchronous (event) - could come from SNS or S3
+            - stream (poll-based) - could use DDB streams, Kinesis
+        - memory considerations
+            - amount of memory also determines the amount of virtual CPU 
+            - adding more mem proportionally increases amount of CPU
+            - if function is CPU-, network-, or mem- bound, changing mem settings can dramatically improve performance 
+        - function timeout
+            - max invocation timeout limit is 15 minutes
+            - verify function has enough CPU/network/mem
+            - (optional) configure provisioned concurrency
+                - initialized a requested number of runtime envs so that they're prep'd to respond immediately to function invocation
+    - API gateway
+        - create, publish, maintain, monitor, secure REST, HTTP, websocket APIs at any scale
+        - create REST APIs
+            - made up of resources and methods
+                - resource
+                    - logical entity that app can access thru resource path
+                - method
+                    - corresponds to REST API request submitted by user of API & request returned to user
+            - more features: API keys, per-client throttling, request validation, WAS integration, private API endpoints 
+        - create HTTP APIs
+            - enable creation of RESTful APIs w lower latency + lower cost than REST APIs
+            - use to send requests to AWS lambda functions or any publicly routable HTTP endpoint 
+            - designed w minimal features vs REST APIs to be cheaper 
+        - create WebSocket API
+            - client & server can both send messages to each other at any time 
+    - DynamoDB
+        - fully managed, serverless, key-value noSQL db designed to run high-performance apps 
+        - DDB Streams
+            - DDB supports streaming of item-level change data capture records in near-real time
+            - apps can be built to consume these streams & take actions 
+            - optional feature that captures data mod events 
+            - use w lambda to create trigger based on specific events occur in stream 
+    - AWS AppSync
+        - creates serverless GraphQL and Pub/Sub APIs that simplify app dev thru single endpoint to securely query, update, publish data 
+    - AWS Step Functions
+        - fully-managed service that simplifes coordination of components for distributed apps & microservices using visual workflows 
+- Amazon Cognito
+    - simple + secure user sign-up, sign-in and access control
+    - provides authentication, authorization, user management for web + mobile apps 
+    - can be used w third part login providers
+    - when to use 
+        - enable users to authenticate w user pool directly or federate w IdP (third-party identity partner)
+- Analytics
+    - data processing on AWS
+        - batch processing
+            - latency significantly longer
+            - computes results derived from all the data it encompasses, and enables deep analysis of big data sets
+        - stream processing
+            - requires ingesting a sequence of data and incrememntally updating metrics, reports, and summary stats in response to each arriving data record
+            - better for real-time monitoring & response functions 
+    - Amazon Kinesis
+        - collect, process, analyze video and data streams in real time
+        - Data Streams (KDS)
+            - capture, process, store data streams in real time
+            - scalable and durable real-time streaming service
+            - continuously capture gigabytes of data per second from 100s-1000s of services
+        - Video Streams (KVS)
+            - capture, process, store video in real time
+            - easy to securely stream video from connected devices to AWS for analytics, ML, other processing
+        - Data Firehose (KDF)
+            - reliably load real-time streams into data lakes, warehouses, and analytical services
+            - ETL service 
+        - Data Analytics (KDA)
+            - gain actionable insights from streaming data w serverless, fully managed Apache Flink
+            - easiest way to transform + analyze streaming data in real-time
+            - perform real-time analytics on KDS
+    - Amazon Athena
+        - interactive analytics service that makes analyzing data in S3 easier
+        - uses Python or SQL
+        - use case
+            - run interactive ad hoc SQL quries against data in S3 w/o managing infra or clusters
+            - can only query specific data formats, like JSON, CSV, and others; not necessarily all data types
+- Additional AWS Security Services
+    - AWS Config
+        - compliance management
+        - continually assesses, audits, evalutes configs + relationships of resources on AWS, on-prem and other clouds 
+        - great tool to assess AWS environment
+        - setup config rules to look for things like publicly accessable buckets, things w/o encryption, and get notified when those triggers are breached 
+    - AWS Secrets Manager 
+        - helps manage, retriev, and rotate db creds, API keys, & other secrets throughout their lifecycles
+        - can be configured to automatically rotate secrets + on a specified schedule
+        - encyprts protected text of secret using AWS KMS
+        - improve security posture by removing hard-coded creds from app source code 
+    - AWS Certificate Manager
+    - AWS Systems Manager Patch Manager
+        - automate patching of EC2 instances
+        - install patches on regular basis by scheduling maintenance windows
+        - view aggregate patch compliance using Explorer 
+    - AWS IAM Identity Center (formerly AWS SSO)
+        - securely create or connect workforce identities & manage access centrally across AWS accounts + apps 
+            - AD should be used for managing users, either using AWS AD managed service or existing AD
+            - external id provider can be used like AzureAD 
+    - AWS Directory Service
+        - Managed service for Microsoft Active Directory
+        - AWS Directory Service for Microsoft Active Directory
+            - need actual MAD in cloud that supports AD
+        - AD connector
+            - in the event of needing to allow access to on-prem AD
+        - simple AD
+            - low-scale, low-cost directory w basic AD compabitility or LDAP compatibility
+    - AWS Resource Access Manager (RAM)
+        - helps securely share AWS resources created in one AWS account w other AWS accounts 
