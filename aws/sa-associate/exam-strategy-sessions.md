@@ -23,3 +23,9 @@
 - use IaC for software app. Wants to test app before send traffic to them & looking for efficient
     - use AWS CFN w parameter set to staging value in a separate environment other that prod (can't use snapshot deletion policy w CFN, doesn't snapshot all resources, and being able to just roll back stack if update fails is missing the point of the testing)
     - route53 failover routing: think DR
+
+# Exam Tips from Creighton: Wednesday, March 1, 2023
+- review all content
+- exam readiness learning from this week
+- take full-length practice exam with skillbuilder subscription 
+    - if subscribing, take a look at cloudquest 
