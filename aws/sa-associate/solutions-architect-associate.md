@@ -1275,3 +1275,716 @@
             - single view of high-priority security alerts + compliance status across AWS accts 
     - AWS Config
         - continuous monitoring + assessment service to detect non-compliant configs in almost real-time
+- Infrastructure Protection 
+    - defense in depth: subnet routing, NACLs, SGs
+    - AWS Systems Manager
+        - features
+            - automation
+            - inventory
+            - patch manager
+            - parameter store
+            - run command
+            - session manager 
+    - AWS Firewall Manager
+        - centrally configure + manage WAF rules across accounts and apps 
+        - can bring new apps + resources into compliance w common set of security rules
+    - AWS Direct Connect
+        - establish dedicated + secure network connection from on-prem to AWS 
+    - AWS CloudFormation
+        - automate & simplify task of repeatedly creating & deploying AWS resources 
+        - ensure all security + compliance controls deployed along w new env 
+    - Amazon Inspector
+        - automated security assessment service
+        - continually scans + assess apps for vulnerabilities or deviations from best practices
+        - findings aggregated in Inspector consle, routed to Security Hub, pushed thru EventBridge 
+- Data Protection
+    - data at rest
+        - client side encryption (encrypted before sent)
+        - server-side encryption (encrypted after received)
+    - protection in transit
+        - AWS services provide HTTPS endpoints using TLS for end to end encryption when communicating w AWS APIs
+        - use AWS to generate, deploy, manage public & private certs for TLS
+        - use IPSec w VPN connectivity into AWS to encrypt traffic 
+    - AWS CloudHSM
+        - computing device that processes cryptographic operations & provides secure storage for cryptographic keys
+    - Amazon S3 Glacier
+        - storage for cold data
+        - enforce compliance controls for individual vaults w vault lock policy
+    - AWS Certification Manager
+        - handles complexity of creating + managing public SSL/TLS certs for AWS-based websites + apps
+        - can issue private SSL/TLS X.509 certs that ID users & devices
+    - Amazon Macie
+        - uses ML to discover, classify, protect sensitive data in AWS
+    - AWS KMS
+        - managed service to create + control keys used in data encryption 
+- Incident Response
+    - AWS Step Functions
+        - coordinate multiple AWS services into serverless workflows to build + update apps quickly
+        - can 'stitch' together services like Lambda and CFN to respond to incident in the cloud 
+- DDoS Mitigation 
+    - services for out-of-region protection
+        - Amazon Route 53
+            - HA + scalable DNS service
+            - hosted at numerous AWS edge locations
+            - able to absorb large amounts of DDoS traffic 
+        - Amazon CloudFront
+            - CDN (content delivery network) service used to deliver data to end users
+            - only accepts HTTPS + HTTP well-formed connections to prevent DDoS
+        - AWS Shield
+            - managed DDoS protection service that safeguards web apps on AWS
+    - AWS WAF
+        - protect web apps from common web exploits 
+# Exam Readiness: AWS Certified Solutions Architect Associate 
+## Module 1: Design Resilient Architectures 
+- reliable, resilient storage 
+    - instance store 
+        - ephemeral
+        - only certain instances
+        - fixed capacities based on instance type
+        - app-level durability
+        - use for caching + storing temp data that's replicated elsewhere 
+    - EBS (Elastic Block Store)
+        - attaches to one instances at a time
+        - multiple can be attached to a single instance
+        - can use RAID w multiple EBS volumes 
+        - supports encryption + snapshots
+        - some can configure IOPS
+        - persists beyond lifetime of instance 
+        - SSD volumes
+            - higher IOPS
+            - best for random access 
+            - types
+                - gp2 (general)
+                - io1 (provisioned IOPS)
+                    - scale read/write
+        - HDD volumes
+            - best for sequential access; larger blocks require less IOPS
+            - throughput optimized more expensive than cold storage 
+    - EFS 
+        - shared storage; multiple instances can access same volume
+        - capacity elastic up & down
+        - supports NFS 4.0 & 4.1
+        - compatible w Linux NOT Windows 
+        - mount points created in specific VPC
+            - can only be attached to one VPC at a time
+    - S3
+        - distributed system with strong consistency for new objects
+            - eventually consistent with updated objects 
+                - might get old object if reading updated object quickly after the update
+        - standard, standard-IA
+        - encryption
+            - data at rest: SSE-S3, SSE-KMS, SSE-C
+            - data in transit: HTTPS (uploads + downloads)
+        - versioning
+            - previous versions of file remain available after file is updated/deleted
+        - access: IAM policies, bucket policies, access control lists
+        - multi-part upload: large files uploaded in smaller parts
+    - Glacier
+        - data backup + archive storage 
+        - bulk: ~12 hours
+        - expedited: $$$ ~5 minute retrieve 
+        - encrypts by default
+        - ideal to set up lifecycle policies in S3 buckets 
+        - regionally available 
+- design decoupling mechanisms using AWS services
+    - e.g. use SQS Qs between external server and internal operations 
+    - load balancer, autoscaling 
+- design multi-tier architecture solution
+    - naturally decoupled
+- design HA and/or fault tolerant 
+    - failure should be treated as an operational event, not an exceptional event
+    - "everything fails all the time"
+    - examples: fault tolerant requires more beef; if app expects 4 instances to run efficiently, needs 4 instances per AZ. HA requires less instances; if app expects 4 instances to run efficiently, 4 instances split in 2 AZs is sufficient 
+- CloudFormation
+    - declarative programming language for deploying AWS resources 
+    - create, update, delete set of resources as single unit 
+    - not region-specific; requires maps to specify different AMIs/region
+- Lambda
+    - fully managed compute service that runs stateless code in response to event or time-based interval
+    - run code w/o needing to manage compute services 
+- test axioms (important to remember)
+    - single AZ will never be the right answer
+    - using AWS managed services should always be preferred
+    - high availability: system will be up and can failover in event of failure
+    - fault tolerance: [higher requirement] service must silently provide the same level of service to the customer
+    - expect that everything will fail at some point and design accordingly 
+## Module 2: Design Performant Architectures
+- choose performant storage & DBs
+    - EBS volumes
+        - SSD
+            - general purpose max: 16TiB size, 10k IOPS/volume, 160MiBs thruput
+            - provisioned IOPS max: 16TiB size, 32k IOPS/volume, 500MiBs thruput
+        - HDD
+            - throughput-optimized max: 16TiB size, 500 IOPS/volume, 500MiBs thruput
+            - cold max: 16TiB size, 250 IOPS/volume, 250MiBs thruput
+    - S3
+        - offload static content to S3 to improve web server performance 
+        - virtual hosted-style URLs: bucket name as part of the domain name
+            - e.g. http://bucket.s3-aws-region.amazonaws.com
+        - path-style url: bucket first part of the path
+            - e.g. https://s3-ap-northeast-1.amazonaws.com/[bucket name]/[key]
+        - can specify region in url in path (optional)
+        - buckets are always tied to a region
+        - bucket names are globally unique 
+        - pricing
+            - GBs/mo storage
+            - transfer out of region (xfer into region free)
+            - per PUT, COPY, POST, GET
+        - classes
+            - S3 standard: cheaper retrieval, higher storage cost
+            - S3 IA: cheaper storage, higher retrieval cost 
+        - lifecycle policies
+            - move cold data to IA storage 
+    - Databases
+        - RDS
+            - managed relational DB
+            - use cases
+                - complex transactions/quries
+                - medium-to-high query write rate
+                - no more than a single worker node/shard
+                - high durablility
+                - scale via larger instance or read replicas 
+                    - can only scale read ability, NOT writing 
+                    - read replicas supported on MySQL, MariaDB, PostgreSQL, Aurora
+        - DynamoDB
+            - table grows as data need is required; throughput defined
+                - Read Capacity Unit (one item up to 4KB)
+                    - one strongly consistent read/s
+                    - two eventuallly consistent reads/s
+                - Write Capacity Unit (one item up to 1KB)
+                    - one write/s
+            - use cases
+                - massive read/write rages (e.g. 150k+ write/s)
+                - sharding, horizontal auto-scaling
+                - simple GET/PUT requests/queries
+        - Redshift (data warehouse w SQL interface)
+            - analytical vs transactional queries 
+- apply caching to improve performance
+    - caching is good for data that isn't expected to change much or doesn't need to be fresh 
+    - CloudFront (managed CDN)
+        - cache at web level
+        - cache content closer to users 
+        - user requests routed to most optimal edge location. non-cached content retrieved from origin and cached at edge location
+        - can be used for static & dynamic content 
+            - benefit for dynamic content is that response comes via AWS backbone instead of public internet 
+        - origins: S3, EC2, ELB, HTTP servers 
+        - integrates w WAF & Shield std + advanced 
+    - Elasticache
+        - cache what would otherwise be pulled from DB backend 
+        - managed memcached
+            - simplier & easier setup
+        - managed redis
+            - more powerful
+    - scaling
+        - vertical
+            - change in instance specifications
+        - horizontal (scaling in and out)
+            - increasing number of available instances
+    - autoscaling
+        - easiest way to horizontally scale 
+        - components
+            - launch configuration
+                - specifies instance size + AMI type
+            - autoscaling group
+                - references launch config
+                - specifies min, max, desired size of ASG
+                - may reference ELB
+                - health check type
+            - autoscaling policy
+                - use CloudWatch to determine scale in and out
+                    - monitor CPU, network, queue size 
+- design solutions for elasticity & scalability
+- test axioms
+    - if data is unstructured, S3 is generally the best storage solution
+    - use caching strategically to improve performance
+    - know when and why to use Auto Scaling
+    - choose the instance and DB type that makes the most sense for your workload and performance need 
+
+### Module 3: Specify Secure Applications and Architectures
+- overview
+    - shared responsibility model (security OF vs IN the cloud)
+        - managed services move the line of responsibility of AWS higher in to the 'IN' category
+    - least privilege 
+        - IAM
+            - roles: temporary identities 
+            - policies: permissions of accessible AWS resources
+                - attach to users, roles, groups
+            - integrate w AD & other ID providers w federation
+        - identities
+            - IAM users
+            - roles
+            - federation
+            - web identity federation 
+                - use roles w authentication from Open ID provider & STS
+- secure application tiers
+- secure data tier
+    - data in transit
+        - in/out of aws
+        - w/n aws
+        - use SSL over web, VPN for IPsec, IPsec over direct connect, import/export w snow family
+        - data sent to AWS API uses SSL
+    - data at rest
+        - stored in S3 or EBS
+            - private by default, requires AWS creds for access
+            - server-side encryption
+                - SSE-S3, SSE-KMS, SSE-C
+                - generally easier and more performant 
+            - client-side encryption
+                - CSE-KMS, CSE-C
+        - manage keys
+            - KMS
+            - CloudHSM
+                - dedicated appliance that customer manages keys w/n 
+- networking infrastructure for single VPC app 
+    - subnet recommendatiosn
+        - public subnets contain entry to IGW
+        - private subnets DO NOT have an entry to IGW
+            - not directly accessible from internet
+            - use NAT gateway for outbound access
+            - use bastion/jump box for inbound access
+        - NACL: subnet level
+            - allow and deny traffic
+            - stateless
+        - SG
+            - only allow traffic (can't explicitly deny)
+            - stateful
+            - apply to network interfaces 
+            - can be config'd to allow access to other interface or SG; don't need to only use IP address to allow access 
+            - use to control traffic into, out of, b/w resources 
+            - can span subnets, not regions
+- test axioms
+    - lock down root user
+    - security groups only allow. network ACLs allow explicit deny
+    - prefer IAM Roles to access keys
+
+### Module 4: Design Cost-optimized Architectures
+- overview
+    - pay as you go
+    - pay less when you reserve
+    - pay even less per unit by using more (volume discount)
+- design cost-optimized storage
+- design cost-optimized compute 
+    - considerations of EC2 cost
+        - clock hour of server time
+        - machine config
+        - machine purchase type (pricing models)
+            - reserved instances
+                - standard 
+                - convertible   
+                    - can be changed to different sizes/types
+                - scheduled 
+            - spot instances
+                - use spare compute
+                - lose instance if price goes above target 
+                    - hybernate: put instance to sleep if spot price goes above target 
+                    - reserve up to 6 hours on the spot market 
+            
+        - number of instances
+        - load balancing
+        - detailed monitoring
+        - auto scaling
+        - elastic IP addresses
+        - OS + software packages
+        - tenancy
+        - storage class
+        - storage
+            - could use S3
+            - EBS considerations
+                - volumes
+                - IOPS
+                - snapshots
+                - data transfer costs of snapshots 
+        - requests
+        - data transfer 
+- serverless architectures 
+    - don't pay for idle time
+    - lambda: pay per invocation 
+    - s3 for static files
+    - DDB for storing state
+    - API gateway to attach REST API to lambda
+    - CloudFront to avoid fetching data 
+        - no data xfer charge for data b/w CF & S3
+        - cost based on how widely traffic is to be shared 
+- test axioms
+    - if it's going to be on, reserve it
+    - any unused CPU time is a waste of money 
+    - use the most cost-effective data storage service and class
+    - detremine the most cost-effective EC2 pricing model and instance type for each workload 
+
+## Module 5: Operationally-excellent Architectures
+- enable operational excellence
+    - ability to run and monitor systems to deliver business value + continually improve supporting processes & procedures
+    - key practices
+        - prepare
+        - operate
+        - evolve 
+    - best practices
+        - perform ops w code
+        - annotate documentation
+            - should be live representation of what is deployed
+        - make frequent, small, reversible changes
+        - refine operations procedures frequently
+        - anticipate failure
+        - learn from all operational failures   
+            - evolve & harden systems
+    - AWS services supporting operational excellence
+        - AWS Config
+        - AWS CloudFormation
+        - AWS Trusted Advisor
+        - AWS Inspector
+        - VPC Flow Logs
+        - AWS CloudTrail
+        - Amazon CloudWatch
+- test axioms
+    - IAM roles are easier and safe thean keys and passwords
+    - monitor metrics across the system
+    - automate responses to metrics where appropriate
+    - provide alerts for anomalous conditions 
+
+# AWS Machine Learning (ML)
+## Module 4: Data Collection, Integration, Preparation, Visualization, and Analysis 
+- data challenges
+    - requires lots of data
+    - requires clean data 
+    - >50% of project time spent gathering, cleansing, + visualizing data 
+    - structured data
+        - prefined format, e.g., RDBs, .csv files
+    - semi-structured data
+        - text-based, e.g., email
+    - unstructured data
+        - data not in pre-defined format
+        - word documents, phone calls, text messages, pictures, etc 
+- build the data platform 
+    - S3, Athena, EMR, Glue, QuickSight, Lake Formation, Redshift 
+- preparation steps
+    - data exploration + profiling
+    - data formatting
+    - data conversion
+    - encoding (all data must be numeric for ML)(e.g. bools or numbers)
+    - data cleaning
+    - normalization/standardizations 
+    - resampling (oversampling/undersampling)
+- SageMaker Data Wrangler 
+    - GUI to transform data
+    - w single click, ingest data from various data sources & deploy data preparation workflows into prod
+    - leverage built-in features to
+        - transform data w data transformations (e.g. add missing data to standardize)
+            - 300+ available data transformations 
+        - understand data visually using visualization templates 
+        - quick-model: train model from data wrangler
+    - ability to 
+        - bring custom transformation
+        - estimate ML model accuracy 
+- SageMaker Feature store
+    - challenge in scaling ML productivity
+        - long + tedious feature engineering
+        - redundant feature pipelines
+        - no sharing or discovery mechanism
+        - troubleshooting overhead due to training inference skew
+    - benefits
+        - ingest features from many sources - including data wrangler
+        - search + discover features easily
+        - ensure feature consistency for training + inferences
+        - standardize w single source of feature definition 
+    - can be made in the GUI in SageMaker console, or programmatically 
+- SageMaker Ground Truth
+    - fully-managed data labelling service
+    - quickly label training data + easily integrate human labelers  
+
+## Module 8: Amazon SageMaker Built-in Algorithms 
+- algorithms: standardized methods used to train models
+- model: function that maps inputs to a set of predicted outcomes using algorithms
+- types of algorithms (families of ML)
+    - linear regression
+    - logistic regression
+    - clustering
+    - vectorization
+    - image classification
+    - encoding and decoding
+    - language processing 
+- built-in algorithms
+    - general purpose
+        - numerical regression or classification
+            - linear learner (supervised learner)
+                - 'simple' problems
+            - XGBoost (supervised learner)
+                - classification regression + ranking
+                - can combine (sample) multiple weaker algorithms
+                - CPU-only, memory bound 
+                - best for complex problems
+            - K-Nearest Neighbors (k = choose the number)
+                - meant for simpler problems 
+        - recommendation
+            - factorization machines 
+                - e.g. recommend what user should look at
+                - capture interaction b/w data sets
+                - passes output to KNN
+        - group entities based on data
+            - k-means
+                - find distinct groups w/n data
+                - unsupervised 
+        - detect anamolies in time series data 
+            - RCF (random cut forest)
+                - find anomalies and outliers 
+                - unsupervised 
+    - specific use cases
+        - classify images or find objects in images (uses neural networks)
+            - image classification
+            - object detection
+                - determine where an object is in an image 
+            - semantic segmentation 
+                - find borders of a thing w/n an image 
+        - classify, encode, and transform text data (natural language processing)
+            - sequence to sequence (seq2seq)
+                - text or audio
+                - generates sequence of tokens
+                - use neural network to encode and then decode
+            - NTM (neural topic model)(unsupervised)
+            - LDA (latent dirichlet allocation)(unsupervised)
+            - blazing text 
+                - text classification
+                - unsupervised: extract features from text
+            - object2vec
+                - word to vector 
+        - reduce dimensions in datasets w high numbers of attributes
+            - PCA (principle component analysis)
+                - plug columns of dataset and break into components
+                - unsupervised, but needs number of components to be provided 
+        - predict future trends based on past history (time series)
+            - deepAR forecasting
+                - add variables to data (e.g. weather, tempurature) to make predictions
+        - find usage patterns in network access logs
+            - IP insights 
+
+# Managing the Application Lifecycle in Amazon ECS
+## Module 1: Preparing Your Environment to Run Containers
+- Reviewing infrastructure requirements 
+    - ECS terminology
+        - cluster: logical grouping of tasks or services
+            - tasks + services run on infrastructure registered to the cluster
+        - service: allows running & maintaining specified number of tasks + determines how tasks are added & configured 
+        - task: one or more running containers
+            - instantiated from a task definition
+            - task definition: describes one or more containers that for app
+                - specified various parameters + can include container image to use, ports to expose, CPU/memory utilization, logging, and env vars 
+    - compute infrastructure 
+        - AWS Fargate
+            - managed serverless compute engine for ECS containers
+                - few management req's and handles security, patches, updates
+            - can scale to a greater degree of precision to prevent paying for unneeded capacity
+            - only pay for time containers are running 
+        - EC2
+            - pay only for underlying compute instances 
+            - use cases: 
+                - long-running + computationally depanding workloads
+                - workloads w predictable utilization
+                - workloads not supported by faregate
+        - on-prem/hybrid 
+            - use ECS Anywhere to run container workloads on-prem 
+            - get same cluster management, workload scheduling & monitoring on-prem as in cloud
+            - use cases:
+                - workloads must reside in on-prem data centers for compliance req's
+                - low-latency access to resources req'd
+                - investments already made into on-prem infra 
+    - network infrastructure 
+        - offers three networking models 
+            - awsvpc mode (supports Fargate + EC2)
+                - ECS creates + manages ENI for each task + each task receives its own private IP addres w/n VPC
+                    - ENI separate from underlying host's ENI
+            - host mode (EC2 only)
+                - networking of container tied directly to underlying host that's running container
+            - bridge mode (EC2 only)
+                - use virtual network bridge to create layer b/w host + networking of container
+                - create port mappings that remap a host port to container port 
+        - ALB/NLB support 
+            - cannot attach more than five target groups to a service using LBs
+            - services using awsvpc network mode, and ip target type must be used on LB
+- Infrastructure Deployment Options 
+    - supported infra deployment tools 
+        - CloudFormation
+        - CDK (Cloud Development Kit)
+            - software dev framework that defines cloud app resources using declarative model + programming languages
+            - can be used to generate CFN templates 
+        - AWS Copilot
+            - CLI for launching + managing containerized apps, automating deployment pipelines, deploying app infra using service patterns 
+            - can create LBs, VPCs, ECR registries
+            - resource config'd based on opinionated best practices for simplified deployment 
+        - AWS proton
+            - fully managed delivery services for containerized apps 
+            - includes tools for infra provisioning, code deployments, monitoring, updates
+            - platform teams create stacks that define compute, networking, code pipeline, security, and monitoring resources
+                - once stacks are published, devs select stacks to use to deploy their infra 
+        - third-party tools (e.g. terraform, pulumi)
+        - AWS App2Container 
+            - CLI tool for converting .NET + java apps into containerized apps 
+            - analyzes and builds inventory of apps running in VMs in on-prem or cloud envs
+            - uses CFN to provision cloud infra + CI/CD pipelines to deploy containerized app 
+- AWS CloudFormation
+    - deploying infra w CFN
+        - features
+            - extinsibility (supports deployment of third-party resources + modules)
+            - cross-region + cross-account mgmt (able to share templates)
+            - safety controls 
+                - determines right ops to perform, provisions resources efficiently + automatically rolls back if errors encountered 
+            - dependency mgmt (automatically manages dependencies b/w resources)
+            - community support (easy to find support resources + CFN templates)
+    - when to use CFN
+        - provide granular control over infra 
+        - requires in-depth familitarity w all aspects of env
+        - ideal for orgs that want to actively manage IaC
+- AWS CDK
+    - declarative model to define + deploy cloud app resources
+    - simplified creation of CFN templates
+        - CDK generates CFN templates
+        - provides default properties for resources based on Well-Architected Framework
+    - constructs for generating infra
+        - construct: define a resource or combination of resources including config details 
+    - deploying infra + runtime code together 
+    - concepts
+        - app: project in CDK; holds stacks
+        - stacks: groups of resources that comprise the app 
+            - each stack in CDK app associated w an env
+                - env is target AWS account/region where stack to be deployed 
+        - constructs: represent AWS resources to app to define app infra 
+            - L1 constructs
+                - low-level constructs directly represent CFN resources
+                - directly represent resources available to CFN
+                - rarely used; need similar granularity as CFN template 
+            - L2 constructs
+                - represent AWS resources w a level of abstraction 
+                - add convenience methods that make it simpler to work w resources 
+            - AWS construct library
+                - contains patterns (higher level constructs)
+                - integrate resources from several services 
+            - patterns for ECS
+                - ALB, NLB, Q processing, scheduled tasks 
+    - when to use
+        - when orgs want to define + deploy infra w declarative model + common programming languages 
+- AWS Copilot
+    - CLI for managing entire lifecycle of app dev and deployment 
+    - automates the following tasks
+        - creating deployment envs
+        - building infra for target env
+        - conducting docker builds + pushing images to ECR
+        - deploy containers to AWS fargate hosts in ECS 
+        - monitor running services 
+    - deploying infra
+        - automatically deploys specific AWS resources to support different aspects of release process
+        - application infrastructure 
+            - for each region app is deployed into, KMS key and S3 bucket created
+                - CodePipeline uses these resources to allow cross-region/account deployments 
+                - all pipelines in app share the same resources 
+        - environment infrastructure 
+            - when env created, new VPC in two AZs created
+            - ECS launches services in public subnets, but only available if LB deployed 
+            - if domain name set up w R53, new subdomain name will be generated each time env is deployed
+                - format: environment-name.app-name.your-domain.com
+            - can also use ACM to provision SSL/TLS so ALB can use HTTPS
+        - service infrastructure
+            - service types
+                - request-driven web service
+                    - Runs on AWS App Runner
+                        - managed service that creats + configs underlying infra of app
+                        - scales container instances up/down to meet traffic need 
+                    - best for apps where very little control over infra is desired 
+                - load balanced web service
+                    - copilot creates ECS service running tasks on Fargate. Creates ALB w/n env VPC for inbound traffic
+                    - best for HTTP services w steady request volumes that need to access resources in VPC or require advanced config 
+                - backend services 
+                    - create preconfigured service w/o connectivity out of VPC
+                    - will provision ECS running on fargate, but won't set internet-facing endpoints 
+                - worker service    
+                    - implements asynchronous service-to-service comms w publish-subscribe architecture 
+                    - copilot deploys infra where microservices publish events to SNS topics & then consumed by worker service 
+                    - copilot creates worker service on fargate, service-level SQSQ, dead letter Q for failed messages, and SNS topic
+    - when to use
+        - use cases that prioritize rapid deployment over customized infra 
+        - only deploys fargate-backed clusters 
+- AWS Proton
+    - vending infrastructure w Proton
+        - create infra templates & make them available to others in org
+        - centralized infra team can use Proton to make a stack that defines everything needed to provision, deploy + monitor service
+        - devs can use published stacks to automate infra provisioning 
+    - concepts
+        - templates: parameterized IaC + CI/CD templates deployed to create env + service infra
+        - environment templates: templates to create shared resources where services can run, like VPC, cluster infra, LBs
+        - service templates: templates to create workloads running in an env, like EC2 or fargate
+        - service instance: instantiation of aservice inside deployed env 
+    - when to use
+        - org wanting to control cost + enforce compliance 
+
+# Developing Serverless Solutions on AWS
+## Module 8: Step Functions for Orchestration
+- use step functions to build a state machine to orchestrate workflow
+- helps keep lambda functions focused on business logic 
+- terms
+    - task: state that performs work
+    - choice: state that provides branching logic
+    - parallel: state that starts parallel branches
+    - wait: state that pauses processing
+    - map: state that iterates on an input array
+
+# Amazon PinPoint 
+- digital user engagement platform
+- combines analytic data w data from record systems to get better view of customer behaviors 
+- can ingest data from CRM/ERP/shopping systems
+
+# Amazon Simple Workflow Service (SWF)
+- managed workflow services that helps build, run, and scale apps that coordinate work across distributed components 
+- fully-managed state tracker and manager for background tasks 
+- supports parallel task completion
+- benefits
+    - logical separation
+        - split b/w control flow of logic & units that have business logic 
+    - reliable 
+        - managed service + all built in benefits of that 
+    - simple
+        - replaces custom-coded pipelines and third-party apps
+    - scalable
+        - automatically scales w complexity of workflows 
+    - flexible 
+        - write app + coordination logic in any coding language
+- key components 
+    - domain: collection of related workflow
+        - scope resources w/n account 
+        - when register domain, have to define how long to keep workflow execution record 
+    - workflow: collection of actions 
+        - can't interact w workflows in other domains 
+    - workflow starter: app that can start workflow execution
+        - can pass add'l data to worker & get current state
+        - needs client to start execution
+        - can be local app, web app, CLI, console 
+    - tasks
+        - activity workers: do the work (e.g., check inventory, charge CC)
+            - polls SWF for new tasks appropriate for the worker to perform
+            - processes task to completion, then provides result to SWF
+            - represents a single process or thread 
+        - lambda task: executes function (and not SWF activity)
+        - decision task: let decider know that something in workflow has changed
+            - decision: data type that can contain info about next steps 
+    - actions: tasks or workflow steps
+    - deciders: implment logic
+        - specify what should occur next in execution 
+        - each decision task assigned per decider 
+        - only one decision at once allowed 
+    - workflow history: complete record of every event since workflow execution
+    - deciders and activity workers communicate directly with SWF, not with each other 
+
+# AWS SSM
+- SSM agent required to be installed on all instances to be managed 
+    - installed by default on AWS linux/windows instances
+- benefits
+    - run command
+    - state manager
+    - inventory manager 
+    - maintenance window
+        - applies patch baseline
+    - patch manager
+        - create patch baseline 
+    - automation
+        - use automation document to do things on instances 
+    - parameter store 
+        - config info like passwords, keys, db codes, licenses 
+- services like CodeDeploy can use parameter store 
+
+# AWS Transcribe
