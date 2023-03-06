@@ -69,3 +69,47 @@
     - provides length of list 
 - generally best to use `for` loop instead of `while` loop - for loops are more elegant
     - for decides when to run the loop & if it needs to keep being run
+- slicing strings 
+    - slicing says "up to, but not including"
+        - e.g. `s = 'Monty Python' \ print(s[6:20])`
+            - if the last number is larger than the number of characters in the list, then it grabs all the elements without producing an error 
+- concatenation 
+    - with the `+` in concatenation, no spaces are provided to strings
+    - Using `,` to combine strings adds a space 
+- using `in`
+    - can be used as an operator in a string (outside of a loop)
+    - treats the string as a list 
+- string comparison
+    - ==, <, > all work, although less than and greater than can be funky with differing cases 
+- string libraries 
+    - strings have built-in methods
+        - `<string>.lower()` - doesn't change `<string>`; creates a new value
+            - can be called directly on a string, or a string stored in a var 
+        - call `dir(<string>)` to see all the built-in functions that can apply to the string/var 
+    - `find()`: search a string - lists how many times value appears in string 
+    - `replace(<search string>,<replacement string>)`: search & replace - replace all occurences of `<search string>` with `<replacement string>`
+    - stripping whitespace (tab, newline, space)
+        - `lstrip()`
+        - `rstrip()`
+        - `strip()`
+    - prefixes
+        - `startswith()`: returns True/False depending on what string starts w
+
+# Chapter 7: Reading Files
+- text file can be thought of as a sequence of lines that python processes through 
+- opening a file
+    - returns a 'file handle'
+        - a wrapper; not the file itself or the data iteself 
+    - `open(filename, mode)`
+- `\n` newline character, important in file reading 
+    - counts as a single character if `len()` is called on a str it is contained w/n 
+    - every line in a text file ends with a newline, even if it's not visible 
+- file handle as a sequence
+    - file handle opened for read can be treated as sequence of strings
+        - each line in the file is a string in the sequence
+    - use for statement to iterate through the sequence of strings 
+        - remember, sequence is an ordered set
+        - "for each line in the file handle <file> do..." 
+        - see ./chapter-7-files/countLines.py
+            - reading the *whole* file in a single string
+            - searching the file 
