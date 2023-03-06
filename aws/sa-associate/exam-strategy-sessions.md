@@ -29,3 +29,10 @@
 - exam readiness learning from this week
 - take full-length practice exam with skillbuilder subscription 
     - if subscribing, take a look at cloudquest 
+
+# Exam Strategy: Friday, March 3rd, 2023
+- implement pilot light DR strat for existing on-prem app. app self-contained, need to DBs
+    - warm standby: existing infrastructure that serves a portion of live traffic 
+        - fast RTO/RPO
+    - backup/restore
+    - pilot light: existing infrastructure that is turned off, but ready to serve live data 
