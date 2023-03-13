@@ -1776,9 +1776,9 @@
         - EC2
             - pay only for underlying compute instances 
             - use cases: 
-                - long-running + computationally depanding workloads
+                - long-running + computationally demanding workloads
                 - workloads w predictable utilization
-                - workloads not supported by faregate
+                - workloads not supported by fargate
         - on-prem/hybrid 
             - use ECS Anywhere to run container workloads on-prem 
             - get same cluster management, workload scheduling & monitoring on-prem as in cloud
@@ -1789,7 +1789,7 @@
     - network infrastructure 
         - offers three networking models 
             - awsvpc mode (supports Fargate + EC2)
-                - ECS creates + manages ENI for each task + each task receives its own private IP addres w/n VPC
+                - ECS creates + manages ENI for each task + each task receives its own private IP address w/n VPC
                     - ENI separate from underlying host's ENI
             - host mode (EC2 only)
                 - networking of container tied directly to underlying host that's running container
@@ -1822,7 +1822,7 @@
 - AWS CloudFormation
     - deploying infra w CFN
         - features
-            - extinsibility (supports deployment of third-party resources + modules)
+            - extensibility (supports deployment of third-party resources + modules)
             - cross-region + cross-account mgmt (able to share templates)
             - safety controls 
                 - determines right ops to perform, provisions resources efficiently + automatically rolls back if errors encountered 
@@ -1830,7 +1830,7 @@
             - community support (easy to find support resources + CFN templates)
     - when to use CFN
         - provide granular control over infra 
-        - requires in-depth familitarity w all aspects of env
+        - requires in-depth familiarity w all aspects of env
         - ideal for orgs that want to actively manage IaC
 - AWS CDK
     - declarative model to define + deploy cloud app resources
@@ -1988,3 +1988,318 @@
 - services like CodeDeploy can use parameter store 
 
 # AWS Transcribe
+- ASR (automatic speech recognition) service 
+- fully-managed and continually trained
+- accurately transcribes low- and high- fidelity audio
+    - can be used for subtitles & reviewing recording phone calls 
+    - supports WAV, FLAC, MP3/4
+- uses ML to add punctuation and formatting
+- adds time stamp to each word to align with subtitles in a video
+- able to recognize multiple speakers
+- invoke service via API & easily able to transcribe & output to S3 
+- transcription results are available for 90 days 
+
+# AWS Translate 
+- neural machine translation service using deep learning 
+- any provided data encrypted at rest and transit 
+- pay-as-you-go
+- encoder reads source one sentence at a time and uses semantic representation to get the gist of the sentence, and uses an attention mechanism to understand phrases of speech then decoder outputs a word at a time in target language 
+- for CLI, can provide text as an argument or as a .json file 
+
+# Amazon Lex
+- powers Amazon Alexa
+- service for building conversational interfaces into any app using voice & text 
+- provides deep learning & natural language understanding to understand and respond sensibly to a human 
+- 4 stage process
+    - save
+    - build master language model (MLM)
+    - test (in console)
+    - publish
+- publish to chat services directly from Lex console 
+
+# Amazon Polly
+- translate text information into life-like speech 
+- part of AI services from Amazon
+- helps increase accessibility 
+- 24 languages, 48 voices total available 
+- SSML (Speech Synthesis Markup Language)
+    - define how bot should speak
+    - change accent, speech rate, and lots of other 
+- able to interpret abbreviations based on context (e.g. St. for Saint or St. for Street)
+
+# Amazon ECR
+- fully-managed container repository 
+    - HA & access controlled w IAM
+    - stores images in S3 
+- image = container 'blueprint'
+
+# Designing Event-Driven Architectures
+- serverless: abstracting computing infra to the point of having no responsibilities for the servers on which code runs; not paying for server idle time 
+- microservices: event-driven
+    - use events to communicate b/w and invoke decoupled services 
+- synchronous: think sequential 
+- asynchronous: decoupled; message amounts and orders persisted w SQS Q
+- client polling: common way to get status info on long-running transaction 
+    - can result in a lot of unnecessary work + increased cost by having the service consistently polled 
+    - advantages: 
+        - convenient to replace a synchronous flow
+    - disadvantages:
+        - adds add'l latency to consistency of data to client
+        - unnecessary work + increased cost for requests + responses when nothing has changed 
+- web hooks: user-defined HTTP callbacks 
+    - trust clients: own both sides of system + can create secure integration b/w them
+    - untrusted client: receive webhook info thru registration process or part of data submission to API
+    - e.g. can use SNS to set up HTTP subscribe + notifies client using webhook
+        - added benefit, can model retries + exponential backoff until success 
+    - downside: add'l complexity since client needs to host web endpoint 
+- WebSockets w AWS AppSync 
+    - open standard used to create persistent connection b/w client + backing service
+    - allows bidirectional communication 
+    - runs on GraphQL; newer standard than REST
+    - ideal for streaming data or when data might yield more than one response 
+- serverless data processing patterns 
+    - processing w Kinesis
+        - ingest + process large volumes of data in near-realtime 
+        - producers add data records onto stream + consumers get records & process them 
+            - lambda can be a consumer
+            - streams can be consumers of other streams
+            - create consumer apps using KCL (Kinesis Consumer Library)
+            - create producers using KPL (Kinesis Producer Library)
+        - KDS [stream]: scale horitzonally by adding shards
+            - each shard has unique ID sequence of data record
+            - data records include partition key + data blob
+                - P key used to group data by shard w/n stream
+            - shard can write 1,000 records/sec up to max of 1 MB/s
+            - for reads, shard can support 5 transactions/s, up to 10k records & up to max of 2 MB/s
+            - increase thruput by adding shards or use aggregation to increase number of records sent per API call
+            - can write custom consumers
+            - guarantees order deliver of data records as exactly-once delivery 
+            - preserves sequence of records; if e.g. Lambda fails on one record in batch, entire batch (and associate shard) is blocked until failure is resolved 
+            - can have multiple consumers & types of consumers 
+            - limit of five consumers/shard 
+            - enhanced fan-out consumer can be added
+                - gets dedicated thruput
+                - supports more than five consumers
+                - add'l cost for each enhanced fan-out consumer 
+        - KDF [firehose]
+            - config data producers to send data to KDF & it automatically delivers data to specified destination
+            - can also transform data before delivering it 
+            - specify the amount of data or time period to buffer data
+            - Kinesis creates the number of required shards; NOT customer defined 
+            - specific, limited targets suported 
+            - when Lambda associated w KDF stream, KDF tries invocation three times then skips that batch of records & records in processing_failed folder in S3
+        - KDA [analytics]
+            - write SQL statements or Apache Flink apps & upload them into KDA app to perform analysis on the data in the stream
+            - supports using lambda to preprocess data before SQL executes 
+            - input sources can be either KDF or KDS & KDA can output to those types of streams
+            - can also use KDA as event source for lambda 
+    - SNS
+        - data pattern of messaging instead of streaming 
+        - uses publication/subscription (pub/sub) model
+        - single published message can have multiple consumers 
+        - subscribers 
+            - email addresses
+            - HTTP endpoints
+            - lambda functions
+            - SQS Qs
+        - decouples publishers and subscribers 
+        - huge amount of topics & subscriptions allowed
+            - 100k topics, 12.5m subs per topic 
+            - able to kick off large number of processes w one SNS message 
+        - message filtering can be done on key:value pairs 
+    - event bridge 
+        - events are observable: multiple services can listen to events, without a game of 'phone tag' through multiple services 
+        - event bus splits up what downstream systems need to hear certain events 
+- Failure Management in Event-Driven Architectures 
+    - failure management in code
+        - capture and retry a call whenever possible + handle errors gracefully when calls fail 
+        - failure management in functions 
+            - lambda logging library can send errors to CloudWatch logs 
+        - error handling for synchronous and asynchronous events 
+            - function error: Lambda successfully hands off event to function, but function errors/times out before completing
+            - invocation error: request rejected before function receives it 
+            - sync invocation: no retries built in
+                - code has to be written to handle errors & retries
+            - async invocation
+                - w async event sources, lambda has built-in retry behaviors 
+                - lambda tries two more times by default
+                    - retry value can be b/w 0 and 2
+                - lambda retries invocation for up to 6 hours by default
+                    - decrease by using max age of event setting 
+                    - use dead-letter Q to handle events that are too old 
+        - error handling for stream based events (e.g. KDA, DDB streams)
+            - streams need to maintain record order per shard
+            - manage failures
+                - bisect batch on function error: split failing batch into two and retry each separately
+                - maximum retry attempts/record age: limit number or duration of retries on failed batch
+                - on-failure destination: send failed records to SNS topic or SQSQ
+            - there is a chance records can be processed multiple times, so function must handle idempotency and can't assume only-once record processing
+        - failed-event destinations 
+            - on-failure destination defined for async + streaming event sources
+            - advantages
+                - contains additional data
+                - more flexbility to change or modify failure behaviors 
+        - error handling w SQS as event source
+            - best practice to set up dead-letter Q on source Q to process failed messages 
+            - SQSQ timeout needs to be greater than the timeout of the lambda process
+                - best practice: SQS should have a 6x greater timeout than the lambda timeout 
+        - error handling summary by execution model
+            - API gateway (sync event source)
+                - has a 30 second timeout; error returned if Lambda function doesn't respond in 30 seconds 
+                - no built-in retries
+                - error handling: generate the SDK from API stage + use provided backoff and retry mechanisms 
+            - SNS (async event source)
+                - no timeouts; doesn't have to wait for response from function execution
+                - built-in retries (max total of three attempts)
+                - max event age 6 hours by default 
+                - SNS has unique retry behaviors: 3 immediate tries, 2 tries at 1s apart, 10 tries, backing off from 1s to 20s, and 100,000 tries at 20s apart 
+                - error handling: use lambda destionations OnFailure option to send messages to destination for processing or move to dead-letter Q
+            - KDS (polling stream as event source)
+                - retention period 24 hours by default
+                    - increase retention period for a cost
+                - by default, lambda retries failing batch until retention period expires 
+                - error handling: OnFailure destination w lambda 
+                - use BisectBatchOnFunctionError to tell Lambda to split failed batch into two batches & keep splitting batches to isolate bad records 
+            - SQSQ (polling queue as event source)
+                - timeout should be 6x greater than timeout set for function
+                - use maxReceiveCount on queue's policy to limit number of times Lambda will retry to process failed execution
+                - error handling: write functions to delete each message as it is successfully processed + move failed messages to DLQ
+    - Failure Management Across Application
+        - step functions for failure management 
+            - features
+                - errors & retries via looping
+                    - tasks + parallel states have field named retry 
+                - try/catch/finally logic
+                - Amazon States Language provides predefined set of well-known errors 
+                - retry and catch fields for error handling
+                    - each catcher can handle multiple errors
+                - states.ALL: wildcard that matches any error name 
+            - can troubleshoot in the console, and the steps are created visually
+            - SAGA pattern
+                - manage failures where each step w/n larger business transaction includes compensating transactions that undo the changes made by its predecessors 
+        - failure management with dead letter queues (DLQ)
+            - SNS or SQS can be DLQs for lambda functions
+            - create Q or topic first, then reference it in function config
+            - lambda execution role must have perms to write to Q or topic 
+            - DLQ on lambda
+                - configured as part of function
+                - sends messages to DLQ after 2 built-in retries
+            - DLQ w SQSQ
+                - DLQ part of Q policy
+                - policy describes how many retries before item moved to DLQ
+            - both lambda & SQSQs need a mechanism to redrive messages back to original source for processing 
+        - AWS event work pipelines
+            - prebuilt apps, available in AWS SAR (Serverless Application Repository) to be used in serverless app
+            - Event Replay Pipeline buffers events from provided SNS topic into SQSQ so events can be replayed to another pipeline in DR scenario 
+        - Distributed tracing w AWS X-Ray
+            - tool that can be enabled for any lambda function, API gateway stage, or SNS
+            - service graph gives visual representation of what's occuring at every step of the serverless workflow 
+            - subsegments
+                - provide more granular visibility
+            - annotations
+                - key:value pairs that group traces for app-specific ops 
+        - synchronous event sources do not have built-in retries for failed or throttled requests 
+
+# Architecting Serverless Applications 
+## Migrating to Serverless 
+- the key to thinking serverless is thinking in terms of patterns and applications, not in individual functions or resources 
+- migration patterns
+    - leapfrog: straight from on-prem to re-writing apps and going straight to serverless cloud arch 
+    - organic: more lift-and-shift style
+        - existing apps kept intact w some limited rewrites to container services
+        - devs experiment w Lambda in low-risk scenarios. As confidence is built, use serverless for more tasks 
+        - get buy-in for a long-term committment to modernizing apps & pilot a workload 
+    - strangler: incrementally and systematically decomposes monolithic apps by creating APIs and event-driven components that eventually replace components of legacy app (most common)
+        - new feature branches can be serverless first 
+        - use canary deployments to test new components & easily fallback 
+- domain-driven design
+    - what does this app do and how are its components organized
+        - how is data distributed, what does the app do?
+    - how can data be broken up based on CQRS (command query responsibility segregation) pattern? What belongs on control plane and what belongs on data plane?
+    - how does the app scale + what components drive needed capacity?
+    - does app have schedule-based tasks
+    - are workers listening to a queue? (easy kill w SQSQ)
+    - where can refactoring or enhanced functionality occur w/o impacting current implmentation 
+- three factors when comparing cost of ownership
+    - infrastructure cost to run workload (e.g. EC2 capacity vs per-invocation cost of Lambda functions)
+    - development effort to plan, architect, and provision resources that app runs on 
+    - cost of team's time to maintain app when in prod 
+## Choosing Compute Services and Data Stores 
+- use Fargate and Lambda for serverless compute 
+    - considerations
+        - Fargate: more of a lift-and-shift style move to serverless 
+            - better for consistent traffic (e.g. longer-running processes, consistent workload)
+            - need more than 3GB memory(?)
+            - app w non-HTTP(S) listener
+            - need to run side cars w service
+            - container image portability w docker runtime
+        - Lambda
+            - better for tasks that run in <15 minutes
+            - spiky, unpredictable workloads
+            - unknown demand
+            - lighter-weight, app-focused stateless computing
+            - simplified IT automation
+            - real-time data processing
+            - reduced complexity for development and ops 
+        - combination of the two might make the most sense 
+    - data stores
+        - use different data stores for different data needs
+        - transactional vs query operations 
+        - DDB: transactional
+        - S3 (data lakes, economical state store, claim-check pattern, filter data retrieved by lambda w S3 select)
+        - Elasticache for Redis (great for real-time leaderboards)
+        - Amazon Quantum Ledger DB (QLDB)
+            - model state changes in cryptographically provable manner
+            - distributed ledger 
+        - RDBs
+            - aurora: transactional
+            - aurora serverless
+                - best for inconsistent use
+            - RDS
+        - challenges of multiple data stores
+            - have to manage partial executions (could use SAGA pattern for step functions)
+            - source of truth for one piece of data must be shared w other domains that use that data 
+                - choose a timely ETL method
+                    - Glue + S3 + Athena + Redshift spectrum
+                    - bash scripts 
+## Application Architecture Patterns
+- serverless IT automation
+    - replace cron job w timed lambda functions 
+    - replace routine tasks w step functions 
+    - use Lambda to prevent unwanted configuration changes 
+- serverless web apps and mobile apps 
+
+## Exam review
+- dead-letter queues
+    - redrive policy defines source queue, dead-letter queue, and when to move messages to DLQ
+        - redrive allow policy: specifies which source Qs can access DLQ
+    - maxReceiveCount: # of times a consumer tries receiving message from Q w/o deleting it (i.e., no work gets done) before being moved to DLQ
+- autoscaling
+    - default: terminates instance first in AZ with greater number of instances, then instance w oldest launch template, then instance closest to next billing hour s
+- DDB r/w capacity modes
+    - on-demand
+        - instantly accommodate workloads as they ramp up or down
+        deliver single-digit ms latency at any scale 
+        - throttling can occur if double the previous peak is exceeded w/n 30 minutes 
+    - provisioned (default, free-tier eligible)
+        - specify number of reads/write/s app requires 
+- DDB: think metadata (among other things)
+- EBS: can modify from io2 to gp3 using EC2 ModifyVolume action w/o downtime 
+- RDS: to encrypt a snapshot of an unencrypted DB, take a snapshot, copy the snapshot as an encrypted snapshot, then restore DB from that snapshot 
+    - can't create encrypted read replica of an unencrypted DB
+    - can't create encrypted backup of unencrypted DB 
+    - RDS (and EBS) snapshots stored in S3 cannot be viewed in the customer console 
+- elasticache: write-through adds or updates data in cache whenever app writes data to db
+    - lazy loading: only loads data into cache when necessary
+- global accelerator: improves TCP and UDP network performance for users around the world, even if an app is hosted in one region
+- TGW: can be the connection point of site-to-site VPN and can use equal cost multipath routing to increase throughput of the VPN copnnection 
+- SNS: topics aren't stored & cannot be re-examined if processing fails 
+- **get clarification: does the exam still test for the info that only egress-only IGWs support IPv6 and NAT gateways don't?**
+- VPC: every instance launched in dual-stack vpc has IPv4 and IPv6 addresses, so it's possible to run out, since the IPv4 are fairly finite 
+- athena: doesn't like files smaller than 128MB
+    - partition data by date and region in S3 to help reduce amount of data athena has to scan for each query 
+    - use Glue ETL to convert .csv to Parquet for columnar data storage, which can help increase athena query performance 
+- WAF: common web attacks (cross-site scripting + SQL injection)
+- Shield: DDoS 
+- redshift: OLAP (analytics processing)  
+- neptune: graph DB 
