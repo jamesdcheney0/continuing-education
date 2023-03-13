@@ -303,3 +303,29 @@ David Chong (Enablement management)
             - low-scale, low-cost directory w basic AD compabitility or LDAP compatibility
     - AWS Resource Access Manager (RAM)
         - helps securely share AWS resources created in one AWS account w other AWS accounts 
+        
+# Content Review March 8th, 2023
+- loosely coupled architecture 
+    - monolithic app
+        - everything processed on the one process, with one data store 
+    - microservice apps 
+        - scalable, fault-tolerant, loosely coupled 
+        - event-driven architecture 
+- containers on AWS 
+    - lightweight, standardized packaging for app code, config, and dependencies 
+- ELBs
+    - ALB: L7
+        - targets: IP, instance, Lambda
+        - terminates flows
+        - listeners: HTTP, HTTPS, gRPC
+        - front end: virtual IP
+    - NLB: L4
+        - targets: IP, instance, ALB
+        - terminates flows
+        - listeners: TCP, UDP, TLS
+        - front end: virtual IP
+    - Gateway Load Balancer (GLB): L3 gateway, L4 LB
+        - targets: IP, instance
+        - transparent pass through of flows 
+        - listener: IP
+        - route table entry 
