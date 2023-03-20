@@ -42,3 +42,4 @@ terraform.rc
 python/automate-the-boring-stuff/chapter-8-reading+writing-files/multiClipBoard.db
 aws/sa-associate/cloudquest/*
 .DS_Store
+terragrunt/octo-setup.md
