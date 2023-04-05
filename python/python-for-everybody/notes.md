@@ -113,3 +113,47 @@
         - see ./chapter-7-files/countLines.py
             - reading the *whole* file in a single string
             - searching the file 
+
+# Chapter 8: Lists  +12
+- data structures
+    - a particular way of organizing data in a computer 
+- collection
+    - allows putting many values in a single variable
+    - carry many values in one convenient package
+    - list is a kind of collection 
+- list constants
+    - surrounded by squiare brackets, and the elements in the list are separated by commas
+    - list element
+        - can be any python object, even another list
+    - can be empty 
+- can get at any single element in a list using an index specified in square brackets
+    - start with 0 base (read sub 0, sub 1 ([0], [1]))
+- lists are mutable
+    - can change an element of a list using the index operator
+- can use `len()` to tell the number of items in a list (the number of things) 
+- `range()` 
+    - e.g. `for i in range(len(<list>))`
+        - if, while looping through, knowing the position is helpful 
+        - if position isn't needed, `for element in list` is sufficient 
+- concatenate lists with `+` 
+- lists can be sliced with `:`
+    - `list[1:3]`, `list[:4]`, `list[3:]`
+    - up to, but not including the last index, if it is defined 
+- list methods 
+    - display all list methods with `dir(list)`
+- creating a list   
+    - `stuff = list()`
+        - object of type list with nothing in it 
+        - 'constructor syntax' 
+    - `stuff = []` 
+        - also works
+    - `stuff.append('book') \ stuff.append(99) \ stuff.append('cookie')`
+    - `print stuff \ ['book', 99, 'cookie']`
+- use `in` to check if an item is in a list, or `not in` for the opposite 
+    - logical operator that returns True or False 
+- lists keep their order unless specifically told to do otherwise
+    - `list.sort()`
+        - sort list based on value
+- built-in functions 
+    - there are a bunch of functions built into Ptyhon that takes lists as parameters
+        - len, max, min, sum
