@@ -32,7 +32,7 @@ Develop the following skills for approximately 1000 hours
     - Resources after having more experience in python: https://book.pythontips.com/en/latest/one_liners.html
     - Started freeCodeCamp: Scientific Computing w Python - Python for everybody (py4e) 20230223: 
         - https://www.py4e.com/
-        - Current location: https://www.freecodecamp.org/learn/scientific-computing-with-python/python-for-everybody/python-lists
+        - Current location: https://www.freecodecamp.org/learn/scientific-computing-with-python/python-for-everybody/strings-and-lists
     - There's also this playlist I've had saved in a browser for a while: https://www.youtube.com/watch?v=rfscVS0vtbw&list=PLWKjhJtqVAbnqBxcdjVGgT3uVR10bzTEB 
 
 - AWS
