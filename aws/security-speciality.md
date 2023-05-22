@@ -1,0 +1,993 @@
+# How IAM is used to securely manage access 
+Identity and Access Management 
+- Authorization: what can be accessed, once account is authenticated 
+- access control: method of accessing secure resource 
+- manage, control, govern authentication, authorization, and access control w/n AWS account 
+## Features 
+- on the dashboard, has sign-in link for users, and the ability to customize it
+- resources
+- best practices: AWS offers a list of best practices (doesn't show anything in govcloud)
+- groups: assign policies to users. Not necessarily used to allow access in and of themselves 
+- roles: operate similar to users, but designed to be assumed to identity or service to have access to temporary permissions 
+- policies: written in JSON, defines what can and can't be accessed
+    - assigned to users, groups, roles 
+    - AWS managed policies 
+    - customer managed policies 
+        - inline policies 
+- access management > account settings 
+    - lists the password policy 
+    - lists security token service endpoints 
+        - recommended to disable the endpoints that aren't used 
+
+# Managing User Identities with Long Term Credentials in IAM
+## Overview of the User Dashboard 
+- Users: objects representing an identity 
+    - user overview
+        - last activity 
+            - green check: <90 days since last access 
+            - orange triangle: 91-365 days since last access
+            - red triangle: >365 days since last access
+            - helps to ensure unused user accounts aren't hanging around 
+        - path: location of user, especially for larger orgs with layers of user management 
+        - mfa: listed if it's enabled
+        - arn: unique identifier of the IAM user 
+- secret keys: access key id, secret access key
+
+# Managing Access using IAM User Groups & Roles 
+## Manaing Multiple Users w IAM User Groups
+- can't be directly referenced as a principal in a policy; allow access to users w/n group
+- usually ment to align with teams and permissions the team needs, e.g., developers, admins 
+    - avoids updating policies assigned directly to each user
+- soft limit of 300 groups
+- each user can only be added to 10 groups 
+## IAM Roles
+- allow trusted users, aws services, and applications to get temporary credentials to access resources 
+- can be assumed by different identities when required 
+- do not have long-term credentials (like password or access keys)
+- uses trust relationship that defines who or what can use the role 
+- assumption rules
+    - user in same acct
+    - user in diff acct
+    - aws service
+    - external federated user 
+## Using AWS services roles to access AWS resources on your behalf
+- service roles
+    - commonly used on ec2 instances to use other resources 
+    - role can be assigned at creation or while instance is running 
+    - using roles is far superior to having access keys stored on the instance 
+- service-linked roles 
+    - often created first time a service is used
+    - preconfigured by AWS to include the resources it needs access to
+        - e.g. AWSServiceRoleForAmazonSSM
+            - has AWS managed Policy configured, which cannot be accessed 
+            - specifically designed to provide access to AWS SSM
+## Using IAM User Roles to Grant Temporary Access for Users 
+- when a role is assumed, it temporarily REPLACES all other permissions the user has 
+- when creating a role, can use 'AWS account' within the current environment, rather than having to have a trust relationship w ec2; just use the account ID of the current account 
+    - then add an inline policy to the user to assume that role
+    - often used to allow cross-account, but works w/n account too
+## Using Roles For Federated Access
+- allows authentication from web identity or SAML 2.0 federation
+    - web identity federation
+        - federation: two provides have a level of trust where one party is the identity provider (IdP) and service provider (SP)
+        - irl, like signing in with facebook/google/apple 
+        - authentication token provided from IdP, and then the role is assumed and user able to be authenticated 
+        - AWS Cognito best way to do it with mobile apps 
+    - SAML 2.0: (security assertion markup language)
+        - generally meant for authenticating employees, e.g. if using MS AD
+        - minimizes amount of admin use & allows for single sign-on
+        - can pick b/w programmatic access and programmatic and gui access 
+
+# Using IAM Policies to Define and Manage Permissions 
+## IAM AWS Policy Types
+- identity-based policies
+    - attached to users, groups, roles
+    - managed
+        - saved to policy library,
+        - able to be attached to multiple entities 
+        - aws-managed policies
+        - customer-managed policies 
+    - inline
+        - embedded directly to entity; only exists w/n entity
+        - can't easily be attached to other entities 
+        - not usually best practice; requires additional administration effort
+- resource-based policies
+    - attached inline to resources (e.g. trust policy)
+    - inline policies assigned to a resource instead of an entity, e.g. S3 bucket policy 
+    - must have principal defined w/n the policy
+- permission boundaries
+    - can only be associated w role or user; define max level of perms that can be granted
+    - act as guide-rail for max permissions allowed 
+- organization service control policies (SCPs) (used by AWS organizations)
+    - similar to permission boundaries, at account level
+    - define boundary of max permissions
+    - associated w aws account or account OU
+    - does not allow access, only acts as a guide-rail
+## Examining the JSON Policy Structure
+- (JavaScript Object Notation)
+- version: specifies policy language version & language syntax used
+- statement: defines main elements of the policy
+    - must contain at least one statement, or can contain an array of statements 
+- sub-elements 
+    - sid: set a unique identifier w/n statement 
+    - effect: grant or reistrict access for the actions defined in the statement 
+    - principal: defines which principal the policy relates to
+        - not needed for identity-based policies
+    - NotPrincipal
+    - action: action that will either be allowed or denied, depending on value entered for 'effect'
+        - based on the APIs & actions associated with the AWS services 
+    - NotAction
+    - resource: specifies actual resource action & effect to be applied to using ARNs
+        - usually arn:partition:service:region:account-id:resource 
+            - partition is aws or aws-us-gov
+            - region left blank for services that are global
+    - NotResource
+    - condition (optional): control when permissions will be effective based upon set criteria 
+## Policy Evaluation Logic 
+- every request for permissions is evaluated through a list of steps 
+    - authentication: ensure principal is authenticated as valid
+    - context: what service or action is being requested
+    - policy evaluation: determine level of access 
+    - result: AWS determines if access is allowed or denied 
+- policy evaluation
+    - by default, all access denied
+    - only allowed if an allow has been associated with a policy attached to a principal
+    - if a deny is associated with the principal at any point, access denied
+    - explicit deny will always take precedence over allow 
+    - checks organizational SCPs, then resource-based policies, IAM permission boundaries, and finally identity-based policies 
+
+# The Difference Between Authentication, Authorization, and Access Control in AWS 
+## Authentication
+- requires two parts of information
+    - identification: unique value in aws account to authenticate to
+        - can't have two of the same username in the same account 
+    - verification: verify identity by providing password 
+## Authorization
+- takes place once an identity has been authenticated
+- establishes what level access the authenticated entity has 
+## Access Control
+- logical access controls 
+    - username/password authentication method
+    - username/password method + MFA
+    - basically, what access methods are required to access a resource 
+    - use of roles or federation to provide permission
+    - NACLs/SGs
+    - related to authentication & authorization
+
++2 mins
+# Authorization Controls in AWS 
+## IAM
+- best practice: attach policies to groups and add users to groups 
+- customer-managed policies can help ensure least priviledge vs using AWS managed policies 
+    - able to 'import managed policies' when creating a customer-managed policy to modify AWS managed policies and customize them
+- can separate actions in policies with commas 
+## S3
+- IAM authorization
+    - S3 Bucket Policies
+        - only applied to buckets w/n s3; act as resource-based policies 
+        - when applied, affects all objects in bucket 
+        - ACL bucket policy principals - can be users, federated/IAM, aws acct or aws services
+        - allow setting conditions w/n policy
+            - e.g. restrict based on IP address 
+    - S3 ACLs
+        - able to set different permissions per object 
+        - set at bucket or object level
+        - conditional statements not supported
+        - less granular than bucket policies 
+        - able to add canonical ID of another account allowed to access bucket 
+- permission conflicts are based on the principle of least privilege
+    - if there is a single deny anywhere in the permissions, access is denied 
+## NACLs
+- authorize network traffic w/n vpc at protocol and subnet level
+- can be applied to one or multiple subnets
+- default NACL allows all traffic in/out
+- NACL rules
+    - rule number: acl rules are read in ascending order
+        - sequence rules with organized numbering system and leave ~50 spots b/w each
+    - type: select a protocol type from dropdown list
+    - protocol: provides value for custom rules
+    - port range: specify port range for protocol
+    - source: define specific IPs or allow all 
+    - allow/deny: what to do w traffic
+- stateless; need an inbound rule to allow responses to outbound requests
+## Security Groups 
+- associated with instances, filter traffic into/out of instance
+- NO DENY action for rules 
+- stateful: don't need an inbound rule to allow traffic in 
+- AWS SG rules fields
+    - name: up to 255 characters
+    - security group rule ID
+    - ip version: 4/6
+    - type
+    - protocol: for custom rules
+    - port range
+    - source: sg, subnet, ip address allowed
+    - description 
+
+# AWS Authentication Mechanisms
+## Username/Password & MFA
+- usernames must be unique w/n the account
+    - usernames verify identity
+- password can technically be the same between every user
+    - passwords provide verification of identity 
+- username/password alone not considered very secure
+- MFA: user must use second step of authentication after submitting password 
+    - no extra charge to use this service
+    - must be configured and associated with the user 
+## Programmatic Authentication
+- access via CLI, APIs, powershell, SDKs
+- access keys composed of
+    - access key ID: 20 random uppercase alphanumeric characters (A-Z, 0-9)
+    - secret access key: 40 random upper/lowercase alphanumeric and non-alphanumeric characters 
+- access keys can be created for any user that needs programmatic authentication 
+- not possible to retrieve lost security keys 
+- after creation, must be associated with system/application that will use them \
+- rotating access keys decreases the possibility of the keys being compromised
+    - process
+        - create a second key
+        - download new access keys
+        - associate keys with application (e.g., aws configure to add new credentials)
+        - mark existing access keys as inactive
+            - test to make sure the new keys work
+        - delete old keys 
+- for instances (and probably in general) better to use roles 
+## IAM Roles
+- efficient & secure solution in authenticating & authorizing access 
+- avoids embedded credentials w/n app 
+- simply an object with a list of associated permissions 
+- temporary access keys are provided when roles are assumed
+- permissions from user and role are NOT amalgamated - the role TOTALLY takes over 
+## Key Pairs
+- made up of public and private keys
+    - either ED25519 OR 2048-bit SSH-2 RSA
+        - ED25519 doesn't work for instance connect or windows instances 
+- on windows instances, decrypts the admin password
+- on linux instances, enables ssh connection 
+## Federation 
+- allows users authenticated by external IdPs to access AWS 
+- trust relationship b/w IdP and AWS account is established 
+    - OpenID (e.g. facebook/google/apple login)
+    - SAML 2.0 (e.g. MS AD)
+
+# Using AWS Identity Federation to Simplify Access at Scale 
+- identity federation: method where two identity providers can establish a level of trust 
+    - identity provider (IdP) authenticates identity, and service provider gives authorization based on credentials 
+    - often correlates with SSO
+    - assertion: contains metadata and attributes about user such as username
+        - sent from IdP after user authenticates their identity to the service provider 
+        - allows service provider to grant access to their services 
+- OAuth 2.0, ODIC (OpenID Connect), SAML 2.0 (Security Assertion Markup Language)
+    - OIDC: simple identity layer on top of OAuth 2.0
+- services offered by AWS
+    - AWS SSO (now succeeded by IAM Identity Center)
+        - allows creation of SSO approach to access multiple AWS accounts w/n AWS organization using a single IdP
+    - AWS IAM
+        - supports federated access via OpenID or SAML
+    - Amazon Cognito 
+        - simplify user access to mobile or web app using SAML or web identity federation 
+        - able to scale to million so of users 
+        - able to create a custom portal for users to see when signing in 
+
+# AWS Incident Response: Isolating your EC2 instances 
+- containment is a critical part of incident response 
+- ought to have an incident response playbook before problems occur 
+- isolation: limiting visibility of instance to itself and other instances
+- detection mechanisms
+    - Amazon GuardDuty: continuous monitoring of vpc flow logs and metadata
+        - able to identify instances that are mining crypto or serving malicious traffic 
+    - Amazon Inspector 
+- how should one isolate EC2 instances 
+    - SG isolation
+        - easy to add SGs to instances & limit traffic
+        - to keep in mind
+            - have to explicitly allow traffic
+                - most permissive security group rules WILL BE ALLOWED
+            - CANNOT SHUT OFF TRAFFIC to an instance by adding an SG; would have to remove all the SGs before adding a blocking SG
+                - since they are stateful, can allow traffic back in the network 
+                - tracked vs untracked connections 
+                    - untracked connections, e.g. 0.0.0.0/0, where all traffic/ports are allowed in/out
+                        - when an SG is updated, e.g. rule added, removed, updated, or sg deleted, this traffic is interrupted
+                    - tracked connection, e.g. allowing a specific port from a specific IP or CIDR rule
+                        - traffic will not be immediately interrupted when SG is updated 
+                        - still technically possible for a malicious user to be connected to the instance, with a tracked connection, the SG change to block all traffic in, and that user to remain connected. They wouldn't be able to reconnect, but they wouldn't be forced to disconnect 
+                            - to remove tracked connections
+                                - created dedicated 'isolation' SG
+                                - create single rule of 0.0.0.0/0 for all traffic in both inbound & outbound rules
+                                - remove any existing security groups attached to the instance 
+                                - associate the isoluation SG to the instance 
+                                - delete both inbound and outbound rules from the isolation SG
+                                - result: converts all tracked connections into untracked connections & blocks everything 
+    - NACL isolation 
+        - all rules based on external IP addresses or CIDR blocks, can't block traffic w/n env
+        - only one allowed per subnet 
+        - very easy to stop inbound/outbound traffic
+            - only need one rule per allow and deny to block all traffic 
+        - can't be used in a targeted way 
+        - how to
+            - add deny all rule to inbound & outbound rules as the first rule 
+    - Route Table Isolation
+        - to disable access to outside, remove all routes in route table or create a new, empty route table
+            - disables all external subnet communications, HOWEVER subnets would still be able to communicate w/n VPC
+    - Internet Gateway Isolation 
+        - can't be removed from VPC if there's any dependencies in the VPC 
+            - requires turning off all instances 
+        - only real option would be to remove routes to route table 
+
+# AWS CloudTrail: An Introduction 
+- used to track and audit all API calls in an account 
+## What is AWS CloudTrail
+- records & tracks all API requests in AWS account
+- every API requestcaptured as an event
+- multiple evens recorded w/n CT logs
+- events contain array of associated metadata 
+- new log files created every 5 minutes
+    - delivered and stored w/n S3
+    - can also be delivered to CloudWatch logs for metric monitoring & alerting w SNS
+- CT Infrastructure 
+    - global service
+    - supports 60+ AWS services/features 
+- use cases for captured data
+    - effective for security analysis
+        - monitor restircted api calls
+    - resolve day-to-day operation issues 
+    - track changes to AWS infrastructure (AWS Config helps with this as well)
+    - CT logs can be used as evidence for compliance and governance controls (ISO, PCI DSS, FedRAMP)
+## How AWS CloudTrail works
+- Core features & services
+    - trails: building blocks of the service
+    - s3
+    - logs: created by CT & capture events every 5 minutes & delivers to bucket 
+    - kms: enable encryption
+    - SNS: notify when different actions occur 
+    - CW logs: deliver logs for metrics monitoring
+    - event selectors: select what part of events to capture
+    - tags
+    - events: tracked in CT log file
+    - API activity filters: events are stored in console for 7 days 
+- CT process flow
+    - create a trail (so CT knows which apis to track)
+    - specify s3 bucket for log storage
+    - optional: encrypt log files w kms
+    - optional: sns notifications of new log files
+    - optional: enable log file validation
+    - trail created
+    - post creation config
+    - option: deliver CT to CW for monitoring
+    - optional: configure event selectors
+    - optional: add tags
+    - configuration complete
+    - after config, use API activity filter
+- lifecycle of API call in CT
+    - API call captured if it matches trail and stored in log file
+    - sends to s3 or cw logs
+    - in s3, stored in default s3 sse 
+        - s3 lifecycle policies may apply 
+## Understanding AWS CloudTrail Permissions
+- Granting Access to CT
+    - required proper permissions & authorization to use CT
+    - create customer-managed or use AWS managed policies
+        - AWS managed policies available are full access or read only access 
+            - full-access also includes full access to sns and s3 
+- s3 bucket policy 
+    - specify bucket for CT logs
+        - create new s3 bucket
+            - CT configures and applies bucket policy w relevant permissions allowing logs to be delivered to bucket 
+        - use existing s3 bucket
+            - customer must configure and set up permissions
+- CT & KMS
+    - specific permisssions req'd to decrypt logs
+    - adds another layer of encryption to CT logs files 
+    - SSE-KMS can be chosen when creating trails
+        - two options
+            - create new KMS key (aws applies proper perms)
+            - use existing keys (must create own policy; must be in same region as CT)
+                - user will need decryption permissions 
+## Understanding Trails
+- w/o a trail, CT unable to capture API calls
+- Trails hold all config information for capturing API calls 
+## Insight into AWS CloudTrail Logs 
+- what is a log file? 
+    - written in JSON
+    - new event written for each API call
+    - new log file created every 5 minutes
+    - log files delivered to s3 ~15 minutes after API call was initiated 
+- events in a log file 
+    - eventName: name of actual API that was called
+    - eventSource: service which API call was made against 
+    - eventTime
+    - SourceIPAddress: of the requester who made API call
+    - userAgent: method request was made through
+        - signin.amazonaws.com (user in AWS console)
+        - console.amazonaws.com (root user)
+        - lambda.amazonaws.com 
+    - userIdentity: set of attributes about identity that made request
+- log file name convention
+    - AccountID_CloudTrail_RegionName_YYYYMMDDTHHmmZ_UniqueString.FileNameFormat
+        - time in utz
+        - unique string is 16 digit alphanumeric character
+        - default filename is json.gz 
+- s3 bucket folder structure
+    - BucketName/prefix/AWSLogs/AccountID/CloudTrail/RegionName/YYYY/MM/DD
+        - prefix is optional to aid w organization
+- multiple accounts and multiple logs 
+    - CT logs from multiple accounts can be aggregated to same bucket
+    - can't do the same w CW logs 
+- log aggregation process
+    - create new Trail in primary AWS acct
+    - apply perms to S3 bucket allowing cross-acct access 
+    - create new Trail in second AWS accts using Bucket name from primary AWS acct
+        - AWS will give a warning; make sure to use the same name & prefix
+    - create Trail & logs will be delivered to same S3 bucket in primary AWS acct 
+- accessing cross-acct log files
+    - if other accounts want read access, use roles in the primary aws acct and give users in other accounts ability to assume the roles
+- log file integrity
+    - verify log files have remained unchanged since CT delivered to S3 bucket
+    - configured during Trail creation
+- log file integrity process
+    - hash created for log file by CT
+    - CT creates new digest file every hour to verify logs have not changed
+    - digest files contain detail of all logs delivered w/n last hour 
+    - to verify the integrity, public key of log is used 
+    - can only be done via CLI 
+    - stored under different prefix than rest of CT logs 
+## Montoring with AWS CloudTrail
+- CloudWatch allows any event from CT to be monitored 
+    - e.g. monitoring major changes in SGs, instance creation/stoppage/rebooting unexpectedly, changes to policies in s3 + IAM, monitoring failed login attempts to management console, API calls that result in failed authorization 
+- CT + CW
+    - to deliver logs to CW, Trail must be config'd to use CW
+    - to deliver to CW, needs a role to be able to make CW logs logstream
+- CW config
+    - have a size limitation of 256KB
+    - add metric filters to allow search of the logs 
+    - each metric filter requires filter pattern
+        - filter patterns determine what data CW is monitoring
+
+# AWS Config: An Introduction 
+- config: management tool service 
+## What is AWS config
+- Resource Management 
+    - important to understand what resources are being used, any security vulnerabilities to worry about, how resources are linked w/n the environment, change history of resources, is infrastructure compliant with internal/external controls, is accurate audit info available 
+- what can AWS config do
+    - capture resource changes (within configuration items (CI))
+    - act as resource inventory
+    - store configuration history; able to save history of changes against a resource 
+    - provide a snapshot of configurations (along with metadata)
+    - notify about changes to resources
+    - provides AWS CT integration 
+    - use rules to check compliance 
+    - perform security analysis w/n env 
+    - identify relationships between resources 
+- AWS Config & regions
+    - regional service; must be configured per region 
+    - able to also include global services 
+## Key Components
+- AWS Resources
+    - typically classed as objects that can be created, updated, or deleted
+    - config records state of resources in specific region
+- Configuration Items
+    - json file holds config and relationship information, among other info like metadata about a resource 
+    - records CIs for directly related resources as well 
+    - five sections
+        - metadata: info about CI itself 
+            - version & config ID
+            - MD5Hash for comparision
+            - time of capture and state ID
+        - attributes: info about resource
+            - unique resource ID
+            - key-value tags
+            - resource types 
+            - ARN 
+        - relationships
+            - description of relationships to other resources 
+        - current configuration
+            - displays info from describe or list calls from AWS CLI
+        - related events
+            - displays related CT event ID
+                - helps dive into 'who' 'what' and 'when'
+    - used by configuration history, streams, and snapshots 
+- Configuration Stream (CS)
+    - when new CIs are created, sent to CS & sent to SNS
+    - other events CS used for
+        - configuration history files delivered
+        - configuration snapshots started
+        - state of compliance changes for a resource
+        - evaluations begin 
+        - when AWS Config fails to deliver notifications 
+    - SNS can have different notification endpoints
+        - email, SQS
+            - can be spammy on email 
+- Configuration History
+    - uses CIs to produce a history of changes for a resource
+    - able to see changes over time on a resources
+    - able to view in console or CLI 
+    - typically delivered every 6 hours to S3 
+- Configuration Snapshot
+    - takes point in time of all supported resources configured for that region & creates CIs for each resource 
+- Configuration Recorder
+    - responsible for recording all changes of resources and generating the CIs 
+    - can be stopped/started
+        - when stopped, doesn't track changes to resources 
+- Config Rules
+    - enforce specific compliance controls across resources
+    - each rule is essentially a lambda function that looks at resources and checks compliance against rules. Sends a message to SNS & marks resource as non-compliance
+        - non-compliant resources operate as normal, and it's up to user/admin to take the action
+    - able to use predefined list of AWS Managed rules & able to define custom rules 
+    - highly recommended for maintaining security checks & configurations 
+    - when first enabled, it's likely to see a bunch of resources as noncompliant 
+    - soft limit of 50 rules per region 
+- Resource Relationships 
+    - config identifies relationships b/w resources, e.g. which instances use what volumes 
+- SNS Topic
+    - used as configuration stream for notifications 
+    - best practice is to programmatically analyize results in SQS before sending to SNS
+- S3 bucket
+    - used to store all Config History files and Snapshots 
+- Permissions
+    - IAM role is req'd to allow config to obtain the correct perms to interact w other services, e.g. reading resources, writing to S3 
+- summary
+    - configure the elements for the Configuration Recorder
+    - AWS config discoveres all supported resources
+    - for any change on a resource, a CI will be created and a notification is sent
+    - AWS config checks current config rules to evaluate if the change is noncompliant
+    - if a configuration snapshot is taken, AWS config will create a snapshot and delever to specified S3 bucket
+    - after 6 hours, a configuration history file will be created 
+- demonstration
+    - able to send Configuration History reports to an S3 bucket in another account, and SNS notifications can go to a topic in another account 
+## Service Integration
+- integrates w SNS, SQS, S3, CloudTrail, IAM
+    - SNS: used for configuration stream for CI
+        - multiple accounts can subscribe to same topic in a primary AWS acct 
+    - SQS: can subscribe to Configuration Streams for HA and decoupled apps + data extraction 
+        - can perform custom filtering
+        - can be subscribed to multiple Configuration Streams 
+    - S3: used to store CI w/n single bucket
+        - can contain configuration history and snapshots
+    - AWS CloudTrail
+        - integrates w config at CI level 
+        - the CT data can be seen w/n config console on the event 
+            - also stored in CT 
+        - also tracks some APIs from AWS config 
+    - IAM
+        - role required to give permissions to service to publish data to SNS/S3 
+        - config must be able to describe list and get API calls on resources it monitors 
+## Managing Compliance with AWS Config
+- compliance sources
+    - come from different resources, e.g. HIPAA, internal security controls, internal standards
+- config rules
+    - manage and organize compliance for env
+    - acts as automatic compliance checker 
+    - AWS Managed Rules
+        - cover a variety of best practices 
+        - can be edited to match env requirements 
+    - notifications are sent allowing appropriate actions to be taken
+        - reesolve security issue
+        - identify who/what made the change
+- creating/modifying rules
+    - identify compliance and standards
+    - define requirements from all parties 
+## AWS Config Use Cases 
+- security compliance 
+    - enforce strict compliance rules
+    - notifications of noncompliance 
+    - continually monitoring resources 
+- discovery of resources
+    - once started, config will discover all supported resources 
+- audit compliance 
+    - external governance controls: FERPA, HIPPA, PCI DSS, SOC
+    - setting custom and managed rules to stay in compliance
+    - able to prove history of changes
+- resources change management
+    - helpful to understand change of resources upon other resources 
+- troubleshooting & problem management
+    - using config dashboard, able to see timeline of events and go back before an incident happened and see what occured beforehand 
+
+# Amazon Inspector 
+## What is Amazon Inspector?
+- helps identify security vulnerabilities w/n EC2 instances and apps 
+- automatically achieved using assessments based on hundreds of best practices and known security weaknesses
+    - common vulnerabilities and exposures (CVE)
+    - center for internet security (CIS) benchmarks 
+    - security best practices
+    - runtime behavior analysis 
+- when assessment complete, report is generated 
+- service is agent based; requires software to be installed on instances that should be assessed 
+- rule package customization
+    - able to select which packages are best for use case
+- why use it? 
+    - security breaches on the increase
+    - targeting small and large companies 
+- security in the cloud
+    - security is one of the top reasons why organizations are slow to adopt cloud tech
+    - AWS invests a lot into security
+- why use inspector'
+    - increase confidence in level of security built into apps and services
+    - confidence benefits orgs and customers
+    - inspector cross-checks resources for security compliance, threats, and vulnerabilities, reducing exposure attacks 
+## Components of Amazon Inspector
+- amazon inspector role
+    - required to create or select role to allow inspector to have read only access to all ec2 instances
+- assessment targets
+    - group of instances that assessment is run against 
+    - uses tags to define groups of assessment targets 
+        - only a match of one key is necessary in a list of multiples 
+- aws agents
+    - software agents installed on instances that are meant to be monitored
+    - can track and monitor data across the network, along w file system and any process activity of instance
+    - telementry data fed to inspector service over TLS
+    - regular heartbeat sent from agent to inspector, which service will respond to w instructions
+    - agent updates are managed & automatically installed by AWS 
+- assessment templates
+    - define specific configurations as to how an assessment is run on instances 
+    - configurable items
+        - rules packjaged to be used
+        - duration of assessment: 15m/1h/8h/12h/24h. 1h recommended by AWS
+        - SNS topics: can be configured to notify about an assessment run
+        - inspector-specific attributes to be assigned to findings 
+        - CANNOT be modified after creation
+- rule packages
+    - contains a number of individual rules that are each checked against instance metadata when assessment is run
+    - each rule has an associate severity
+        - high
+            - should be rectified immediately 
+            - would likely compromise the integrity, confidentiality, and availability of data 
+        - medium
+            - should be rectified in a timely manner
+            - poses a risk to integrity, confidentiality, and availablility of data
+        - low
+            - log urgency on remediation, but still requires attention
+        - informational
+            - describes a particular security config w/n assessment target 
+    - CVE
+        - rules w/n package will check for exposures to known security holes that would compromise CIA of instance
+        - aws updates this list w new CVEs when they're available
+    - CIS
+        - global standard for protecting data and resources 
+        - AWS is a CIS benchmarks member company 
+    - security best practices 
+        - looks for weaknesses in common security best practices
+        - can ONLY be run against assessment targets that are running Linux 
+        - covers the following checks
+            - disable root login over SSH
+            - support SSH version 2
+            - disable password auth over SSH
+            - configure password maximum age/minimum length/complexity
+            - enable ASLR
+            - enable DEP
+            - configure perms for system dirs (e.g. only root has access to / dir)
+- Assessment Run
+    - occurs once inspector role configured, agents installed, assessment target config'd, assessment template config'd
+    - telemetry sent back to inspector and s3 to assess data against rules packages
+    - multiple assessments can be run if they're not overlapping instances
+- telemetry
+    - data collected from instance, detailing config, behavior and processes during assessment run
+    - once collected, sent to inspector in near-real-time & stored in s3
+    - s3 data encrypted & deleted after 30 days
+- assessment reports
+    - provides details on what was assessed and the results of that assessment
+    - findings report
+        - contains subset of full report
+        - summary of assessment
+        - list of instances assessed
+        - rules packages used
+        - detailed report on findings that occured
+    - full report
+        - everything in finding report plus 
+        - list of rules that were passed successfully for all instances 
+- findings
+    - generated from results of assessment run
+    - a potential security issue or risk against instance
+    - for each finding an explaination of the issue is provided 
+## Integraztion with CloudWatch & CloudTrail
+- cloudwatch
+    - able to monitor agents and assessment runs 
+- cloudtrail
+    - all API calls performed by inspector are logged w/n CT
+## Service Limitations and Costs 
+- max 500 agents per assessment - hard cap
+- max 50,000 assessment runs per account - soft cap 
+- max 500 assessment templates - soft cap
+- max 50 assessment targets - soft cap 
+- cost 
+    - based on number of instances scanned, specifically the amount of time, per month - charged per instance 
+
+# AWS Trusted Advisor
+## What is AWS Trusted Advisor
+- helps optimize inffrastructure
+- helps in making decisions based on best practices 
+- main function: recommend impreovements across AWS account to optimize and streamline account
+    - cost optimization
+    - performance
+    - security
+    - fault tolerance 
+    - service limit 
+        - warns when resources reach 80% of service limit quota
+- has a list of control points and checks to see if account is lined up with best practice 
+- acts as automatic auditor across account 
+- 115+ best practices checks    
+    - list of available checks is based on support agreement w AWS
+        - full access is provided with business and enterprise accounts 
+            - also able to track most recent changes to AWS account + display at top of dashboard
+    - security has 6 core checks available to all tiers 
+- features available to everyone
+    - trusted advisor notification
+        - opt-in or opt-out feature that tracks resource check changes and cost saving estimates over the course of a week & emails 3 people
+    - exclude items
+        - exclude specific resources from appearing in console w/n specific check 
+    - action links
+        - hyperlinks associated w many of the items w/n checks + allow quick access to resource in question
+    - acces management
+        - tightly integrated to IAM; full-access, read only, restrict access to specific categories, checks, and actions 
+    - refresh
+        - data is automatically refreshed if data is more than 24 hours old
+        - can perform manual refresh 5 minutes after the last refresh
+## Reviewing Checks & Taking Action 
+- dashboard
+    - shows the five categories & three icons under each category 
+        - if icons are grey, no checks have met an alert criteria to activate the icon (e.g., to low of an account level for scans to occur)
+- for each check, there's four bits of information
+    - description and use
+    - alert criteria
+    - recommended action: high-level suggestion on steps & action to rememdiate
+    - additional resources 
+- security checks
+    - security groups - specific ports unrestricted
+        - assesses SGs to see if there's unrestricted traffic allowed (e.g. from 0.0.0.0/0)
+        - able to exclude SGs from the check in the TA console 
+    - IAM use
+        - checks if using IAM service (rather than just root)
+    - MFA on root account 
+        - logging in as root account should have add'l levels of authentication 
+        - helps protect AWS account 
+    - Amazon EBS Public Snapshots
+        - checks if any snapshots are public
+        - if snapshots are public, other folks would be able to view any data w/n if it's not meant to be public 
+    - Amazon RDS Public Snapshots
+        - checks if any RDS snapshots are public
+- service limit checks 
+    - checks w/n category assess when service limit reaches 80%
+    - doesn't support every service 
+
+# Understanding Amazon GuardDuty
+## What is Amazon GuardDuty
+- regional-based intelligent threat-detection service
+    - users can monitor account for unusual behavior from CT event logs, VPC flow logs, DNS logs 
+    - powered by ML
+        - can identify behavior-based issues
+        - best pracitces
+        - blocking from known bad sources
+    - provides auto and continuous security analysis
+    - findings are sorted by severity
+- doesn't require agents or software on resources
+- can link multiple AWS accounts
+## Components and Configuration
+- data sources
+    - CloudTrail Event logs
+        - generated by CT, about API calls 
+    - VPC flow logs
+        - store network traffic info w/n VPC; in & out
+    - DNS query logs    
+        - contain queries that DNS resolvers forward to R53
+        - contain requested domain, timestamp, record type, response code 
+- machine learning 
+    - gets better as time goes on & a baseline is able to be established
+- list management
+    - upload lists of trusted IPs and threats 
+    - can only have ONE active trusted IP list at a time
+    - may have 6 active threat lists 
+    - only need to provide name of list, S3 location, and data format 
+- GuardDuty Findings
+    - found threats are listed as a finding w/n GD dashboard 
+    - findings elements 
+        - finding summary
+            - finding type, severity, region, account ID, resource ID, time of detection, which threat list was used (if applicable)
+        - resource affected
+            - provides info about affected resource in detected threat
+        - action
+            - info about action that resulted in threat
+        - actor
+            - data relating to source of threat (IP, geographical info, port, domain)
+        - add'l information
+            - info on which threat list was used to detect threat 
+            - if activity considered to be unusual
+    - severity
+        - each finding associated w severity level & score
+            - high: 7.0-8.9
+                - assumes security breach has occured & must be addressed immediately
+            - medium 4.0-6.9
+                - GD has detected suspicious activity that could escalate into a threat
+            - low 0.1-3.9
+                - issues that were detected, and may need to be addressed to prevent from occuring again 
+## Managing Multiple Accounts
+- able to have one account act as master and all other accounts as members & view findings in central location
+- trusted IP lists and threat lists w/n member accounts are not used w/n master account
+- master account give added controls like suspending GD w/n member accounts
+    - able to suspend GD, but can't disable
+- setup
+    - add AWS account from w/n master account
+    - send invitation to member accounts
+    - accept inveitation from w/n member account 
+        - can only accept one invitation 
+## Managing Permissions
+- access GD dashboard
+    - perms req'd to access dashboard & enable GD
+- enable GD
+    - user needs access to GD & IAM perms to allow GD to have the proper service-linked role 
+    - policy for user to use GD is AmazonGuardDutyFullAccess 
+        - doesn't allow adding the lists, user must be able to do a couple more IAM things 
+        - AWS has a template of a policy that allows true full access, but it's not managed 
+        - AmazonGuardDutyReadOnlyAccess provides read-only perms for users to review findings 
+        - GD uses AWSServiceRoleForAmazonGuardDuty when GD enabled 
+- manage trusted IP & threat lists
+## Understanding Amazon GuardDuty Findings
+- in the finding, can filter by clicking on the magnifying glass with the +, and it adds it to the filter bar 
+    - can save filters 
+## Benefits to the Enterprise
+- intelligent threat detection service that performs continual and automatic analysis and threat detection 
+    - powered by ML, utilizes multiple threat detection feeds
+- high-level security regardless of deployment size
+    - provides same level of detection w/n global enterprises and small-scale deployments
+    - implementing threat detection system in traditional env is very costly
+    - minimal cost to observe all instances
+- centralized management
+    - aggregate findings into single master account
+    - makes management easier
+- no agents required
+- no upfront costs
+    - only pay for processing of log files 
+    - click 'enable' and it starts working
+- automation of rememdiation
+    - can use CW event rules in conjunction w lambda 
+    - able to trigger auto responses & quickly lock down resource by restricting permissions 
+## Costing
+- CloudTrail Event Analysis
+    - per 1 million events/mo
+- VPC flow logs and DNS log analysis
+    - per GB of log analyzed per month
+- able to use service free for first 30 days & see how much it would have cost to help estimate ongoing cost 
+## Partner Offerings 
+- vendors that focus on monitoring and security and provide services that interact with GD 
+- Alert Logic Cloud Insight Essentials for AWS
+    - allows gaining add'l insight into GD findings
+    - helps respond to findings faster by providing further intelligence about threat
+    - produce reports to analyze threat detection findings 
+- CrowdStrike
+    - integrate their threat intelligence feeds used w/n CW to GD
+    - GD can pull data + info from CS which uses AI
+- Trend Micro
+    - Deep Security agent software that can be installed on EC2 to protect against threats
+    - uses CW + lambda triggers to invoke Deep Security
+- These are just a sample of the partners 
+
+# Amazon Macie
+## How to Find PHI and Sensitive Data in Your S3 Buckets with Amazon Macie 
+- Macie: managed ML pattern matching service that helps with data security and privacy 
+- can find PII and protected financial information
+- able to take actions with lambda & step functions
+- constant discovery of data w/n S3
+    - creates service-linked role to
+        - create inventory of S3 buckets
+        - provide statistical data
+        - monitor and evaluate buckets
+        - check buckets for sensitive data 
+- saves metadata and calculates statistics to make assessments of data
+- can check for unencrypted buckets, publicly accessable, and shared buckets
+- metadata automatically refreshed once every 24 hours
+    - can be manually refreshed every 5 minutes 
+- bucket policy findings
+    - when Macie finds something, it creates a policy finding to be reviewed 
+    - S3BlockPublicAccessDisabled
+    - S3BucketEncryptionDisabled
+    - S3BucketPublic
+    - S3BucketReplicatedExternally
+    - S3BucketSharedExtnerally
+    - each finding includes severity rating, general information, and available for 90 days 
+    - able to view findings in Macie Console, Macie API, AWS EventBridge, AWS Security Hub 
+- since findings can be discovered programmatically, changes can be made auotmatically
+### How to Discover Sensitive Data Within Buckets 
+- create and run snsitive data discovery jobs
+    - able to analyze objects in buckets for sensitive content
+        - financial information
+        - personal information
+        - national information
+        - medical information 
+        - credentials and secrets 
+    - report sensitive data & overall analysis
+    - can be scheduled to run once, daily, weekly, etc 
+    - managed data identifiers
+        - built-in set parameters
+        - curated and built by AWS
+        - currently list defined by GDPR, HIPAA, PCI DSS, etc
+    - custom data identifiers
+        - created by customer
+        - can include regex, severity data
+        - can be used to supplment managed data identifiers 
+- findings categorized by what bucket they were in and how they were found 
+    - able to suppress findings as needed
+### analyzing encrypted objects
+- Macie can decrypt objects with the role, based on the encryption used
+    - e.g., can decrypt SSE-S3, SSE-KMS fairly easily
+    - for CMK-KMS, needs permission to the key 
+    - cannot decrypt SSE-C
+        - can only report metadata on object
+    - cannot decrypt client side encryption
+### Supported file formats
+- big Data
+    - .avro, .parquet
+- compression/Archive
+    - .gz, .gzip, .tar, .zip
+- documents
+    - .doc, .docx, .pdf, .xls, .xlsx
+- text
+    - .csv, .htm, .html, .json, .jsonl, .tsv, .txt, .xml, and other non-binary text files 
+- can extract files and look at up to 1 million files and up to a depth of 10 levels
+- video and pictures cannot be observed
+### Integration with Organizations
+- able to establish Macie Administrator account and run data discovery jobs across all accounts
+    - can only have one Macie admin account
+    - if Macie Admin account is changed, all other accounts are removed 
+    - once an account becomes a member, it can not remove itself from membership 
+- able to view all findings in all other accounts
+- can have up to 5,000(!) members
+- recommended to not be the same account as the organization root account 
+### Costs
+- number of S3 buckets evaluated
+    - per bucket - $.10 per bucket/month
+        - prorated per day
+- quantity of data processed 
+    - $1/gb/mo, and decreases as more data is processed
+
+# Overview of Amazon CloudWatch
+## What is Amazon CloudWatch?
+- global service designed to be a window into health and operational performance of apps & infrastructure 
+    - monitor & review performance
+    - can trigger automatic responses 
+- components 
+    - CW Dashboards
+        - build & customize page using different widgets 
+        - resources can be from multiple regions 
+        - can be shared w other users - even those not in the account 
+    - CW Metrics + Anomaly Detection
+        - metrics are key component and fundamental to the success of CW
+            - enable tracking metrics over time 
+            - different services offer different metrics
+        - by default, everyone has access to a free set of metrics that are collated over 5 minutes
+        - can collate data across the metrics every minute for a fee 
+        - custom metrics are regional 
+        - anomaly detection: CW implments ML against metric data to detect activity outside of the baseline
+    - CW Alarms
+        - tightly integrated w metrics 
+        - allow automatic measures to occur based on metrics 
+        - states
+            - ok: metric w/n threshold
+            - alarm: metric exceeded threshold
+            - insufficient_data: waiting for info
+        - can integrate w dashboards
+    - CW EventBridge
+        - extension of CW events 
+        - connect applications to variety of targets (typically AWS services) to allow real-time responses to events
+        - event: anything that causes change to env or app 
+        - helps implement event-driven architecture in a real-time decoupled env 
+        - elements
+            - rules: filter for incoming stream of event traffic 
+                - can route traffic to mulitple targets
+            - targets: where events are sent by rules 
+                - all events received in json
+            - event bus: component that receives the event from apps 
+                - rules associated with the bus 
+                - default bus available, and other buses can be created
+    - CW Logs
+        - centralized location to store logs from AWS services that have log output 
+        - acts as a central repository for real-time monitoring of log data 
+        - requires unified cloudwatch agent that can collect from linux or windows - this is in addition to regular logging 
+    - CW Insights  
+        - can use to monitor log stream in real-time
+        - types
+            - log insights: analyze logs captured by CW logs at scale in seconds using interactive queries and delivers visualzations
+                - can use to filter log data to get specific data 
+            - container insights: collate and group metric data from container services + apps 
+                - EKS, ECS
+                - capture and monitor diagnostic data for add'l insights to issues w/n containers 
+                     - can be analysed at cluster, node, pod, and task level 
+            - lambda insights: gain deeper understanding of apps using lambda
+                - gathers and aggregated metrics related to lambda to help monitor + troubleshoot serverless apps 
+                - have to enable the feature per lambda function
