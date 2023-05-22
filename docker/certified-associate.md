@@ -69,9 +69,51 @@
         - sharing config files from host machine to containers
         - sharing source code or build artifacts b/w dev env on docker host + container
         - when file or dir structure of docker host is going to be consistent w the bind mounts the containers require (meaning, it's not very portable)
+    - downside: not decoupled from the host
+    - `--mount type=bind,src="/local/machine/path",dst=/logs`
+        - have to define local host path, then the dst (destination) path in the container will append the dir defined in it to the one defined on localhsot 
 - volumes
     - preferred way to persist data
     - docker manages the storage on the host; don't need to know the underlying data path
+    - friendlier to use cross-platform (vs bind mounts)
+    - `--mount type=volume,src="logs", dst=/logs`
+        - if the volume doesn't exist, docker creates it, and it can be checked with `docker volume ls` and the path can be found with `docker volume inspect <volume-name>`
 - in-memory storage (tmpfs)
     - for when data should be ephemeral
     - allows for file-system access for the life on the container; good for secrets 
+    - `--mount type=tmpfs,dst=/logs`
+        - don't have to define location on localhost since the storage doesn't persist 
+        - the docker directory shows on the local filesystem, but only as long as the container is running 
+
+# Tagging 
+- tags provide way of identifying specific version of an image 
+- image can have more than one tag 
+- `docker build -t "tag_demo" .`
+    - with -t, can specify registries other than the default docker registry 
+    - by default, docker tags with 'latest' 
+    - `docker tag tag_demo:latest tag_demo:v1`
+        - to rename the formerly made image and define a version tag
+        - could be renamed something different in the second 'tag_demo', just same for demo purposes here 
+- by default, docker runs the image with the latest tag, unless mentioned otherwise. 
+    - when making increased versions, e.g., to v2, have to update the latest tag as well. 
+        - in the e.g., he made a v2 container, and when he ran :latest, it picked up the :latest tagged image, which was still aligned with v1 
+    - if the tag is not defined, latest will just apply to the latest revision of the image 
+- outside of dev environments, it's best practice to use bespoke tags 
+## Pushing image to dockerhub 
+- `docker login` (after making accout on dockerhub)
+- `docker push tag_demo:latest` doesn't work; it's not specific enough
+    - `docker tag tag_demo:latest <username>/tag_demo:latest` - to tag to user-specific dockerhub account 
+    - `docker push <username>/tag_demo`
+
+
+# Misc Lab experimenting
+- discovered that `docker build -t image_name .` needs the dot (or directory) specified to do things 
+- if it fails somewhere in the dockerfile, it won't make the image 
+- grabbed docker ip with `ip addr show`: 172.17.0.2/16, removed the /16, and was able to ping it 
+- to install go, had to use wget instead of curl 
+    - used the following guide: https://linuxize.com/post/how-to-install-go-on-centos-7/
+- `docker exec <container name> ls <dir/path>` list file within docker container 
+- run a container with the name 'web-server' detached (don't automatically go into the container bash) and assign port 8080 on the container to port 80 on the localhost and define the image and version of the image 
+    - `docker run --name web-server -d -p 8080:80 nginx:1.12` 
+
+# Container Orchestration with Docker Swarm Mode 
