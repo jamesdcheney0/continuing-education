@@ -10,7 +10,7 @@ COPY webapp /
 CMD ["/bin/bash"]
 
 # on Linux: 
-# to create an image, ran `docker build -t ubuntu_networking` 
+# to create an image, ran `docker build -t ubuntu_networking .` 
 # to create a docker container, ran `docker run -it ubuntu_networking` and was able to run `ip addr show` and `ping google.com` w/n the container to demonstrate it is connected to the internet via a bridge networking connection 
 # in the docker bash, type `ip addr show` to list the container's networking info
 # ping the container from the host with `ping <container-ip>`
