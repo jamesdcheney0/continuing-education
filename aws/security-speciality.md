@@ -991,3 +991,865 @@ Identity and Access Management
             - lambda insights: gain deeper understanding of apps using lambda
                 - gathers and aggregated metrics related to lambda to help monitor + troubleshoot serverless apps 
                 - have to enable the feature per lambda function
+
+# Building CloudWatch Dashboards 
+- quickly display key information
+- CW also has automatic dashboards on a service-by-service basis
+- two ways to create dashboards: GUI or programatically
+    - eight widget types
+        - line chart
+        - stacked area
+        - number 
+        - bar chart 
+        - pie chart 
+        - text: free text w markdown formatting
+        - log tables: explore results from logs insights
+        - alarm status 
+    - able to apply math to data in dashboards 
+    - json template of dashboards can be a bit challenging 
+        - requires the location and data to be written 
+- able to add annotation to graphs 
+    - vertical and horizontal annotations can be added 
+- can link w different dashboards in other regions and accounts
+    - must enable cross-region or cross-account connections & other account must accept
+    - sharing methods
+        - share just one dashboard with a specific region or account 
+        - share dashboard(s) publicly
+        - connect all dashboards to SSO provider (like AD) to allow users from the SSO to be able to see the dashboards 
+            - must be integrated with cognito
+- cost
+    - 3 dashboards w 50 widgets
+    - $3/dashboard for larger than that 
+- recommendations
+    - make most important graphs the largest 
+    - avoid plotting too much data in a graph
+    - use horizontal annotations to show normal min and max values 
+
+# How to Implement and Enable Logging Across AWS Services
+## The Benefits of Logging
+- without logging, there could be a delay in resolution fo the incident and the safeguarding of the env
+- logs generally contain a huge amount of info retained on persistent storage
+- audit control
+    - often contain lots of metadata like date-stamps, source info (IP address, usernames)
+- incident resolution
+    - use logs to ascertain state of env before/after and during incident
+- monitoring & alerting
+    - monitoring allows quick identification of potential issues & get alerts 
+- trend analysis
+    - build a performance baseline to establish what's routine, and be able to identify threats & anomalies easier
+- understanding infrastructure
+    - understanding how infra is performing and communicating is key
+    - having more data far outweights the disadvantages of not having enough 
+## CloudWatch Logging Agent
+- CloudWatch Logs
+    - CW: used to collate and collect metrics on resources, monitor performance & respond to alerts
+    - able to collect logs of apps & AWS services
+    - able to monitor log streams in real-time
+- unified CW agents
+    - after installed, able to collect logs from EC2 instances & on-prem servers (in addition to std metrics)
+- CW agent installation
+    - create & attach role to instance so CW can collect data from instances & interact w ssm
+        - need a role to install agent & to communicate w parameter store w/n ssm to store a config info file of agent
+            - only one instance needs to be able to communicate w parameter store - best to remove this role after the config is written
+            - cloudwatchagentadminpolicy & amazonec2roleforssm policies for the add'l perms for ssm
+            - cloudwatchagentserverpolicy & amazonec2roleforssm policies to install agent and send data to CW 
+    - download & install agent
+        - on the instance w the admin policy (should only be temporarily attached)
+            - download CW agent (instance needs access to agent)
+            - agent may already be installed on certain AMIs
+        - easiest to do it via SSM 
+            - ssm > run command > run command > AWS-ConfigureAWSPackage
+            - select instance to install on 
+            - package: AmazonCloudWatchAgent
+            - also able to do it from CLI (this page generates the command as well)
+    - configure & start agent
+        - on the first instance, must create CloudWatch Agent Configuration File
+        - can be created or via the wizard 
+            - wizard: `sudo /opt/aws/amazon-cloudwatch-agent/bi/amazon-cloudwatch-agent-config-wizard` 
+                - one of the questions is 'do you want to store the config in the SSM parameter store', which then stores it in SSM and allows future read-only type instances be able to pull the config 
+                    - may need credentials to upload to parameter store 
+        - after the file is in SSM, go to SSM > run command > run command > `document name prefix: equal: AmazonCloudWatch-ManageAgent`
+## CloudTrail Logging 
+- AWS CloudTrail: records & tracks all AWS API requests made 
+- captures request as an event and records this event w/n log file that's stored in S3 
+- CT records add'l metadata like identity of caller, timestamp, source IP addr 
+- log files
+    - written in JSON
+    - when API captured, associated w event & written to log
+    - new logs created every 5 minutes
+    - logs delivered to S3 buckets ~15 minutes after API called 
+    - important attributes captured: eventName, eventSource, eventTime, SourceIPAddress (of requester who made API call), userAgent (method of request, console, root, lambda), userIdentity (add'l info on identity that made request)
+    - naming format
+        - AccountID_CloudTrail_RegionName_YYYMMDDTHHmmZ_UniqueSTring.FileNameFormat
+            - random 16 character string used to CT as identifier
+            - format json.gz by default 
+    - s3 bucket folder structure
+        - BucketName/prefix/AWSLogs/AccountID/CloudTrail/RegionName/YYYY/MM/DD
+        - especially useful when multiple AWS accounts are delivering to the same bucket 
+            - to aggregate logs, enable CT in AWS account, apply perms to destination S# bucket allowing cross-account access
+            - create new CT & use bucket from another account 
+            - to allow access to users to read the logs relating to their CT logs, have them use read-only roles to view only the logs from their account CT 
+- CT log files security
+    - log file integrity validation
+        - allows verification that log files have remained unchanged since CT delivered them to S3 
+            - typically for security & forensic investigation
+        - when log file delivered to S3, CT creates a hash for it 
+            - in addition to creating the hashes, CT creates a digest file every hour to help verify log files 
+            - verification of log files can only be done via CLI 
+## Monitoring CloudTrail with CloudWatch
+- CT can send logs to CW logs, which allows metrics & thresholds to be configured
+    - any event can be monitored; successful & unsuccessful API calls can be tracked 
+- configure CT to use CW
+    - make new CT use a new or existing CW log group
+    - need a role & policy to allow CT to deliver to CW
+        - CT needs to be able to CreateLogStream, PutLogEvents, then can deliver to CW logs 
+        - role CloudTrail_CloudWatchLogs_role automatically made for CT to be used
+        - CW logs can only accept items up to 256KB in size - larger than that won't be delivered 
+    - CW must be config'd to perform searches on CT logs 
+## S3 Access Logs
+- collate data based on who has been accessing an s3 bucket
+    - tracks the following metrics 
+        - source bucket that was accessed
+        - timestamp of events
+        - identity requesting access to object in bucket
+        - action performed w object 
+- by default, access logging not enabled
+- configuration based on source bucket & target bucket
+    - source bucket: bucket to log requests for
+    - target bucket: bucket to write logs to
+    - recommended the buckets are different
+    - buckets must be in the same region
+    - needs write access for log delivery group
+        - in the console, automatically created 
+## CloudFront Access Logs
+- CloudFront: speeds up distribution of static and dynamic content
+    - requests routed to the edge location w lowest latency
+    - can record the requests to S3
+        - charged for storage on S3
+- CF Access Logs
+    - capture data over period of time + amount of log files generated depend on amount of requests recived
+    - logs not written to S3, simply stored there
+- enable: CF > general > logging: on
+- CF needs permissions to S3 to write
+    - needs FULL_CONTROL of the ACL, s3:GetBucketAcl, s3:PutBucketAcl
+- Log files
+    - depending on delivery type, the log output will vary
+    - RTMP is depreciated
+        - data/timestamp + which edge location received request
+        - source metadata including ip 
+        - event being carried out (Play, Pause, Stop)
+        - URL of page where SWF file is linked 
+    - web delivery info
+        - data/timestamp + which edge location received request
+        - source metadata including ip 
+        - HTTP access method (PUT/DELETE/GET/etc)
+        - HTTP status code of request
+        - distribution domain name
+        - encryption & protocol data 
+- cookie logging
+    - if enabled w/n distribution, CF will include all cookie info w CF access log data 
+    - only if origin on distrubtion points to anything OTHER than S3, like EC2 (s3 does not process cookie data)
+## VPC Flow Logs
+- vpc flow logs capture IP traffic info that flows w/n VPC
+- helps to resolve incidents w network communication & traffic flow
+- log data is sent to CW logs 
+- limitations
+    - w VPC peered connections, can only see logs of peered VPCs w/n same account 
+    - can't retrieve info from resources w/n EC2-classic env
+    - once flow log has been created, it can't be changed 
+    - traffic not monitored
+        - DHCP traffic w/n VPC
+        - traffic from instances destined for Amazon DNS servers
+        - traffic destined to the IP addresses for VPC default router
+        - traffic to and from 169.254.169.254 (metadata), 169.254.169.123 (time sync service)
+        - traffic related to Amazon Windows activation license from a windows instance
+        - traffic b/w NLB ENI + endpoint network interface 
+- VPC Flow logs
+    - can be created against three resources
+        - ENI on instance
+        - subnet w/n VPC
+            - data captured for all network interfaces
+        - VPC
+            - data captured for all network interfaces
+- publishing data to CW
+    - every ENI that publishes data to CW log group uses a different log stream
+    - w/n each stream there is flow log event data that shows content of log entries 
+    - each log captures data during windows of ~10-15 minutes
+- permissions
+    - role needed to setup and config VPC flow log
+    - VPC flow log needs to assume role to deliver logs to CW 
+- flow log record
+    - version  account-id  interface-id  srcaddr  dstaddr srcport dstport protocol  packets  bytes  start end  action log-status 
+## AWS Config Logging
+- what can AWS config do
+    - capture resource changes 
+    - act as resource inventory
+    - store configuration history
+        - uses configuration items (CIs) to collate and produce a history of changes to a particular resource
+        - info can be accessed thru CLI or console 
+        - sends a config history file for each resource type to S3 every 6 hours that contains all CI changes for resources
+        - CI stores config info, relationship info + other metadata in a json file
+            - CI created every time supported resource has change made to config
+            - for every CI generated, there will be five sections
+                - Metadata: version and config ID, MD5Hash for comparision, time of capture and state ID
+                - Attributes: unique resource ID, key-value tags, resource type, ARN
+                - Relationships: description of relationships to other resources
+                    - e.g., for ec2: vpc it resides in, etc
+                - Current Configuration: displays info from 'Describe' or 'List' calls from CLI
+                - Related Events: displays related AWS CT event ID 
+            - can aggregated configuration history files into same s3 bucket
+    - provide a snapshot of resource configurations 
+    - notifications about changes 
+    - provide AWS CT integration 
+    - enforce rules to check compliancy 
+    - security analysis
+    - identity relationships between resources 
+## Filtering & Querying data with Amazon Athena 
+- can use Amazon Athena to query data w SQL w/n S3 to search for specific entries 
+- must create DB, either with SQL, or in Catalog Manager with a wizard, and a S3 bucket to store the Athena DB (not for querying yet)
+    - works like regular DB, and tables and such can be created and point to a S3 bucket to query from
+- basically everything done with SQL
+- queries can be saved with a name and description 
+- can view past executed queries in history - both the command & results of the command  
+
+# KMS 
+## What is Encryption
+- unencrypted data: aka plaintext/cleartext
+- data encryption: mechanism in which info is altered, rendering the plain text data unreadable 
+    - plaintext turned into cyphertext 
+    - need an encryption key to covert back to plaintext
+    - longer the key, more difficult it is
+- symmetric cryptography: single key used to encrypted & decrypted 
+    - the problem is if a third party gets the key, since the key has to be shared 
+    - KMS can function as a central repository for storing this key for additional security 
+    - faster than asymmetric encryption
+- asymmetric encryption
+    - encryption key (private key)
+    - decryption key (public key)
+        - able to be shared - doesn't need to be sent securely
+        - w/o private key, unable to open it 
+## An Overview of AWS KMS
+- KMS: managed service used to store and generate encryption keys 
+    - other services able to use KMS for encryption 
+- AWS has no access to custom keys & cannot recover deleted keys
+    - only responsible for the hardware hosting the service 
+- core components 
+    - AWS KMS keys: encrypt and decrypt data
+    - customer managed keys: created, managed and controlled by customer
+    - AWS managed keys: managed by integrated AWS services
+    - AWS owned keys: managed by AWS, used across multiple accounts; not tied to individual account
+    - data keys: encrypt data outside of KMS
+    - HMAC keys: symmatric key to create & verify HMAC codes 
+    - only able to encrypt data at rest with these keys 
+        - data in transit needs method like SSL
+        - data encrypted at rest would remain encrypted when sent to others 
+## Components of the KMS service 
+- AWS KMS keys
+    - primary keys w/n KMS that can be used to perform crypto ops
+    - key can be used to generate data keys
+    - when generated, created as symmetric 256-bit AES-GCM encryption key
+    - will live in KMS permanently
+    - by default, AWS services use symmetric encryption
+- assymetric keys used when encryption needed outside of KMS
+- key types
+    - customer managed keys (CMKs)
+        - asymmetric keys
+        - provide greater key control
+        - create key policies 
+        - admin functions available: enable/disable, manage rotation, add tags, create aliases, manage deletion
+    - AWS managed keys
+        - automatically generated
+        - integrate w KMS
+        - perform same function as CMKs
+        - can be viewed w/n KMS
+        - easily identifiable: aws/servicename is the standard naming
+        - users cannot manage key in any way
+    - HMAC keys
+        - Hash-based Authentication Code
+            - take message data + HMAC key that's associated w metadata of object to check integrity & authenticity of data 
+        - confirms to standards sset by RDS 2104
+    - Data keys
+        - generated by KMS
+        - meant to be used outside of KMS
+        - uses symmetric encryption; it uses a plaintext and encrypted version of the same key 
+    - Data key pairs
+        - use asymmetric encryption
+        - supported type 
+            - RSA, elliptic curve, HM
+        - private key store in KMS & encrypted by KMS key
+        - plaintext private key + encrypted version created
+        - encryption: public key + algorithm = cyphertext
+        - decryption: data keys + plaintext keys + algorithm = plaintext 
+    - Key Material
+        - element used as part of crypto algorithm
+        - private key material
+            - must be protected
+            - symmetric encryption required
+        - public key material
+            - asyemmetric encryption
+            - public key 
+        - key material storage for symmetric keys 
+            - AWS KMS
+            - external key manager
+            - CloudHSM
+    - key rotation
+        - should be implemented for CMKs
+        - can be done automatically & managed by AWS 
+            - key doesn't change; key material associated with key changes 
+        - for AWS managed/owned keys, AWS does automatically 
+        - all previous key information is saved in rotation - data encrypted before the rotation is still accessable, and uses the cryptographic information of the key from when it was originally encrypted 
+    - key policy
+        - security feature w/n KMS that allows defining who can use and access particular keys 
+        - resource-based policies
+        - different policies can be created for different KMS keys
+        - permissions defined w/n JSON key policy document 
+    - grants
+        - temporary-based policy
+        - resource-based policy
+        - allow delegation of subset of user's access to KMS key for another principal, such as another user w/n AWS account 
+        - less risk of someone altering access control perm's for the KMS key
+        - grant created & applied to KMS key for each principle requiring access 
+## AWS KMS Permissions and Key Policies 
+- to use IAM policies, have to allow the use of IAM policies w/n KMS key policy
+    - enabling the use of IAM doesn't provide access, just allows policies in IAM to govern user access to the key 
+    - access given to root, with the upside of always being able to have access to key at some level 
+- KMS key policies
+    - resource based
+    - contain info like
+        - IAM user permissions
+        - who can administer key
+            - can only perform administrative actions with the key, not cryptographic actions (although they can do both if the permissions are set up correctly)
+            - can specify if they can delete key
+            - have ability to update key policy and allow themselves to use the key
+        - cryptographic operations
+        - grants 
+    - JSON based and largely similar to IAM policies in format 
+    - allow use of key to key users
+    - grants: allow attachment of persistent resources
+        - the way to allow users to provide grants 
+        - grants must be made via KMS APIs; not possible in the console  
+        - only have access to single KMS keys
+        - can only be granted to single users
+        - can only have 'allow' permissions, not deny
+        - permissions may take some time to propogate; tokens are eventual consistency
+        - retire: use when grant is no longer needed
+        - revoke: use if key becomes compromised
+        - grants do not expire; valid until retired or revoked  
+- KMS events will not appear in event history 
+## KMS Access: Policy Evaluation Logic 
+- policy types 
+    - key policy
+    - IAM policies
+    - grants
+- least privileged access: any deny has overarching importance, and user needs explicit access 
+## Sharing CMKs Across Multiple AWS Accounts 
+- Custom master key
+    - can create data encryption keys for external data encryption 
+    - managed by AWS: used by AWS services (S3, SSE-KMS)
+    - managed by customer: 
+        - greater flexibility
+        - manage the key 
+            - rotation
+            - governing access
+            - key policy configuration
+            - enable and disable key
+- access control
+    - identity-based IAM policies
+    - resource-based access 
+    - to manage access to CMKs, key policy must be used 
+    - must use resource-based key policy where the CMK resides along w IAM identity-based policy in AWS acct that wants to access the CMK
+    - can only edit key policies for keys that you have created 
+        - can't share managed CMKs b/w accounts 
+- key policies
+    - resource-based policies tied to CMK
+    - KMS creates a default key policy when the key is created in the console 
+    - define permissions for
+        - key administrators: administer CMK, but don't use for encryption
+        - users: can access CMK + perform encryption
+    - to allow another account, add IAM users from the other account in the policy JSON
+        - users w/n the external account need IAM users/roles in their account to be set & associated to be able to use the CMK 
+        - need the ARN of the key to add to the policy in the other acct 
+        - once connected, key won't show in console (e.g. in KMS option in S3); will have to use ARN to use it 
+
+# Sharing Secrets Between Multiple Accounts Using AWS Secrets Manager
+- secrets manager  
+    - secret: password, API keys, plaintext; something to remain hidden from world
+    - able to remove hardcoded secrets w/n app and replace w API call to secrets manager 
+    - enables easier secrets rotation
+    - integrates closely w AWS services 
+- access to secrets
+    - goverened by fine-grained IAM identity-based policies + resource-based policies 
+- sharing secrets b/w accounts
+    - with the goal of having a single account with all secrets stored centrally 
+    - account with secrets, key policy needs to allow user/role from other account to use the key 
+        - have to set a resource-based policy on the secret, but can only do it via a JSON document applied via CLI 
+    - account using the secret, role/user needs policy allowing reading of the secret and decryption of KMS to be able to actually use the secret
+
+# CloudHSM
+## What is CloudHSM
+- HSM: hardware security module
+    - physical, tamper-resistant hardware appliance used to protect and safeguard cryptographic material and encryption keys
+- provides Federal Information Processing Standards (FIPS) 140-2 level 3 (used for document signing, CAs)
+- physical single-tenant device
+- used for secure encryption key management 
+- create, store, manage cryptographic keys
+- ability to use cryptgraphic hash functions (HMACs)
+    - symmetric & asymmetric
+- able to manage HSMs to a greater degree than KMS HSMs
+## Understanding AWS CloudHSM Architecture & Implementation
+- begin by creating a cluster over multiple AZs for HA
+- any requests to cluster load balanced b/w HSMs in cluster 
+- ENI placed in customer-owned VPC, and connects to an AWS-owned CloudHSM-owned VPC
+- creates a service-linked role and SG for the cluster w ports 2223-2225
+- provisioned in uninitialized state 
+- once initialized, able to connect via EC2s w/n subnets/vpcs
+- add instance to cluster SG
+    - must enable 22/3389
+- install AWS CloudHSM client software on instance 
+## Access Control
+- users on HSM devices + need IAM permissions
+- types of users on HSM
+    - precrypto office (PRECO)
+        - first HSM connected to has this user which is a temporary user with temp credentials of read-only access to cluster
+        - part of activation process of cluster PRECO PW will be changed, and becomes CO 
+    - crypto office (CO)
+        - can perform user management tasks
+            - creation & deletion of users
+            - changing users passwords
+        - perform administrative level cryptographic operations 
+            - zeroize data on HSM
+            - obtain HSM details (IP addresses, models, serial numbers)
+            - view & determine syncrhonization status across cluster 
+    - crypto user (CU)
+        - used to perform cryptographic operations and key management functions in cluster
+            - create, delete, import/export + share of crypto keys
+            - perform encryption & decryption
+            - signing & verifying 
+        - also able to zeroize data & get HSM details & sync status 
+    - appliance user (AU)
+        - performs cloning and sync across cluster
+- HSMs designed w physical tamper detection + response processes 
+    - performs key deletion if compromise detected
+    - resistant against brute force attacks + will lock user out if identified 
+## Using CloudHSM as a Custom Key Store in KMS
+- KMS: can create custom key store, which are storage locations to store and protect crypto key
+    - default key stores managed by KMS & stored on HSMs managed by AWS
+    - can create a custom key store and have full management over CloudHSM store
+    - benefit: wide integration w other AWS services w minimal configuration 
+- custom key store obtains key material from CloudHSM cluster, and able to leverage the power of KMS 
+- each HSM cluster can only be associated w one custom key store
+    - must upload trust anchor certificate for cluster to KMS to create custom key store 
+- a user must be created for KMS for it to access crypto information on HSM cluster 
+## Monitoring & Logging 
+- pushes metric data to CW 
+    - HsmUnhealthy
+    - HsmTemperature
+        - machine will shut down if temp gets to 110ºC
+    - HsmKeysSessionOccupied
+    - HsmKeysTokenOccupied
+    - HsmSslCtxsOccupied
+    - HsmSessionCount
+    - HsmUsersAvailable
+    - HsmUsersMax
+    - InterfaceEth2OctetsInput
+    - InterfaceEth2OctetsOutput
+- CT can track and record API calls for CloudHSM
+- CW logs can track audit logs 
+    - generated by CloudHSM clients using the CloudHSM client daemon
+    - retrieved by viewing file on client or by entering a command 
+    - can't be disabled or turned off, either locally or on the way to CW logs 
+    - allows full audit of all actions and requests that have made changes to HSM
+
+# AWS Encryption for Data Analytics
+## Amazon S3 and Amazon Aethna Encryption
+- S3 encryption options
+    - SSE
+        - used for securing data at rest
+        - data encrypted at object level before written to disk
+        - forms
+            - SSE-S3 (amazon s3 managed keys)
+                - Amazon S3 uses unique key to encrypt each data object & the key is encrypted w Master Key 
+                - objects encrypted w AES-256 (which is symmetric), which is fine, since AWS manages encryption & decryption 
+                - works w S3 bucket policies (e.g., enforce SSE w conditions in policy)
+            - SSE-KMS (keys managed by AWS via KMS)
+                - have the option to select default AWS S3 CMK or choose a customer managed CMK
+                - KMS CMK is used to encrypt the data keys, not the actual object data itself 
+                - when uploading an object: request made from S3 to KMS, KMS returns two versions of data key, one in plaintext, and is used by S3 to encrypt object. The other key is encrypted and uploaded w the object 
+                - decryption: S3 sends encrypted data key to KMS, KMS uses CMK associated to decrypt the data key, and KMS responds w plaintext key 
+                    - plaintext key stored in memory and deleted after actions are copmleted 
+            - SSE-C (keys managed by customer & provided to AWS)
+                - customer must supply key and S3 service performs the encryption
+                - must send customer-provided key w data object upload request using HTTPS
+                - after encryption, AWS deletes the AES-256 key from memory and stores HMAC value
+                - must use the same key to decrypt
+    - CSE (client side encryption)
+        - data encyprted before being sent to S3
+        - CSE-KMS (CSE using KMS)
+            - only need to supply CMK-ID to the S3 encryption client
+            - when object uploaded, request is made by the client and KMS returns a plaintext and ciphered visions of a data key
+            - when object retrieved, client sends the ciphered key to KMS to retrieve the matching plaintext version
+        - CSE-C (client-side encryption using a custom client-side master key)
+            - key is never sent to AWS
+            - when uploading an object, master key must be provided to client 
+            - master key will be used to encrypt a data key generated by the client, which will be used to encrypt the object data 
+            - when object retrieved, the master key is used to decrypt the data key & object is decrypted 
+- Encryption with Amazon Athena 
+    - able to query S3 data that is already encrypted
+    - it can encrypted the results of the query
+    - the encryption of results is independent of the underlying queried S3 data 
+        - i.e. can encrypt results of unencrypted data 
+    - supports SSE-S3, SSE-KMS, CSE-KMS
+    - doesn't support SSE-C, CSE-C
+    - can only unencrypt objects that are in the same region 
+## Elastic MapReduce (EMR) Encryption
+- EMR: managed service comprised of a cluster of highly scalable EC@ instances to process and run big data frameworks
+- can encrypt data at rest, in transit or both
+    - the exist as a separate entity w/n EMR & can apply to future created clusters
+- by default, instances w/n cluster don't encrypt data at rest
+- BY DEFAULT, DOESN'T ENABLE ENCRYPTION AT REST 
+- instances w/n EMR are created from pre-config'd AMIs
+- must use EMR 5.7.0 to use custom AMIs and encrypt the root device volume 
+- EMR encryption w EBS
+    - if using EBS as persistent storage (not applicable to root volumes)
+        - Linux Unified Key Setup (LUKS): specify KMS to be used as key management provider or use custom key provider
+        - Open-Source HDFS Encryption: secure Hadoop RPC, uses SASL
+            - data encryption of HDFS block transfer uses AES-256
+- EMR encryption with S3
+    - can use S3's encryption tools
+    - supports SSE-S3/SSE-KMS or CSE-KMS and CSE-C (if data is encrypted before being sent)
+    - encryption in transit using TLS cert provider
+        - must provide pem to S3
+- EMR application specific encryption
+    - Hadoop
+        - Hadoop MapReduce Encrypted Shuffle uses TLS
+        - secure Hadoop RPC uses SASL (simple authentication security layer)
+        - data encryption of HDFS block transfer uses AES-256
+    - presto
+        - when using EMR 5.6.0+ any internal comms b/w presto ndoes use SSL/TLS
+    - tez
+        - tez shuffle handler uses TLS
+    - spark 
+        - Akka protocol uses TLS
+        - block transfer service uses SASL and 3DES
+        - external shuffle service uses SASL
+- EMR encryption w KMS
+    - when using encryption at rest using KMS CMKs
+        - ensure that role assigned to instance w/n cluster have relevant permissions to enable access to CMK
+        - add relevant role to key users for CMK
+- EMR transparent encryption w HDFS
+    - offers encryption both at rest and in transit
+    - data encrypted and decrtyped transparentingly w/o requiring changes to app code
+    - each HDFS encryption zone has own KMS key; by default EMR uses Hadoop KMS, but alternative can be selected 
+    - each file is encrypted by a different data key, which are encrypted w HDFS encryption zone key; not possible to move files b/w encryption zones 
+## RDS Encryption
+- during creation of RDS, encryption can be enabled at Configure Advanced Settings screen 
+    - keys can be issued by KMS using AES-256
+    - encryption can't be applied after DB creation
+- to encrypt an unencrypted DB, 
+    - create snapshot of unecnrypted DB
+    - create encrypted copy of the snapshot
+    - use the encrypted snapshot to create new DB
+    - now have an encrypted RDS DB 
+- RDS encryption
+    - if KMS ke3y is disabled, will not be able to read or write to DB and RDS will move its instances to terminal state
+    - must reinstate the KMS key and recovery DB from backup
+    - read replicas follow same encryption pattern as defined by the DB source 
+- RDS encryption mechanisms
+    - Oracle and SQL Server Transparent Data Encryption (TDE)
+        - can be used in addition to KMS, but would impact performance of DB 
+        - to use, DB must be associated to an option group
+            - option groups provide default settings for DB & help w management
+            - option groups only exist for oracle, mariadb, mySQL, and some versions of MSSQL server 
+        - must add Oracle Transparent Data Encryption option to the group, and it can't be removed 
+        - TDE Encryption modes
+            - TDE tablespace encryption: encrypts entire table
+            - TDS column encryption: encrypts single columns 
+    - MySQL cryptographic functions 
+    - Microsoft Transact-SQL cryptographic functions 
+- RDS Encryption: Instance Types 
+    - offers ability to encrypt instances across all regions other than China (Beijing) region, and across ~20 types of instances
+    - applying encryption at rest for RDS simplified due to built-in app-level encryption option 
+- encryption in transit
+    - can be secured using SSL/TLS
+    - recommended if required to abide by specific compliance or when data is sensitive
+    - method how this works based on DB engine type
+- RDS encryption w Oracle
+    - can use Oracle's Native Network Encryption (NNE)
+    - will encrypt all connections w DB
+    - not possible to use SSL and NNE together 
+    - to enable, add NATIVE_NETWORK_ENCRYPTION to DB options group 
+## Amazon Kinesis Encryption
+- Amazon Kinesis Firehose
+    - delivers real-time streaming data to different service w/n AWS; can be useful for big data
+    - fully managed by AWS 
+    - receives data from data producer and delivers to destination
+    - encryption
+        - can be sent via HTTPS; when enters Kinesis, is unencrypted by default 
+        - can implement encryption using SSE-KMS on S3
+            - relevant perms must be assigned to a role for access 
+    - even when sending data to redshift/ElasticSearch, data is stored in S3 and has the applicable encryption there
+- Amazon Kinesis Streams
+    - collects and processes huge amount of data in real-time
+    - data can come from varity of sources 
+    - encryption
+        - able to implment SSE-KMS directly from producers
+            - gives full at-rest encryption 
+            - new data key generated every 5 minutes 
+            - small latency of less than 100 micro seconds added to performance 
+        - both producer and consume apps need perms to use KMS key
+            - producer: something that adds data to Kinesis stream
+            - consume: Kinesis app that processes data from stream 
+## Amazon Redshift 
+- redshift: managed service for data warehousing for big data solution
+    - able to scale up to 1 PB
+- Redshift Encryption   
+    - offers encryption at rest using 4-tiered hierarchy using either KMS or CloudHSM
+        - T1: the master key
+            - managed by KMS or CloudHSM
+            - integration w HSM device req's add'l steps to implement
+        - T2: cluster encryption key (CEK)
+        - T3: db encryption key (DEK)
+        - T4: data encryption keys 
+    - when encryption is enabled it can't be disabled and vice cersa
+        - can only turn on encryption at creation
+    - once cluster is encrypted, data, metadata and snapshots are also encrypted 
+- KMS encryption for redshift
+    - either use default KMS key or select another CMK
+    - default key automatically made when encryption is chosen upon creation 
+    - CMK known as master key on tier 1
+        - redshift will send request to KMS for new KMS data key
+        - KMS data key encrypted w CMK master key
+        - encrypted KMS data key then used as the Cluster Encryption Key (CEK)
+        - CEK sent to redshift and stored separately from cluster
+        - redshift sends CEK to cluster over asecure channel & key stored in memory
+        - redshift requests KMS decrypts T2 CEK
+        - decrypted CEK also stored in memory
+        - redshift creates random DEK and loads it into memory
+        - decrypted CEK in memory encrypts the DEK which is also stored in memory
+        - encrypted DEK is stored separately from the cluster
+        - encrypted and decrypted CEK & DEK are stored in memory
+        - decrtyped DEK encrypts the data keys generated by redshift 
+- CloudHSM encryption for Redshift 
+    - to work wth CloudHSM, must set up trusted connection b/w both HSM client and redshift using client and server certs 
+    - using a key pair, redshift creates public client cert 
+    - cert is downloaded and registered to HSM client & assigned to correct HSM partition
+    - must config redshift w HSM ip addr, partition name/password, public HSM server cert
+    - after info provided, redshift confirms it's able to use the connection 
+- key rotation
+    - redshift enables rotation of encryption keys for encrypted clusters
+    - be aware: cluster will be unavailable for a short period of time during the key rotation process
+    - during rotation
+        - redshift will rotate CEK & CEK for backups
+        - rotate DEK
+        - put cluster into state of ROTATING_KEYS until process complete
+    - perform key rotation w console
+        - redshift > clusters > pick cluster > select db > rotate encryption keys > yes, rotate keys 
+
+# Protecting Web Apps with AWS WAF, Shield, & Firewall Manager
+## WAF
+### What is WAF & what does it do? 
+WAF: helps prevent web sites and web apps from being maliciously attacked by common web attack
+patterns
+1652
+used to identify how Cloudfront distrubutions and ALBs respond to web requests
+1653
+filters HTTP and HTTPS requests distinguishing between legit and malicious users
+1654
+- WAF components
+    - conditions
+        - specify what elements of incoming HTTP(S) request to monitor for
+            - cross-site scripting: scripts written to maliciously gain access to client-side data from another user via a web apo
+                - scripts embedded w/n web pages that are normally trusted
+                - can be data like cookies
+            - geo match
+                - specify which countries and geographic functions for WAF to filter on
+                - if using geo restriction w/n CF to block country, then traffic from that country won't make it to WAF ip addresses
+            - ip addresses 
+                - specify a single IP addr or a range of IP addrs to allow or block
+                - can be used in conjunction w geo match
+            - size constraints
+                - block traffic based on size of parts of requests. can define which part to look for
+            - SOL injection attacks
+                - can alter and read data w/n db and spoof identities
+                - performed by inserting a SQL query via client into an entry field to a remote app db
+            - string and regex matching
+                - identify web requests based on strings contained w/n request itself
+                - when creating a web ACL, can allow or block
+    - rules
+        - allows compliation of one or more conditions into a list, where each condition is ANDed to form the complete rule
+        - requests must meet all the rules to help with more specific matching
+        - types
+            - regular
+            - rate-based
+                - count number of requests from a single IP over 5 minutes
+                - When limit is reached, further requests are blocked 
+                - if traffic drops below limit, requests are unblocked
+                - must be >=2,000 requests, otherwise is just a regular rule adding conditions to rules
+                every condition in rule has to be met for the action of the rule to be carried out
+    - web ACLs
+        - rules are added here
+            - final decision if traffic is allowed or block
+            - action applied for each rule: Allow, Block, Count
+                - allow: request forwarded to CF distribution or ALB
+                - block: request terminated
+                - count: count number of requests that meet conditions w/n rule
+                    - helpful in testing to see how much traffic meets this rule before making it allow/ block
+            - rules executed in the order that they are listed w/n web ACL
+                - usually listed whitelisted (allow), blacklisted (block), bad signatures (block)
+### When and why should I use WAF?
+- if delivering web content via CFt or ALB, recommended to implement WAF as an add'l layer of security 
+- benefits
+    - huge asset to web app arch
+    - quicker and simpler to manage than standard WAF solutions
+        - easy to manage via console or cli/apis
+        - integrates w CW for monitoring and Lambda for automation
+    - might help achieve higher level of security compliance 
+    - the closer the detection systems are logically implemented to web app, the greater the risk of add'l vulnerabilities being exploited 
+    - logically, sits b/w end user & CFt distributions
+        - however, request will be received by CFt distribution first and then forwarded to associatd WAF web ACL
+### WAF Demo
+- cloudwatch metrics made for ACL and for rules 
+- to attach to CFt, go to CFt console & go to general > edit to add WAF ACL
+### Monitoring WAF
+- in AWS WAF dashboard, able to view statistical info for web ACLs created 
+    - can't generate reports here 
+- integrating w CW
+    - metrics reported in one minute intervals & kept for 2 week periods
+    - sum count of
+        - AllowedRequests
+        - BlockedRequests
+        - CountedRequests
+        - PassedRequests
+    - for each ACL, there will be an associated CW metric 
+### Limitations of WAF
+- 100 conditions of each type, except regex, which allows only 10 conditions (soft limit)
+- 100 rules and 50 web ACLs per acct
+- 5 rate-based-rules per acct 
+- 10,000 requests per second for WAF w ALB 
+- same web ACL can be assigned to different CFt distributions 
+### WAF and CloudFront
+- WAF relies heavily on CFt distributions
+    - CFt does not rely on WAF
+- WAF supports custom origins, allowing applying the same level of security to web infra managed outside of AWs
+- associate b/w web ACL and CFt distrubtion can take ~15 min for Web ACL and rules to be propigated 
+- when request blocked by WAF, CFt notified request was forbidden & returns 403 to browser
+    - error doesn't provide any useful info to user 
+        - can create custom 403 errors to guide users to issues for access 
+- use combo of CFt config and WAF Web ACLs to process incoming requests leveraging settings from both services 
+    - e.g. if CFt will not respond to certain methods, no need to also block those in WAF
+### WAF Pricing
+- number of incoming requests
+    - $0.60 per million requests
+- number of Web ACLs
+    - not chargee xtra for assigning the same Web ACL to multiple distributions 
+    - $5 per Web ACL per mo
+- number of rules w/n each of Web ACL
+    - $1 per rule per Web ACL per month 
+- all charges in addition to using CFt
+- no upfront costs, and not very expensive overall 
+## AWS Firewall Manager
+### Overview of Firewall Manager
+- simplify managing WAF in multi-account env w simplicity and control
+- able to protect all vulnerable resources across all of AWS accts w/n AWS organization
+- prerequesites
+    - AWS account must be parent of AWS organization, which must have been config'd w all features 
+    - define which AWS acct will act as the firewall manager admin
+    - AWS config must be enabled 
+### Components of Firewall Manager
+- WAF rules (same as rules in the actual WAF console)
+- Rule Groups
+    - allow group together one or more WAF rules that will have the same action applied
+    - can create own group & add own WAF rules, or purchase existing rule groups via AWS marketplace 
+    - can only contain block or count acionts (no allow action)
+    - hard max of 10 rules per rule group 
+- firewall manager policies 
+    - after rule groups are created, this contains the rule groups 
+    - hard limit of two rule groups: one custom, one from AWS marketplace  
+    - $100 per policy per region per month 
+## AWS Shield
+### What is AWS Shield
+- protect infrastructure against DDoS
+- DDoS attacks
+    - SYN flood
+        - spoofed SYN packets sent to host, which sends SYN/ACK, but never receives ACK & leaves those requests open
+    - DNS query flood
+    - HTTP flood/cache-busting
+        - send lots of requests to host, force content to be retrieved from originating server and not edge location 
+- AWS Shield Standard
+    - free: offers DDoS protection against common layer 3 & 4 attacks for S3 and CFt
+- AWS Shield Advanced
+    - offers protection to web apps running on EC2, CFt, ELB, route53
+    - enhanced levels of DDoS protection offered compared to standard
+    - access to 24/7 specalized DDoS respond team  
+    - can view real-time metrics of any attacks against resources
+    - protection against layer 3, 4, 7 attacks
+    - cost protection as a part of the plan, and WAF is included in 
+    - $3,000/mo 
+    - account-specific
+### Configuring Shield
+- have to configure rate-based rules from WAF to help indicate DDoS attack is in progress 
+    - only needed for ALBs and CFt
+- pre-authorize AWS DDoS Response Team (DRT)
+    - can allow DRT team access to resources to help in event of attack
+    - must be subscribed to business or enterprise support 
+    - team is given access by adding a role that they can assume 
+- recommended to use CW + SNS + shield for notifications 
+- global threat enviroment dashboard
+    - shows number of attacks across AWS landscape 
+
+# AWS VPC: Subnets and Routing
+## VPC Subnets
+### VPC CIDR Blocks
+- subnetting: process of splitting CIDR block into smaller CIDR blocks 
+- VPC creation requires IPv4 CIDR block
+    - max block: /16 (65,531 hosts)
+    - min block: /28 (11 hosts)
+    - first available host address for VPC router
+    - second available for AWS DNS
+    - third available for future AWS use
+    - remainder of addresses for host use
+### Why Subnet your VPC? 
+- logical network division
+    - able to have SN for DB/app/web
+- security
+    - w logical division, allows for greater security mgmt 
+- accessibility
+    - split b/w private & public SN and have different controls for each 
+- communication
+- high availability
+    - better to deploy resources across multiple subnets 
+### VPC Subnets
+- console info for subnets 
+    - summary: provides summary of all metadata associated w subnet 
+        - includes IPv4/6 CIDR, state, vpc, available IPs, az, route table, nacl, default SN (from default VPC) yes/no, auto-assign public ipv4/6 status
+    - route table 
+    - NACL: displays inbound & outbound rule sets 
+    - flow logs
+    - tags
+### Public & Private Subnets
+- public subnets have direct access to internet
+    - IGW attached to VPC + added to SN default route 
+    - instances w/n public SN will need public IP addr to communicate on internet
+    - NACLs need to allow traffic in/out 
+- ip addressing behavior
+    - public ip addresses can be automatically or manually assigned to instance
+    - by default, all subnets have automatic assignment disabled 
+        - able to disable on instance if SN setting is automatic assignment 
+    - must use EIP if the same IP addr is desired every time 
+- private subnets have no direct access to the internet
+### VPC Peering: Subnet Considerations
+- allows connect two or more VPCs together as if they were part of the same network
+- once established, resources in one can access resources in the other
+- subnet considerations
+    - vpcs w overlapping or duplicate CIDR blocks can't be peered
+- it is not possible to create end-to-end communication of VPCs by daisy chaing them together
+    - each VPC will only communicate w its peer 
+### Flow Logs: VPC Subnets
+- track traffic flow b/w VPCs, subnets, individual networking adapters 
+## VPC Routing
+### Routing Fundamentals & Route Tables
+### Routing Priorities 
+### Routing: VPC Peering
+### Routing: VPN Connection via a Virtual Private Gateway
+### Routing: Internet Gateways & NAT Gateways
+### Routing: VPC Endpoints 
