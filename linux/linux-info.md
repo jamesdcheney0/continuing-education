@@ -44,3 +44,8 @@ look for p10k for prompt creator
 # Searching help pages 
 - I saw Doug search through a help page with `aws backup --help | rg -i <search-term>`
     - rg -i sorts through the aws backup help page and only returns items that match the term, instead of having to scroll through the the whole help page 
+
+# zip
+- I was having real challenges getting all files within a deep directory structure all zipped into one thing
+- I had a single dir I wanted to zip, and it had files and directories all the way throughout that I wanted to get all of
+- what I ended up doing was cd'ing into the directory, then `zip -r <zip-name>.zip *` to recursively grab everything in the dir, then moved the zip out of the dir and deleted the dir (so I could push to github)
