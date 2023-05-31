@@ -83,3 +83,7 @@ yw: yank word to general buffer
 "A9dd: delete 9 lines; append to buffer a
 "ap: put text from general buffer a after the cursor
 J: join lines
+
+other
+set nu/set number to show line numbers 
+go to a specific line `:X` where X is the line number 
