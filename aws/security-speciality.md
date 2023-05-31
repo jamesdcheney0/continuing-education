@@ -1845,11 +1845,234 @@ filters HTTP and HTTPS requests distinguishing between legit and malicious users
 - it is not possible to create end-to-end communication of VPCs by daisy chaing them together
     - each VPC will only communicate w its peer 
 ### Flow Logs: VPC Subnets
-- track traffic flow b/w VPCs, subnets, individual networking adapters 
+- track traffic flow & troubleshoot network problems b/w VPCs, subnets, individual networking adapters 
 ## VPC Routing
 ### Routing Fundamentals & Route Tables
+- routing: provides mechanism to allow network packets to be forwarded to the correct destination
+- routing fundamentals
+    - AWS creates & adds implicit router for VPC during CPV creation process
+    - default route table, named 'Main Route Table' also created
+    - main route table cannot be deleted & is implicitly associated w subnets 
+        - able to set a new main route table; doesn't have to be the default one
+    - subnets can be implicitly or explicitly associated w route table 
+    - a subnet can only be associate w a single route table
+    - a route table can be associated w multiple subnets 
+- console info
+    - summary: route table ID, explicit association, main yes/no, vpc 
+    - routes: shows routing decisions made w/n routing table
+        - destination: CIDR block for network to route to
+        - target: gateway to route to
+        - status
+        - propogated yes/no
+    - subnet associations 
+        - can't use route table of another SN via daisy chaining 
+        - under main route table, will show implicit and explicit associations
+    - route propagation 
+        - enable route propagation against virtual private gateway (VGW) attached to VPC
+    - tags 
 ### Routing Priorities 
+- longest prefix match: AWS will use most precise route available w/n route table to route traffic to specific destination
+    - e.g., if there's routes for 192.168.0.0/16 and 192.168.1.0/24, will go to the /24 one 
+    - exclusions
+        - if route propagation is enabled for VGW & those propagated routes overlap the 'local' route - the local route will have precedence, even if propagated routes have LPM
+        - if any propagated routes have the same destination as any static routes, LPM rule not aplpied. Route priority is executed against static routes in the following order
+            - IGW > VGW > ENI > Instance ID > VPC peering connection > NAT gateway
+                - read as, IGW has greater preferance than VGW, etc 
+- route table limitations
+    - soft limit of 200 routes per VPC
+    - soft limit of 50 non-propagated routes (hard limit of 100)
+    - each limit applies separately to IPv4 and IPv6
+    - hard limit of 100 propagated routes per table 
 ### Routing: VPC Peering
+- peering connections abbreviated w pcx
+- subnets in both VPCs must include a route to subnets in the peered VPC using the pcx 
+- CIDR block must not overlap for peered VPCs
+- can peer to two separate VPCs that themselves have overlapping CIDR blocks
+    - it's possible, but do try to avoid it... 
+        - e.g. A connects to B, which is connected to A and C, and C is connected to B. 
+            A and C both have the same CIDR range, and B has a separate one. Routing properly between A and C gets tricky when considering routing priorities 
+    - peering does not support unicast reverse path forwarding 
+        - i.e. if A and and C both have same CIDR range, and request comes from A, and they both have the same entry on the route table, the response would probably be routed to C
 ### Routing: VPN Connection via a Virtual Private Gateway
+- required to set VPN connection between corporate network & VPC
+- once VPG is attached, route tables for SN need to be updated to point to corporate network
+- IPv6 not supported over VPG connection 
 ### Routing: Internet Gateways & NAT Gateways
+- internet gateways     
+    - public subnets must be able to route to IGW attached to VPC
+    - IGW is means of communicating to internet fro mVPC 
+    - IGWs are managed service
+    - destination of 0.0.0.0/0 implies that any routes with unknown routes are sent to the internet 
+- NAT gateways
+    - allow instance w/n private subnet to initate a connection to the internet
+    - access from internet cannot be initiated w instances w/n subnet behind NAT gateway
+    - created per AZ, recommended to have multiple for HA 
 ### Routing: VPC Endpoints 
+- virtual device which allow connection of VPC to other AWS services w/o using gateway
+    - traffic remains w/n AWS global network
+- S3 and DynamoDB supported
+- doesn't impose risks of availability or bandwidth across VPC
+- creating new endpoint automatically adds an entry to main route table 
+
+# AWS Security Best Practices: Abstract & Container Services 
+## Abstract & Container Services
+- container service characteristics
+    - run on separate infrastructure instances, such as ec2
+    - AWS responsible for OS + platform 
+    - managed services provided by AWS for the actual app which are seen as 'containers'
+    - customer responsible for management and security of
+        - managing network access security
+        - platform level IAM
+    - examples: RDS, EMR, elastic beanstalk
+    - provide greater control & responsibility to customer 
+- abstract service characteristics 
+    - service is removed (abstracted) from the platform or management layer
+    - accessed via endpoints using AWS APIs (typically not assigned AZs)
+    underlying infrastructure, OS, platform - managed by AWS
+    - provide a multi-tenant platform on the underlying infra
+    - data isolated via security mechanisms
+    - strong integration w IAM
+    - examples: S3, DDB, Glacier, SQS
+- AWS shared responsibility model 
+    - which security controls are AWS responsibilities and which are the customers
+    - boundaries vary b/w services 
+    - three models
+        - infrastructure service model
+            - AWS: security of the cloud (foundation services, global infra)
+            - customer: security in the cloud (data, IAM, OS config, encryption)
+            - how and when to apply security controls is not AWS' responsibility
+        - constainer service model
+            - AWS: platform & app management, OS & network config, foundational services, global infra, endpoints, AWS side of IAM
+            - customer: client-side data encryption + integrity, network traffic protection, firewall config, customer side of IAM
+        - abstract service model 
+            - AWS: all of above, plus network traffic protection + SSE
+            - customer: customer data + client-side encryption + data integrity
+## Security Controls 
+### Data at Rest and in Transit
+- protecting data at rest in EMR
+    - EMR: managed service by AWS, highly-scalable cluster of ec2 instances to run big data frameworks
+    - does NOT encrypt data at rest by default 
+    - can use DDB or S3 as persistent store 
+        - can copy from there or store on local disks 
+        - can use SSE-S3/KMS if using S3 
+            - able to choose to encrypt data at rest, in transit, or at rest and in transit 
+            - can reuse security configuration of one cluster for other clusters 
+    - mechanisms to implmement protection of data at rest in local disks
+        - enable local disk encryption for EBS w/n EMR 
+            - LUKS: linux unified key setup
+            - open-source HDFS encryption 
+                - secure hadoop RPC
+                - data encryption of HDFS block transfer 
+- protecting data at rest in RDS
+    - during creation, can enable encryption under advanced options > database options 
+        - keys can be managed by KMS using AES-256
+    - platform-level encryption
+        - oracle and SQL server transparent data encryption (TDE): comes with a minor performance hit 
+        - MySQL cryptographic functions
+        - microsoft SQL - transact SQL cryptographic functions 
+- protecting data at rest in S3 
+    - securing the availability and reliability of data
+        - by default, s3 replicates objects across ALL AZs w/n region 
+        - to protect against accidental or malicious deletion, implement versioning
+            - version control objects
+            - recover from unintended actions
+            - uses add'l S3 space + increases cost 
+            - can't be turned off, only disabled after being turned on
+- protecting data at rest: Glacier & DDB
+    - by default, Glacier encrypts data at rest using SSE
+        - each archive generates a new key and the data is encrypted using AES-256
+    - data can also be encrypted before storing it on Glacier
+    - DDB supports SSE using KMS and is enabled by default 
+        - no option to enable or disable encryption at rest 
+- protecting data in transit in RDS
+    - SSL/TLS: implementation depends on DB engine
+    - oracle can use NNE, which is not compatible w SSL/TLS
+- protecting data in transit in EMR
+    - open-source HDFS encryption: provides hadoop encryption option
+    - hadoop mapreduce encrypted shuffle uses SSL/TLS
+    - communications to DDB + S3 sent over HTTPS
+    - connect to EMR cluster for admin purposes using SSH
+- protecting data in transit: elastic beanstalk
+    - HTTP over SSL/TLS (HTTPS) w signed certificates 
+        - will be encrypted from client to route53 to elb, then regular http to apps
+- protecting data in transit: abstract services
+    - S3
+        - encryption in transit managed by AWS
+        - uses HTTPS and SSL/TLS connections
+    - DDB
+        - when accessing DDB over internet, connections should be using HTTPS to ensure data encrypted 
+- protecting data in transit when using the management console
+    - the console uses SSL/TLS b/w browser and AWS service endpoints in addition to using X.509 cert
+    - SDKs, AWS CLI + AWS API calls not from console are RESTful APIs over HTTPS
+### Network Segmentation
+- network traffic protection is under customer's responsibility in container services 
+- public & private subnets
+    - subnets: segment VPC into different networks
+    - able to refind security profile for different services in different subnets 
+    - public subnets: have IGW on route to 0.0.0.0/0
+- route tables
+    - route b/w two or more network segments
+    - define which subnets can talk to which other subnets
+    - helps isolate traffic b/w subnets 
+- NACLs
+    - provide rule-based tool for controlling ingress and egress network traffic at protocol & subnet level
+    - NACLs are attached to one or more subnets w/n VPC
+    - default NACL allows traffic in and out
+    - stateless; do not remember outbound connections
+- security groups
+    - work at instance level
+    - associated w instances and provide security at protocol and port access level
+    - there are no deny rules - if traffic isn't explicitly allowed, it is denied 
+- NAT (network address translation)
+    - allow proviate instances to have outgoing connectivity to the internet & block inbound traffic from the internet (except for response to outbound traffic)
+    - resides w/n public subnet
+- bastion host
+    - sit w/n public SN accessed via secure connection
+    - act as 'jump' server, allowing connection to private instances from internet 
+    - should be locked down as much as possible 
+- network security: RDS
+    - RDS instances should be located w/n private subnet w/n VPC, removing exposure to the internet 
+    - also helps trim down on how comprehensive a single NACL needs to be, e.g., DB SN NACL only needs to allow DB ports 
+- network security: elastic beanstalk
+    - can use all the above network security controls
+    - beanstalk has the option to manage updates to underlying platform, OS and web and app server updates 
+- network security: EMR
+    - automatically uses some VPC security groups
+        - during EMR job, will launch two EC2 security groups
+            - SG for master node and for slaves 
+        - EC2 instances used by EMR w/n cluster should be located w/n private subnet 
+- network security (abstract services): DDB/S3/SQS
+    - DDB: most of security, ops controls, underlying maintenance is AWS responsibility of AWS 
+        - auto hardware failover
+        - data replication
+        - network inspections
+    - S3, SQS
+        - network security controls + mgmt managed by AWS
+        - controlling who has access to these services is customer's responsibility via IAM
+### IAM
+- can configure conditional access & allowing only during set time periods or from specific IP address 
+- IAM w RDS
+    - any authenticated identity w appropriate perms can access RDS
+    - granular perms can be granted
+- IAM w EMR
+    - access to clusters and to data itself managed
+    - by default, EMR clusters restricted to the IAM user who created 
+        - there is an option to make cluster visible to all users if required
+    - can use AWS managed policies 
+- S3 access controls 
+    - add'l resource-based access control
+        - bucket policies
+        - access control
+    - if there are conflicting perms b/w IAM and resource perms, least privileged access will be granted 
+- IAM w DDB
+    - can granted access to specific rows w/n DDB table
+### Built-in Service Security Controls 
+- RDS
+    - offeres durability and available of data thru multi-AZ feature
+        - will automatically configure a secondary DB of primary DB in different AZ 
+    - automatic backups & snapshots
+        - auto backups enable point-in-time recovery
+        - can create snapshot of entire database (must be triggered by user)
+- S3
+    - MFA delete 
+        - enforces add'l security measures to be used when object w/n bucket is set for deletion 
