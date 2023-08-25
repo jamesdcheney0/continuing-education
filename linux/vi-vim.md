@@ -5,7 +5,7 @@ Format of VI commands: [count][command] to repeat the effect of the command
 
 input commands
 a: append after cursor
-i: insert before curso
+i: insert before cursor
 o: open line below
 O: open line above
 :r <file>: insert <file> after current line
@@ -37,6 +37,7 @@ N: repeat search reverse
 <ctrl>l: redraw screen
 <ctrl>g: display current line number and file information
 G: go to last line
+gg: go to the first line 
 <n>G: go to last line <n>
 :<n>: go to line <n>
 z<CR>: reposition window: cursor at top - not tracking on this one
@@ -87,3 +88,8 @@ J: join lines
 other
 set nu/set number to show line numbers 
 go to a specific line `:X` where X is the line number 
+command history: in command line mode, hit ctrl+f
+    navigate w j/k or arrow keys
+    enter will run the command again
+    ctrl-c will put it on the command line so it can be edited
+    another ctrl-c will take back to normal mode 

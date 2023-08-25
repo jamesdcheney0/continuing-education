@@ -154,7 +154,6 @@ Identity and Access Management
     - NACLs/SGs
     - related to authentication & authorization
 
-+2 mins
 # Authorization Controls in AWS 
 ## IAM
 - best practice: attach policies to groups and add users to groups 
@@ -2076,3 +2075,57 @@ filters HTTP and HTTPS requests distinguishing between legit and malicious users
 - S3
     - MFA delete 
         - enforces add'l security measures to be used when object w/n bucket is set for deletion 
+
+# Exam Review
+- CloudTrail logs to CW logs group; remember, CW has logs group and log streams. CT needs to be able to CreateLogStream and PutLogEvents
+- IAM passwords: can enforce complexity, expiry date, disable reuse, allow pw self service, and force users to contact account admin when their pw has expired 
+- CW metrics: RDS sends metrics to CW every minute by default. So does SNS. EC2 + ASG are 5 minutes by default 
+- CloudHSM HA group unable to communicate b/w members. Recover automatically w LunaSlotManager.reinitialize()
+- Route53 and CFt have built in protection against SYN/ACK floods, UDP floods, reflection attacks and DNS query floods 
+    - WAF is for apps behind R53, not for R53 itself 
+- in AWS Directory Service, set up AD connector directory to existing MS AD to allow SSO for users 
+- CloudTrail can be used to filter by access key to see API requests & see if any were suspicious & disable the applicable keys 
+- use Trusted Advisor to determine if a security alert has been generated for lambda functions with runtime approaching depreciation 
+- sharing golden images in AWS organization: enable sharing w/n org, create resource share in AWS Resource Access Manager to share images across org 
+- if 2/3 CloudHSM instances go down, HSM can still maintain service 
+- CFt: if logging enabled, CFt records info about each end-user request for an object & stores the files in the specified S3 bucket 
+- KMS: can define data classification levels & have multiple keys per level. Recommended to use it and have at least one key per level 
+- CT: logs events from all regions in account
+- VPC flow logs can be configured to capture all traffic, accepted traffic only, or rejected traffic only 
+- API gateway automatically protects backend from DDoS attacks, either layer 7 counterfeit requests or layer 3 SYN floods. AWS Shield Advanced can protect at layers 3, 4, 7. Route53 can protect against DNS DDoS attacks, but doesn't protect entire layers 
+- to use a third-party authentication service (like Okta) with AWS, can use cognito. For MS AD, use AWS Directory Connector 
+- GuardDuty is an intrusion detection service that monitors AWS account + resources for malicious activity. Can detect & can be configured to have automatic remediation
+- Config is used for configuration audits of resource. Cannot automatically remediate, but can send notifications 
+- HSM: public key installed on HSM appliance during provisioning 
+- invalid principle in policy: not an issue with the S3 bucket arn, but relating to IAM user or the value in principle is the wrong type 
+- Amazon Client VPN can allow secure login w corporate credentials to both AWS and on-prem resources
+- AWS SSO secure user portal is use to manage access to multiple AWS accounts & business apps. Able to host a personalized portal to give users easy access to AWS accounts + authorized apps 
+- with resource based policies, can define permissions for sub-directories of bucket separately
+    - not managed policies. Read the Question!  
+- WAF used to protect APIs and apps from common web exploits + bots that affect availability/security
+- inspector: able to create assessment targets for different instance tags + run different rules packages in those different assessment targets 
+- in CW when creating metric filters for CT logs, must create 'filter pattern' that determines what CW should monitor + extract from CT logs 
+- when locking down instances, can also use linux iptables-host based restrictions on the instances to act as a firewall & another layer of security 
+- when using security hub, can enable it and turn on integrations for AWS native security tools and partner integrations 
+- AWS resilience hub: define, validate, track resiliency of AWS app
+- AWS control tower: enforce + manage governance rules for security, ops, and compliance at scale across all orgs + accounts in AWS 
+- AWS incident manager: part of SSM that enables creation of incident plans to allow for faster resolution of critical app availability + performance issues 
+- when using CloudHSM HA config, failed/lost group HSM can be reinstated by hands-off (HA recovery on) or manual (HA recovery off)
+- GuardDuty exfiltration finding would look something like 'Exfiltration:/IAMUSER/AnomalousBehavior' 
+- if concerned about data security, can also use OS tools to encrypt file systems on EBS volumes (seems a little redundant?)
+- don't be too pedantic about the questions. They're usually not trying to be *that* sneaky. if traffic is working inside the network, and there's NACLs involved, it's probably a NACL issue with outbound ports 
+- cloudHSM: `aws cloudhsm describe-hsm` retrieves info about an HSM, including ENI addr + secret access key (aka public key)
+- VPCs: read the question! private subnets to NAT gateways for internet comms. Public subnets to IGW, VPN traffic to VPGw
+- CT log naming: acctID_CT_Region_dateTime_uniqueString.FileNameFormat 
+- can tag findings in inspector with key-value attribute to each finding according to customer policy (in addition to inspector findings severity)
+- instance store data remains when instance reboots. Stopping, terminating, or underlying hardware failure causes loss of data in instance store volume 
+- can use config to enforce proper AMIs are used 
+- safest process to delete existing KMS keys is to use the full 30-day waiting period before deletion
+- KMS keys can operate in multi-region scope, but AWS recommends region-specific keys for most cases 
+- AWS inspector is used to check network accessibility and security vulnerability of EC2 instances, container images, and security state of apps running on those resources
+    - can have it scan ECR & review findings for container images w vulnerable OS packages 
+- CW events rules can trigger based on CT calls, even if the question words it as just 'AWS API calls' & can quickly submit events into Kinesis Streams
+- can use trusted advisor to determine if security alert has been generated for origin servers that have SSL certs that are expired, about to expire, missing, or that use outdataed encryption
+- CloudWatch Events do things in response to APIs; alerts for CT services are set up and triggered through CW 
+- can create IAM credential report as often as every 4 hours. If new report requested, if none are newer than 4 hours, a new one is automatically generated 
+- REMEMBER TO READ & UNDERSTAND THE QUESTIONS
