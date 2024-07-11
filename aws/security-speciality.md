@@ -2129,3 +2129,1286 @@ filters HTTP and HTTPS requests distinguishing between legit and malicious users
 - CloudWatch Events do things in response to APIs; alerts for CT services are set up and triggered through CW 
 - can create IAM credential report as often as every 4 hours. If new report requested, if none are newer than 4 hours, a new one is automatically generated 
 - REMEMBER TO READ & UNDERSTAND THE QUESTIONS
+
+# AWS Partner Certification Readiness: Security - Specialty
+## AWS Security Fundamentals 
+### Introduction
+- design principles
+    - implement a strong identity foundation
+        - least privilege, separation of duties
+    - enable traceability
+        - monitor, alert, audit actions & changes
+    - apply security at all layers (defense in depth)
+    - automate security best practices
+    - protect data in transit and at rest
+    - enforce the principle of least privilege 
+        - start w deny all & grant access as needed 
+    - prepare for security events 
+        - have an incident management process that aligns w org req's 
+- shared responsibility model
+    - AWS is responsible for:
+        - protecting global infrastructure that runs services
+            - hardware, software, networking, facilities
+    - customer is responsible for  
+        - securing data, OS, networks, platforms & resources created in AWS 
+        - protecting confidentality, integrity, and availability of data 
+### Security of the cloud
+- AWS Global Infrastructure: 102 AZs, 35 regions w 12 AZs & 4 regions to come
+- compliance and governance
+    - AWS artifact
+        - no-cost, self-service portal for access to AWS security & compliance reports + select online agreements
+            - includes Service Organization Control (SOC) reports, Payment Card Industry (PCI) reports, and certs from accreditation bodies across the world 
+### Security in the cloud 
+- everything happens through API calls 
+    - every interaction is authenticated 
+- IAM
+    - authentication: AD, SAML, rotating credentials
+    - authorization: permissions to do the tasks needed
+    - authentication is critical, by ensuring each operator only has authorization to do the tasks they need to keeps the risk to a manageable scope 
+    - Add'l IAM services
+        - AWS Secrets Manager
+            - centrally manage secrets for resources on AWS, on-prem, & third-party services
+            - replace hardcoded creds in code w API call to secrets manager 
+            - can rotate secrets on defined schedule 
+        - AWS IAM Identity Center (Formerly AWS SSO)
+            - allows for central management of SSO access to multiple accounts & business apps 
+            - users can sign into a portal w existing corp creds & access assigned resources from one place
+            - includes built-in SAML integrations + can integrate w MS AD 
+        - AWS STS 
+            - enables request of temp, limited-privilege credentials for IAM users assuming a role or for federated users 
+        - AWS Directory Service (for MS AD)(aka AWS Managed MS AD)
+            - enables domain workloads + AWS resources to use MS AD in AWS
+            - built on actual MS AD
+            - does not require sync or replicate data from existing AD to cloud 
+        - AWS organizations 
+            - centrally manage & enforce policies for multiple AWS accounts 
+    - Amazon Cognito 
+        - add user sign-up, sign-in + access controls to web & mobile apps 
+        - define roles & map users to role so app can only access resources authorized for each user 
+        - sign-in can be done by third-part or directly via cognito 
+        - user pool: user directory that handles the tokens returned from social sign-in providers 
+            - after successful user pool sign-in, app will receive user pool tokens from cognito
+            - tokens can retrieve AWS creds from cognito identity pools
+- detective controls 
+    - cloudtrail
+        - enabled by default on AWS account 
+        - recommended to export CT logs to another account where no user from the tracked account has access so that event forensics can know for sure logs weren't tampered with 
+        - to enable for org, must be in mgmt acct 
+    - cloudwatch
+        - can use to route events + info of potentially unwanted changes into a proper workflow
+    - auditing
+        - S3 server access logs
+            - contain details like request type, resources requested & date + time request was made 
+        - ELB access logs
+            - capture detailed info about each request: IP address, latencies, server response
+            - can analyze traffic patterns & troubleshoot issues 
+        - CW logs + events 
+            - monitor & troubleshoot all operating systems + apps in AWS env 
+            - monitor logs for specific phrases, patterns & values 
+        - VPC flow logs
+            - audit connectivity + security issues
+            - can ensure network access rules for a VPC and config'd properly
+            - capture info about IP traffic going in/out of network interfaces & subnets 
+        - CT 
+            - obtain history of API calls made to account via console, CLI, SDKs, other AWS services 
+    - services for detective controls
+        - GuardDuty
+            - intelligent threat detection service
+            - continuously monitor + protect AWS accts + workloads
+            - identifies suspected attackers through integrated threat intelligence feeds + uses ML to detect anomalies
+            - monitors for unusual API calls or unauthorized deployments that indicate compromise or direct threats like compromised instances or reconnaissance by hackers 
+        - Trusted Advisor 
+            - draws upon best practices
+            - inspects AWS env + makes recommendations for 
+                - saving money
+                - improving system performance
+                - closing security gaps 
+            - business + enterprise-level support get access to full suite of TA best-practice checks 
+        - AWS security hub
+            - single view of high-priority security alerts + compliance status across AWS accts + multiple services 
+    - AWS config
+        - continuous monitoring + assessment service that help detect non-compliance configs in almost real-time 
+        - can view current/historic configs of resource + use to troubleshoot outages or analyze security attacks 
+        - can continuously run assessment checks on resources to ensure compliance w security policies, best practices, compliance standards 
+
+### AWS Partner Certification Readiness: Security Specialty | Week 1 Content Review 
+- VPC 
+    - regional vs vpc services
+        - regional: DDB, S3, etc 
+        - vpc: EC2, lambda, RDS, redshift, etc
+    - security groups
+        - stateful firewall (remembers ephemeral ports from existing connections)
+        - only supports allow rules 
+        - network adapter level
+        - default deny all
+    - NACL
+        - stateless firewall
+        - default allow all
+        - filter traffic on subnet level 
+    - VPC endpoints
+        - keep AWS traffic private w/n AWS private network 
+        - connect VPC to supported AWS services
+        - interface endpoints use Privatelink
+            - include some AWS managed services, services hosted by other AWS customers + partners in their own VPCs & supported AWS marketplace partner services 
+        - gateway endpoints (do NOT use privatelink) targets specific IP routes in a VPC RT & is used for traffic destined to DDB or S3 
+- AWS Compute
+    - EC2
+        - desire lots of control over configuration
+        - configure servers, storage, networking, OS
+    - ECS
+        - run servers, config apps and control scaling in containerized fashion
+    - Fargate
+        - run containers in serverless fashion
+    - Lambda
+        - serverless, event-driven compute service
+        - temporary compute 
+- CloudFront
+    - securely deliver content w low latency + high transfer 
+- Route53
+    - can be used to direct traffic to CFt endpoint 
+    - and in blue/green deployments
+    - can eliminate certain countries/IP addresses from accessing environment
+        - can change routing based on IP address & geographic location 
+- IAM
+    - controls who can access what 
+        - who: person, role, resource 
+        - what: resources in scope to allow access 
+    - ARN: uniquely identify AWS resources
+        - depending on the resource, formed slightly differently 
+    - policy types
+        - identity-based policy: assigned to a 'who', i.e. user, role
+        - resource-based policy
+            - if a principal is listed in the policy, then it's a resource policy (identity policies are assigned to the identity, and don't need to specifically define it again)
+        - policy interpretation
+            - statement: has been 2012-10-17 with no expectation of change
+            - resource policies
+                - prinicipal lists who gets access 
+    - STS used when a role is assumed 
+    - VPC flow logs need the correct permissions to be able to write to CW 
+        - flow logs need to be able to create, put, and describe logs groups
+        - plus a trust policy which allows it to assume the role 
+- S3 
+    - storage classes
+        - S3 intelligent-tiering
+        - S3 standard
+        - S3 standard-IA
+        - S3 glacier
+        - S3 glacier deep archive 
+        - S3 one zone-IA
+            - use cases where if the data is lost, could be rebuilt 
+        - S3 outposts 
+            - local device sent to on-prem
+    - lifecycle
+        - transition actions
+            - define when objects transition to other S3 storage classes as they age
+        - expiration actions
+            - define when objects expire
+            - S3 deletes expired objects on your behalf 
+    - bucket policies
+        - resource policies, but specific for S3 
+    - versioning 
+        - objects are never deleted; old versions retained 
+    - object lock
+        - compliance mode
+            - store compliant data
+            - data CANNOT be written by anyone until compliance date is passed
+            - even root cannot delete object
+        - governance mode
+            - store data in write-once-read-many (WORM) format
+            - privileged users can modify retention controls
+        - legal hold
+            - unsure of how long objects should stay immutable 
+    - encryption
+        - all new S3 buckets are encrypted by default, but can be disabled
+        - SSE-S3, SSE-KMS, SSE-C
+    - block public access
+        - by default, all objects are private 
+        - buckets have to be intentionally opened up
+### AWS Partner Certification Readiness: Security Specialty | Week 3 Content Review
+- AWS Config "rules & compliance"
+    - looks across entire environment & makes sure resources are compliant with rules defined 
+        - notified when resources go out of compliance
+    - only looking at infrastructure; don't have visibility into application 
+    - key concepts/features
+        - configuration history of AWS resource
+            - can go back and look at any resource and see what all changes occured in the lifetime, even for things that have been terminated 
+        - configurable and customizable rules
+            - built-in and custom rules able to be used 
+            - conformance pack: grouping of rules 
+                - rules grouped together that can all be applied in an environment 
+- GuardDuty "suspicious events"
+    - like a guard in the bank constantly looking around monitoring the environment 
+    - actively aware of what's going on in AWS environment & watching for suspicious things 
+        - can see APIs, deployed resources, etc 
+    - threat detection types
+        - reconnaissance
+        - instance compromise
+        - account compromise 
+        - sends alerts to Amazon EventBridge 
+            - eventbridge used to take action on GD findings 
+                - i.e. can use an event to trigger lambda 
+            - EB for routing the events, Lambda/misc for handling the events 
+- Inspector "vulnerability"
+    - automatically discovers and scans for software vulnerability 
+    - can also identify libraries that lambda uses 
+    - can trigger security hub, eventbridge, or write data to s3 
+        - eventbridge can only operate on a single notification. If needing additional context around that event, use security hub 
+    - uses SSM agent to identify vulnerabilities on instances
+        - can integrate w SH to take the finding & invoke custom actions, including SSM runbook 
+- Systems Manager Incident Manager 
+    - response plans 
+        - triggered by EventBridge event or CW alarm 
+    - runbook automation
+        - kick of basic automated responses 
+    - engagement and escalation
+        - send notifications to make sure everyone involved has visibility 
+    - active collaboration
+        - can integrate with AWS chatbot to keep track of collaboration 
+    - incident tracking
+- Security Hub 
+    - cloud security posture management service
+    - performs security best practice checks, aggregates alerts, and enabled automated remediation
+        - aggregates and scores finding
+            - user has control over how scoring occurs 
+    - config: how it was set up
+    - security hub: how it is presently in the environment today
+    - security hub findings can trigger eventbridge to perform work 
+    - runs on AWS, but can pull findings from other sources 
+- Not on exam: security lake
+- Detective 
+    - analyze, investigate & quickly identify root cause of potential security issues or suspicous activities 
+- CloudTrail "logging"
+    - does all the auditing and monitoring of API activity
+- CloudWatch "monitor & alert"
+    - collects API information and acts on it 
+    - CW logs: SLA is 15 minutes
+        - there is a delay between when a thing happens in the environment to when it appears in the logs 
+        - can also put custom logs like app logs 
+        - can pull data from on-prem or cloud devices w cloudwatch agents 
+    - pulls log events from cloudtrail
+    - log stream
+        - sequence of log events that share same source
+    - log group
+        - groups of log streams that share same retention, monitoring, and access control settings
+    - retention settings
+        - how long log events kept in CW logs (doesn't affect how long logs remain in CT)
+- VPC Flow Logs
+    - capture info on what's going into and out of a network
+    - does NOT capture what is IN the packets
+    - can run on instance, subnet, or VPC 
+- centralized logging w opensearch
+    - collect, ingest, and visualize log data from various sources 
+    - provides web-based console 
+- logging best practices
+    - set up cloudtrail that gets logged to a dedicated and centralized s3 bucket
+        - best to write organizational logs to an archive account
+    - use SSE-S3
+    - enable MFA delete on s3 bucket to avoid accidental deletion
+    - use least privilege
+    - configure object lifecycle management
+    - use file integrity monitor when logging
+        - writes hash value for each record + hourly digest that includes all records written. 
+        - helps identify if logs get tampered with 
+    - versioning not required, but doesn't hurt to enable (except for a slight cost increase), more for defense in depth protection of logs in s3 
+- S3 object lock: store data in WORM (write once, read many) format
+    - compliance mode
+        - can't change anything
+        - can be helpful for logs, so they can't be changed 
+    - governance mode
+        - privileged users can modify retention controls
+    - legal hold
+        - if unsure how long objects should stay immutable
+- Trusted Advisor "Recommendations"
+    - inspects AWS env and makes recommendations for saving money, improving system performance, or closing security gaps
+- Audit Manager 
+    - continually audit AWS usage to simplify managing risk and compliance w regulars & industry standards 
+
+## AWS Best Security Practices: Network Infrastructure
+- VPC
+    - gateway endpoint
+        - route table target for S3 or DDB 
+- DNS
+    - DNSSEC
+        - domain name system security extensions
+        - strengthen security of DNS protocol by providing authentication using digital signatures
+        - helps prevent DNS attacks like DNS cache poisoning and DNS spoofing 
+        - if using in public hosted zones, will need to store cryptographic keys, which the authentication is based on
+- network security
+    - network firewall
+        - managed service that provides
+            - stateful firewall
+            - web filtering
+            - intrusion protection
+            - central management and visibility
+            - rule management and customization
+            - partner integrations 
+- security services
+    - AWS shield
+        - always-on network flow monitoring to defend against L3 & L4 DDoS attacks 
+        - shield advanced also includes
+            - tailored detection based on app traffic patterns
+            - health-based detection
+            - advanced attack mitigation
+            - visibility & attack notification
+            - DDoS cost protection
+            - proactive event response 
+                - SRT: shield response team 
+            - also protects (customers also get WAF + firewall manager for protected resources)
+                - CloudFront distributions 
+                - R53 hosted zones
+                - Global Accelerator
+                - ALBs
+                - ELBs
+                - EC2 EIPs
+    - AWS WAF
+        - L6 & L7 DDoS attacks
+        - can filter based on 
+            - IP address origin of request
+            - country of origin of request
+            - regex
+            - size of particular part of request
+            - malicious SQL code or scripting 
+    - Firewall Manager
+        - streamline & standardize management of firewalls deployed across accounts 
+        - integrated w AWS organizations to manage the following across multiple accounts 
+            - WAF rules
+            - shield advanced protections
+            - VPC SGs
+            - network firewalls
+            - R53 resolver DNS firewall rules 
+
+- "Proceed to AWS Security Best Practices: Network Infrastructure Hands-On Lab from Skillbuilder."
+
+## Automatically Mitigate Account Compromise Issues 
+- AWS Health
+    - provides visibility into performance & availability of AWS services & accounts
+    - powers AWS personal health dashboard (PHD)
+    - must carefully structure AWS orgs to maximize usefulness of PHD
+- AWS Risk
+    - how it works
+        - detects compromise
+            - AWS continuously monitors public repos to detect exposed credentials & customer accts to identify abnormal usage
+            - AWS fraud team verifies anomalies to reduce false positives
+        - notifications sent
+            - support case auto generated & copied to root email + security contact
+            - event generated in PHD
+            - CW event generated 
+        - mitigation steps taken to protect account 
+            - AWS compromised key quarantine policy may be applied to restrict IAM user from some actions 
+            - account owner should take action on the identified IAM user 
+- to take full advantage of AWS Health service requires at least Business Support, and the org must be config'd for all features mode 
+- events can be sent across accounts, but NOT regions 
+- CloudWatch EventBridge permissions
+    - per account
+        - not recommended
+    - per org
+        - recommended 
+    - open to all 
+        - allow every account to send management events to main account 
+        - security risk if anyone can send events if they know account ID
+        - if malicious actor wants to flood acct w events, must know account id + setup on the backend 
+
+## Week Three Exam Prep
+- question 1
+    - security engineer monitoring AWS acct for changes to compliance rules. EC2 must be launched from specific AMIs & EBS volumes must be encrypted. non-compliant instances must be terminated
+- answers for 1
+    - monitor compliance for AWS Config rule 
+    - set up EventBridge based on amazon inspector findings
+        - inspector can't check what AMIs were used to launch instances
+        - inspector looks at network vulnerabilities 
+    - set up custom remediation action w SSM automation runbooks 
+    - set up EventBridge based on trusted advisor metrics 
+        - TA doesn't integrate w EventBridge 
+    - invoke CLI command from EventBridge to terminate infrastructure 
+        - CLI isn't a target for EventBridge
+- question 2
+    - using ECS for EC2 requires SSH/instance access of some sort to manage the cluster
+    - systems manager runs over HTTPS 
+- question 3
+    - security team creating response plan in event of unauthorized actions performed on AWS infrastructure. Want to include steps to determine if employee's IAM perms changed as part of incident
+- answers for 3
+    - use config to examine IAM perms before/after incident
+        - part of the use-case of config 
+        - if employee changed their permissions intentionally, they likely would have changed them back. Able to look through the whole cycle of events, and see changes during event 
+        - (these events would also show in cloudtrail, but wouldn't know what specific permissions got changed)
+    - use Macie to configure IAM policies as custom-defined sensitive data type
+        - Macie looks for PII in S3 to prevent leaks 
+    - use IAM access analyzer to examine IAM perms before/after incident
+        - tells where resources are over-exposed to people outside of environment
+        - does not keep history
+- question 4
+    - teams wants to automate patching instances to remain compliant within 7 day patch window
+- answer for 4
+    - enlist all instances in SSM patch manager patch group; use patch manager to create patch baseline; configure maintenance window to apply baseline 
+- question 5
+    - using cloudtrail to log all API activity for all regions & all their accounts. Wants to protect integrity of log files in a central location. What steps to protect log files from alteration (select two)
+- answers for 5
+    - create central s3 bucket in dedicated log account. in member accounts, grant CT access to write logs to this bucket 
+        - implies orgs are set up
+    - enable AWS orgs for all AWS accts. Create SCP to enable CT in each member acct w logs directed to central s3 bucket 
+        - kinda does what A does w the central bucket
+        - SCP (service control policies) set up guardrails applied to IAM policies to restrict actions of member accounts 
+    - enable server access logging on s3 buckets 
+        - doesn't log API activity; only tracks people who have accessed bucket, but not what they did
+    - use SSM compliance to continually monitor access policies of s3 buckets containing CT logs 
+        - scans instances & looks for instance config. Doesn't look at access policies
+    - enable AWS orgs for all AWS accts. enable CT w log file integrity validation while creating org trail. Direct logs from trail to central S3 bucket
+        - log file integrity validation: hash of every log written, and hourly digest of files written 
+        - cloudtrail organization trail is a thing 
+- question 6
+    - engineer pings instance, but doesn't receive response. flow logs output listed. Traffic from instance out is being rejected
+- answer for 6
+    - check outbound rules of NACL for deny
+    - other options are check SG for deny (which it doesn't support) or check NACL for inbound deny, which isn't the issue 
+
+# Getting Started with Security Hub
+## Introduction to Security Hub 
+- security hub
+    - cloud security posture management service
+    - performs automated, continuous security best practice checks against AWS resources 
+    - can understand security posture w score across all AWS accts + regions 
+    - ingests security findings from AWS services + partners 
+- benefits
+    - reduced effort to collect + prioritize findings
+        - processes finding data using standard finding format
+        - correlates findings across providers 
+    - automatic security checks against best practices + standards
+        - runs continuous, account-level config and security checks based on AWS best pracitces + industry standards 
+    - consoldiated view of findings across accounts and providers 
+    - automated remediation of findings 
+        - integrates w EventBridge 
+- pricing
+    - based on quantity of checks + quantity of ingested findings each month 
+## Architecture and Use Cases
+- when activated, begins to consume and aggregate findings from AWS services that are enabled
+    - services like GuardDuty, Macie, Inspector, Detective, IAM access analyzer, WAF/firewall manager 
+    - also integrates w third party ticketing, chat, incident management, threat investigation, plus GRC, SOAR, and SIEM tools
+- can have security hub account w/ or w/o organizations
+    - w/o, simply invite other accts
+    - w/, designate a single account as security hub 
+    - administrator and member accounts. Can only be one. 
+- aggregation region
+    - view security findings from multiple regions
+    - view and manage findings in aggregation region from linked regions 
+- archived finding
+    - finding w a RecordState set to ARCHIVED
+    - indicates the finding provider believes that finding is no longer relevant 
+- Workflow.Status
+    - NEW, NOTIFIED, SUPPRESSED, RESOLVED are some of the states it can be in 
+- security control
+    - check against a specific resource 
+    - contains control details
+        - include control status + generated findings for the control
+- security standard 
+    - set of related controls to determine compliance 
+    - details page for standard includes list of controls in the standard + the overall score
+- security check
+    - determines whether resources are in compliance w/ control requirements 
+    - running check producing finding that specifies point-in-time status of a single resource: passed, failed, warning, not available 
+- finding
+    - observable record of security check or security-related detection 
+    - processes these findings using the AWS Security Finding Format 
+- insight
+    - collection of related findings defined by aggregation statement and optional filters 
+    - identifies security area that requires attention & intervention
+    - some default insights offered by security hub 
+- use cases
+    - reduce risk w automated, continuous security checks
+        - set of auto controls called AWS foundational security best practices standard
+            - vetted by AWS security experts 
+        - provides security score of 0-100 for each standard & each account, plus a total score for all accts associated w admin account 
+    - consolidate findings across AWS services + partner integrations
+    - automate response and remediation
+
+# AWS Partner Certification Readiness: Security - Specialty | Week 4 Exam Strategy 
+## Missed topics coverage
+- Cognito
+    - provides authentication, authorization, and user management for web AND mobile apps 
+    - user pools
+        - users authenticate to env that is set up
+        - anything they do against an AWS service goes through the user pool
+        - can use local or identity federation to allow sign in and get a token
+            - app exchanges that token for credentials in the *identity pool* & uses those credentials to access AWS services
+        - able to set up MFA and MFA through federation provider 
+        - lots of hooks can be used to 'interrupt' the workflow to allow more granular controls 
+        - email address and user ID (among other things) stored in the pool
+            - can either populate the pool or allow users to create users for the pool 
+    - identity pools 
+        - exchange tokens for AWS credentials 
+- Resource Access Manager (RAM)
+    - securely share AWS resources 
+    - set up resources in one AWS account and directly share them with other AWS accounts
+        - can share things across organizations (don't have to be w/n org)
+    - main use case: centralize management of resources shared b/w accounts
+        - can also use for governing resources
+        - e.g. sharing the same VPC across multiple accounts & allowing other accounts to build in the VPC 
+    - often used in organizations, but DOES NOT have to be
+    - to tell if the resource is shared, must look at the ARN, and if it shows a different account number, or in RAM
+## Questions
+- question 1
+    - company using AWS org. Wants to implement automated solution to detect when new or existing S3 buckets in any acct or region made public. must respond by blocking public access. Must also detect and respond to changes in ACLs and bucket policies
+- answers for 1 
+    - needlessly complex: usually a sign it's not the answer 
+    - using org trails w cloudtrail is good, but the way the answer is worded, EventBridge is only used in the designated security account and NOT reading cloudtrail 
+    - when turning on EventBridge on s3 buckets, bucket ACL and bucket policy changes NOT sent to cloudtrail 
+    - the right answer: use config (which is used to detect if something doesn't meet a predefined rule) to detect public access in object ACLs, bucket ACLs, and bucket policies. use an automated remediation action for the rule. Use SSM automation runbook to remove public access on misconfig'd S3 buckets 
+- question 2
+    - responding to DDoS targeting dynamic website on EC2 behind cloudfront. Attack is from many IP addresses. Attack query strings have common misspelling in query strings
+- answers for 2 
+    - WAF: layer 6-7 DDoS, Shield layer 3-4
+    - WAF ACLs + associate w cloudfront 
+- question 3
+    - company wants to enable SSO so that employees can sign into AWS console by using company's SAML provider
+- answers for 3
+    - can only map corporate groups to IAM policies; cannot map corporate (aka SAML) users to IAM users 
+    - a role must be set up that establishes a trust relationship b/w IAM & corporate SAML IdP
+- question 4
+    - company wanting to share s3 bucket w vendor for vendor to analyze log files in S3. Company created IAM role that grants access. Has also set up trust policy. What info is required as argument in the API calls to access S3 bucket 
+    - the question: what are the required steps to get into the bucket, but the answers are asking how to assume the role 
+- answers for 4
+    - temporary access keys are not meant to be shared; that's the purpose of roles 
+    - for assuming a role, don't need ARN of the trust policy
+        - ask, what's the purpose of the trust policy, which is just to give permission to assume role; safe to throw out 
+    - need the ARN of the role to be able to assume the role (think of how it works in the console)
+    - external ID provided by vendor to the company
+        - particularly when coming from the outside to assume a role, must have shared the external ID with the company whose environment you're trying to get in so that their policy can allow your account 
+        - 'confused deputy': https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html 
+        - external ID: random string of characters for identifying other accounts
+            - trust other account, and require that the external ID is passed in; that way, malicious users wouldn't be able to assume the role with just a role and account ID 
+            - https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html
+            - do not hard code external IDs! 
+    - name of bucket policy of bucket in company's account
+        - don't need this; policy doesn't say anything about authority
+    - this was a question of knowing the wrong answers and being able to slim down to what are the correct answers 
+- question 5
+    - company w dev + prod accts in AWS orgs wants to make sure users in prod accts are not allowed to modify or update KMS encryption keys
+- answer for 5
+    - SCP + an OU for the specific account is what they were designed to do 
+    - config can't check to see if an IAM policy is assigned to a user 
+    - SCPs affect IAM users + roles, but NOT resource based policies (i.e. ec2 instance or s3 bucket) 
+
+# Deep Dive with Security: IAM
+- Attribute-based access control (ABAC) (in contrast to role-based access control)
+    - authorization strategy that defines permissions based on attributes (aka tags)
+    - w attribute-based perms, can manage tags from multiple projects & it scales w new tags added to new resources 
+- IAM condition keys 
+    - can use condition element to compare keys in the request context w key values specified in policy 
+- global condition keys
+    - start w aws: prefix
+    - used in restricting access 
+        - to a certain period of time (CurrentTime, EpochTime, TokenIssueTime)
+        - by enforcing an extra layer of security during authentication + data transmission (MFA age, MFA present, SecureTransport)
+        - based on source of request (SourceAccount, SourceArn, SourceIP, SourceVpc, SourceVpce, VpcSourceIp)
+        - based on principal making request (PrincipalAccount, PrincipalArn, PrincipalOrgId, PrincipalOrgPaths, PrincipalType)
+        - using attributes (tags) to control access (PrincipalTag, RequestTag, ResourceTag, TagKeys)
+        - more granular level of control (Referer, RequestedRegion, UserAgent, userid, username, ViaAWSService)
+- Advanced Policy Elements
+    - strongly recommended to avoid using a 'Not*' and "Effect": "Allow" in the same statement 
+        - in part because bad actors could inadvertently allowed in
+    - NotPrincipal  
+        - cannot be used in an IAM identity-based policy
+        - can be used in trust policies for IAM roles and resource-based policies 
+    - NotAction
+        - by using NotAction (rather than deny) can list a few actions that shouldn't match, and the options not listed are then allowed 
+    - NotResource
+- STS
+    - temporary credentials consist of an access key ID, secret access key, and a security token 
+        - each time a role is assumed, a set of temp security creds are generated + IAM role session created 
+    - default security credentials last for 1 hour. Can provide values from 15 minutes to 12 hours 
+- managing role sessions
+    - session policies
+        - inline permission policy that user pass into the sesson when assuming role 
+        - benefits to admins:
+            - reduce number of roles needed to create b/w multiple users can assume same role yet have unique session perms
+            - set perms for users to perform only specific actions for that session
+        - must have sts:TagSession action allowed in IAM policy
+        - good for the duration of the role assumption (present as a key/value pair)
+            - transitive tags can persist through sessions 
+        - cannot pass session tags using the console
+        - role chaining
+            - use a role to assume a second role through CLI/API
+            - by default, tags are not passed to subsequent sessions
+                - able to set session tags as transitive & pass to subsequent sessions in a role chain
+                    - must set tags as transitive in the CLI command used to assume the role 
+            - useful to impose guardrails against self or admin to prevent accidental changes 
+    - each IAM role session is unique identified by a role session name
+- identity federation  
+    - before app can call AssumeRoleWithSAML, SAML IdP must be configured to issue the claims AWS requires
+        - must also use IAM to create SAML provider entry in AWS acct that represents IdP
+        - must also create an IAM role that specifies the SAML provider in its trust policy 
+    - AssumeRoleWithWebIdentity (think Cognito)
+        - before app can call w API, must have identity token from supported IdP & create a role that app can assume 
+        - does not require the use of AWS security credentials 
+        - Cognito   
+            - allows adding user sign-up, sign-in + access controls to web and mobile apps 
+            - can define roles & map users to different roles so app can only access resources authorized for each user 
+- IAM policy simulator
+    - test and troubleshoot identity-based policies, IAM perms + boundaries, AWS orgs SCPs, and resource-based policies
+    - does not actually make an AWS service request & is safe to test 
+        - returned result indicates whether action would have been allowed or denied 
+            - have to specify what actions & for what service to test against
+- IAM access analyzer
+    - continuously monitors policies for changes to catch issues as policies are added or updated 
+    - able to proactively address any resource policies that violate their security and governance best practices 
+    - generate IAM policies based on access activity in CT logs
+    - identify resources in org & accts that are shared w external entities 
+    - to enable, create analyzer for AWS acct or for entire org if using AWS orgs 
+        - can only have one analyzer per region in acct 
+    - supported resource types
+        - IAM roles
+            - checks to see if an entity outside zone of trust is allowed
+        - check if S3 bucket policy, ACL, or access point gives access to external identity
+        - AWS KMS keys
+            - findings generated if key policy or grant allows external entity to access key
+        - lambda
+            - findings generated for policies that grant access to function to external entity
+        - SQSQs
+            - findings generated for policies that allow external identity to access Q
+- viewing access history
+    - can view allows AWS service information & allowed action information
+        - includes date & time when attempt was made
+        - to view last accessed info on console, go to IAM, pick a group/user/role, then go to Access Advisor tab 
+    - considerations
+        - tracking period: activity usually appears w/n 12 hours & up to 400 days are tracked 
+        - iam:PassRole action is NOT tracked 
+        - only the principal that generates a report can view the report details 
+        - info for IAM includes services that are allowed by an IAM entity's policies 
+            - policies either attached to a role or attached to a user directly or through a group
+- troubleshooting with cloudtrail 
+    - if a trail is created, enables continuous delivery of CT events to s3 bucket 
+    - if trail not configured, can view most recent events in CT console -> event history
+
+# AWS Certification Readiness: Security - Specialty | Week 4 Content Review
+- AWS WAF (operates at layer 7)
+    - configure rules that allow block or monitor web requests based on conditions:
+        - IP addresses
+        - HTTP headers
+        - HTTP body
+        - URI strings
+        - SQL injection
+        - cross site scription
+    - can protect the following resources 
+        - CloudFront Distrubtion
+        - API Gateway REST API
+        - ALB
+        - AWS AppSync GraphQL API
+        - Cognito user pool 
+- AWS Shield 
+    - managed service that provides protection against DDoS
+    - classes of attacks that shield detects
+        - network volumetric attacks (layer 3)
+        - network protocol attacks (layer 4)
+        - application layer attacks (layer 7)
+    - enabled by default for AWS customers for regular DDoS attacks 
+- AWS Firewall Manager 
+    - security management service that allows central configuration & management of firewall rules across accts + apps in AWS orgs
+    - simplifies admin & maintenance for
+        - AWS WAF
+        - AWS Shield Advanced
+        - VPC SGs
+        - network firewall
+        - R53 resolver DNS firewall 
+    - integrates & sends findings to security hub 
+- VPC Network Access Analyzer
+    - understand network access to resources in VPCs
+    - can identify unintended network access relative to security & compliance req's to take steps to improve network security
+    - able to demonstrate that network on AWS meets compliance requirements as needed 
+- how customers connect to AWS globally
+    - public internet (i.e. IGW)
+    - IPSEC or SDWAN
+        - connect securely from customer data center to aws network
+    - Direct Connect
+        - dedicated connection b/w colocation facility and AWS network 
+        - Direct Connect Security w MACsec
+            - layer 2 encryption for dedicated direct connect connection  
+            - if needing encrypted connection with direct connect
+            - secures ehternet connection b/w customer's edge device & AWS edge device 
+- EC2 image builder
+    - simplifies creation, maintenance, validation, sharing, and deployment of linux/windows images for use w EC2 & on-prem
+    - source image -> customize software + config -> secure image w AWS-provided or custom hardening templates -> test image w AWS-provided or custom tests -> distribute golden image to selected regions 
+- AWS SSM patch manager
+    - automate process of patching instances
+    - automate patching by defining rules for auto approval
+    - scan & install patches on a regular basis w scheduled maintenance windows
+    - view aggregate patch compliance using explorer 
+- AWS orgs 
+    - centrally manage & consolidate all AWS accts
+    - can use SCPs (service control policies) to provide permission guardrails at the AWS org, OU, or acct level
+    - when SCP attached to OU, it is inherited by the child OUs and accts under OU
+        - SCPs do not grant any perms
+        - SCPs specify max perms for AWS org, OU, or acct
+    - SCPs affect only IAM users & roles managed by accts & are part of org
+        - SCPs don't affect resource-based policies directly 
+## IAM 
+- IAM identity center (successor to AWS Single Sign-On)
+    - securely create or connect workforce identities and manage their access centrally across AWS accts & apps 
+    - users have to be in groups and have permissions
+    - apps have to have this service enabled to allow users to log in 
+    - SAML federation
+        - token provided for a role to do things 
+    - AD should be used if wanting to manage users in either AWS Managed AD or on-prem AD
+    - external IdPs can be used as well 
+    - this whole thing is powered to STS; get authentication via identity provider, sends confirmation to AWS SSO for authentication, then exchanges that for a role 
+        - token will be expired over time, and thus the user's ability to assume the role 
+- AWS Directory Service
+    - managed MS AD
+    - actives directory-aware workloads & AWS resources to use managed AD on AWS 
+    - use AWS Directory Service for MS AD if wanting actual MS AD in the cloud
+    - use AD connector if only needing to allow on-prem users to log into AWS apps & services w AD creds 
+    - use simple AD for low-scale, low-cost directory w basic AD compatibility
+- AWS Cognito
+    - authentication, authorization, user management for web and mobile apps 
+    - must know the difference between user pools and identity pools (Kevin recommends 20+ minutes on each)
+        - user pools: who is a user
+        - identity pools: once we've figured out the who, what they can do
+
+# AWS Partner Certification Readiness: Security - Specialty | Week 5 Exam Strategy 
+- question 1
+    - starting w encrypted EFS w many files. Company wants to encrypt it & future files. Must be encrypted w regularly rotated keys 
+- answer for 1
+    - can't modify existing EFS to be encrypted
+        - can't encrypt most services after the fact; generally have to create new then copy data over 
+    - answer: create KMS CMK + configure auto rotation. Create new EFS & encrypt w key. Use DataSync to xfer existing files to new EFS
+    - D: same, but use KMS default service key. Rotation setting is NOT configurable, although they do automatically rotate every 365 days 
+- question 2
+    - company ensuring compliance encofrcing data retention. Critical data stored w restriction that locks data against future changes for 1 year. Data stored in s3 standard, but rarely accessed. Want to move to archival solution. How to move data MOST efficiently
+- answer for 2 
+    - lifecycle rules directly from s3 to glacier. Use vault lock policy to enforce compliance. Complete process in less than 24 hours x
+- question 3
+    - company has KMS CMKs. Some keys have imported key material. keys must be rotated annually. 
+- answer for 3
+    - enable automatic key rotation + import new key material to a new key; point key alias to reference new key 
+    - can't import new key material into existing key
+    - doing rotation manually would be annoying
+    - don't delete existing keys; keys not remade by default 
+- question 4
+    - stack deployed w CFn. template specified just enough properties necessary for resource creation & inherited default values from remaining optional values. company reconfigured default values OUTSIDE of CFn. Now want to maintain all settings for properties through template. identify changes made outside of CFn & remediate template to original config. Which solution will meet these req's w least effort
+- answer for 4
+    - a: update template w values for all properties. use lambda + eventbridge. Run lambda daily
+        - it /would/ work, but complicated 
+    - b: use the original template (which kinda seems like it doesn't have the new values in it). use lambda + eventbridge to run the original template
+    - correct: c: update template, detect drift w AWS Config, configure a config rule to use SSM automation runbook to run the remediation 
+    - d: use Config drift detection & run SSM automation runbook. Can't detect drift w/o knowing original properties 
+- question 5
+    - company uses AWS orgs to manage accts. Want to prohibit use of unapproved services in prod accts. Wants to minimize add'l management overhead as number of accts increases
+- answer for 5
+    - when seeing this, think about OUs to segregate accts, and SCPs to reduce scope of access 
+- question 6
+    - company builds & maintains customer products in separate accts. security team overwhelmed w incident report. How to efficiently determine access to resources granted to external IAM identities & what sensitive info stored in S3 is publicly accessible
+- answer for 6
+    - AWS orgs, add customer accts as members in security hub. Turn on Macie, AWS IAM access analyzer, and CT in company acct + all accts. Use security hub to analyze findings 
+    - cloudtrail needed for access analyzer 
+
+# Practice Exam Review
+- S3 & CloudFront
+    - company wants CloudFront w two origin buckets. Some AWS resources need access to bucket one, but not the other. CFt needs access to both buckets
+    - create a CFt Origin Access Control (OAC) to associate w CFt distribution only
+        - create a bucket policy for bucket one that allows read access to AWS resources + OAC
+        - create bucket policy for bucket two that only allows read access to OAC 
+- IAM roles & global condition context keys 
+    - company allowing third party contractor to assume only certain roles. Wants to ensure roles can only be assumed if MFA is in use
+    - aws:MultiFactorAuthPresent is only used by temporary credentials, i.e. roles
+    "Effect" : "Deny",
+    "Condition" : { "BoolIfExists" : { "aws:MultiFactorAuthPresent" : "false" } }
+    - This is the best way to check if temporary credentials, i.e. a role, is using MFA. If the role assumption is not, or if long-term credentials are trying to be used (i.e. IAM user) then this would flat out deny them
+- AWS service catalog
+    - gives users ability to create & manage catalogs of IT services that are approved for AWS. Can be a way to further limit access of devs w/o implementing (or in addition to) SCPs
+- CloudFormation StackSets
+    - extends capability of stacks b/c gives users ability to create, update, or delete stacks across multiple accts + regions w a single operation
+    - can use admin account to define, manage, and use CFn template as basis for provisioning stacks 
+    - delegated admin is the only account that is allowed to use StackSets to deploy to specific OUs or individual accounts. 
+        - dev accts cannot access CFn SSs
+- AWS Private Marketplace
+    - can be build on top of AWS marketplace
+    - gives admins ability to create & customize digital catalogs of approved independent software vendors & products that confirm to the company's in-house policies 
+    - AWSPrivateMarketplaceAdminFullAccess is the policy required to set up the marketplace in the first place 
+- GuardDuty & SSM
+    - detects comms to know C2 endpoint from EC2 instance. Instance is running vulnerable version of common web framework. Ops team wants to quickly identify which other compute resources have that framework version installed
+        - config cannnot discover the version of an installed framework
+            - can provide detailed view of config & compliance status of resources in acct 
+        - Inspector network reachability inspector 
+            - looks for security vulnerabilities of instances on a network access basis
+        - SSM inventory
+            - collects metadata from managed nodes. can query data to find which nodes run what versions of the framework
+        - RAM (resource access manager)
+            - used to securely share resources created in one acct w roles & users in that acct + other accts 
+- KMS
+    - company is expanding to second region. Want to use the same key material in the new region. All existing and new EBS volumes must use same key across regions 
+        - cannot convert a single region key into a multi-region key
+        - cannot change the KMS key that is associated w existing encrypted volume 
+        - Create new multi-region KMS key (in the original region), create a replica key in the second region. Use the replica key to encrypt all EBS volumes in the second regions. Use snapshots of the EBS volumes in the first region to create new EBS volumes (in the first region) that use the new multi-region key 
+- ECS/ALB/Cost explorer
+    - ECS services ran behind ALB. ECS services deployed in private subnets. Services need to be frequently updated & require indirect internet access for the updates. Services must be able to communicate among each other. During development, Cost Explorer forecasted high costs for the coming three months. NAT gateway usage had unexpectedly increased. How to identify & resolve the security gap
+        - Use cost explorer to view cost data for previous month, group by service and usage type. check for unusual costs. Since they apparently didn't know why costs had increased, need to look at historical cost explorer information
+            - able to create monitors in cost anomaly detection & receive SNS alerts (kinda like I do on my account)
+        - use VPC Flow Logs & send to S3, then query with Athena. After confirming NAT gateways are the problem, can see what traffic is going to them from where 
+        - don't use VPC reachability analyzer; it only works on traffic inside VPC & identifies what component w/n VPC is blocking connection. like traceroute for the VPC 
+        - create new internal ALB. register & update web services to use newly-created ALB for internal comms b/w services 
+- VPC Flow Logs
+    - company set up VPC flow logs w default flow log record format. Want to quickly identify excessive IPv4 requests that got rejected. Least effort solution
+        - cannot change flow log record content of an existing flow log. 
+        - can publish VPC flow logs to S3 or cloudwatch. In cloudwatch, it'd be easiest to just use a CW metric, rather than trying something with Athena in S3. Cloudwatch can then notify SNS when threshold is exceeded 
+- AWS Backups
+    - company must back data up every day. Currently experimenting w AWS Backup & default vaults. Must retain backups for at least 1 year. Backups must be available w/n region + another region for compliance reasons 
+        - create backup plan that has daily backup frequency, default vault in main region for backup + default vaule in second region as destination backup w retention period of a year. Apply backup vault lock to the default vault in the second region that has a min retention period of 1 year for the recovery points 
+            - AWS Backup Vault Lock permanently enforces retention periods & prevents early deletions by privileged users (including root)
+            - a backup plan requires selecting a backup vault from same region. Cannot directly write backups to a second region 
+            - vault access policies restrict user access only to AWS backup APIs
+- VPC peering
+    - company added new instance to a peered VPC where traffic was otherwise able to travel b/w. New instance cannot be reached by existing instances in other VPCs. solution w least effort 
+        - use VPC reachability analyzer to create path w new EC2 instance as destination & EC2 instance in the other VPC as the source. View results to determine which component is blocking comms 
+        - since there's no indication that the new VPC can't reach other instances, it should be used as destination, not source 
+        - VPC flow logs + S3 + athena could potentially work, but lot more effort than reachability analyzer 
+- S3 
+    - planning to create versioned s3 bucket to store sensitive data. multiple apps will access data. When objects no longer required, specific authenticated users should delete them. Those users get the appropriate permissions. Even if users delete some objects, company must maintain all versions of s3 bucket w/o any modification for a minimum of 7 years
+        - enabling MFA delete for bucket using root is not secure since root MFA would have to be shared
+        - S3 Object Lock in compliance mode
+            - object lock can help protect objects from deletion or overwriting for a fixed amount of time
+            - in compliance mode, no user, including root, can overwrite or delete a protected object version until retention period expires
+            - when enabled, versioning automatically activated
+            - in governance mode, no user can overwrite or delete protected object, but any user w the correct perms can alter the retention settings or delete the object
+        - aws:MultiFactorAuthAge is for all types of MFA requests, not just temporary, and identifies if the request has MFA. IF it didn't, would evaluate to null
+            "Condition": { "Null": { "aws:MultiFactorAuthAge": true }}
+            - if Null in the condition evaluates to null, i.e. no MFA age indicating no MFA usage, then it evaluates to true. If the condition is true, then the statement (of deny) applies to it
+- IAM 
+    - access key compromised & EC2 instances launched unexpectedly. What actions to take to minimize impact 
+        - deactivate the compromised IAM access key for the IAM user 
+            - do not delete the key, test apps with a new key, then delete the key 
+        - create point-in-time EBS snapshots for volumes attached to new instances & isolate the new instances (for offline forensics)
+        - use CloudTrail to discover any add'l actions performed using the compromised access key
+- log network traffic to ALB behind Web ACL
+    - company must log all network traffic flowing to app. Admin must analyze logs in as close to real-time as possible. Must block an IP address that attempts HTTP flood attack
+        - configure web ACL logs, send logs to S3. Write lambda function to query Athena & analyze logs. Add suspicious IP addresses to Denied IP set of web ACL. 
+            - IP set: collection of IP addresses & IP address ranges that can be used together ina  rule statement
+                - can reference up to 10k CIDR ranges each 
+        - VPC flow logs won't work, since they're only for network interfaces w/n VPC. Also collect data in an aggregation interval & is not real-time
+        - SG rules won't work; max 50 rules allowed 
+        - listener rules won't work; only 100 rules allowed (and not recommended to use for traffic blocking)
+        - in the event of an HTTP flood or other attack, app may not be available, and app logs would not be helpful to look at 
+        - WAF logs can be sent to CW, S3, KDF
+- MS AD
+    - company wants an AWS solution to manage new and existing users on AWS, and to move from on-prem MS AD. Must support MFA
+        - Use AWS Directory Service for MS AD. Use Active Directory Migration Toolkit (ADMT) to migrate users from on-prem MS AD. 
+            - ADMT can migrate users from on-prem AD to AWS managed MS AD. AWS Managed MS AD supports MFA. 
+        - Using IAM Identity Center is used for synchronizing MS AD deployments, but cannot migrate identities from existing AD 
+        - Using AWS Directory Service w AD connector just redirects requests to on-prem MS AD. Doesn't even cache info
+        - AWS DS w Simple AD doesn't support MFA
+- AWS Orgs
+    - company has hundreds of AWS accts in dev/test/prod OUs. Devs have full admin access to dev accts. Company wants to allow only certain EC2 instance types to be used w/n dev OU. How to prevent dev accts from launching unapproved EC2 instance types
+        - create SCP to denty ec2:RunInstances for instance types that aren't in an approved list & attach to dev OU 
+- IAM
+    - company implementing MFA w FIDO security keys. Security admin tasked w configuring MFA for all IAM users. Must verify the right type of MFA is configured before distributing the devices to the correct employees 
+        - use the IAM console to configure security key device for each user. Verify all IAM users have MFA configured from the users page in the IAM console 
+        - can't use a credential report b/c it only lists TRUE or FALSE under mfa_active, and couldn't confirm it's FIDO or not. 
+        - can't use CLI; FIDO devices can only be enabled in the console 
+- CloudFront
+    - company wants to filter out unauthorized requests based on JSON web token in the query string of a request to CFt that goes to ALB in front of EC2
+        - create a CloudFront function & attach to CFt distribution that has the viewer request event type. Use the function to validate JWT value
+            - CFt functions are deployed at edge location & can be used to modify traffic. Infinitely scalable, performant, and secure
+        - Can't use WAF web ACL b/c it cannot process or validate JWT value. Is able to filter traffic based on presence of JWT query string 
+        - lambda@edge is a lambda function that can customize the content that CFt delivers, but they sit behind CFt; requests go through CFt first; if content is available in cache, then the lambda@edge function wouldn't be triggered 
+- EBS volumes
+    - wants to set up an automated solution to scan EBS volumes for malware at scale. Security consultant creates Amazon EventBridge rule + sets CW logs log group as target for the rule 
+        - use GuardDuty. Configure eventbridge to match GD finding when type is 'Execution:EC2/MaliciousFile' or 'Execution:EC2/SuspeiciousFile' <- those are GD finding types
+        - there is no service called EC2 or EBS Malware Protection 
+        - Amazon Inspector does not have a feature named Malware Protection 
+            - also, doesn't scan for the presence of malware itself 
+            - inspector finding types include 'PACKAGE_VULNERABILITY' and 'NETWORK_REACHABILITY'
+- ECS
+    - company runs critical workload on fargate ECS. ECS task refernces a sensitive variable & the variable must be rotated every 12 monhts. Most secure way to do that 
+        - create key-value pair for var in AWS Secrets Manage. Reference it in the env vars section of container definitions in ECS tasks. Use 'ValueFrom' option for the var. Add full ARN for secret to container definition. Configure rotation in secrets manager
+            - in fargate, not all ECS task definition parameters are available 
+            - valueFrom expects a string of arn of a secret, or the local location of a secret 
+- CloudFormation StackSets
+    - company uses AWS Orgs to manage accts. security team defined security controls in CFn template. security team must deploy controls in all accts that belong to specific OUs in org
+        - enable trusted access w/n org for CFn StackSets. Register a security acct as delegated admin for SSs. Use SSs in the security acct to deploy custom controls as stacks in the appropriate OUs
+            - recommended to delegate features of security services to other accts than just the organizational billing (i.e. management) acct 
+            - when trusted access is activated, SSs creates the necessary IAM roles in the org's management acct + target (member) accts when creating SSs
+                - only account admin in management acct has perms to activate trusted access 
+            - able to grant self-managed perms to security acct to perform SSs ops. However, is labor intensive b/c it requires creation of roles in sec acct + each member acct. Better to use trusted access 
+- SSM 
+    - lots of EC2 instances in VPC that has an S3 endpoint configured. Instances have SSM agent + CLI installed. Not all have internet access. Critical vulnability exists in the OS of the instance. OS vendor is creating a patch. Company must deploy patch on all instances w/n 1 day of release
+        - download patch from OS vendor to S3 bucket. Create SSM document that defines commands necessary to install patch. Use SSM run command to apply patch
+            - using lambda + SSM patch manager predefined patch baseline would be more complicated, and predefined patches include 7 day approval period before new updates are released 
+            - trusted advisor doesn't do this; can only provide recommendations on following best practices, but does not get data on installed patches on instances
+- S3
+    - want to ensure S3 compliance. When buckets become noncompliant, must receive email w bucket name, region, and time of noncompliance. Security Hub + Config have been activated. SNS topic w email subscribed has been created. Now what to do? 
+        - in Config, add s3-default-encryption-kms managed rule to the list of enforced rules. Set rule to run when S3 bucket is created or edited
+            - can't define an hourly frequency for config rules to run. 
+        - create EventBridge rule that has SNS topic as target & an event pattern JSON
+            - security hub findings can't be defined in JSON; SH collected security data from AWS accts, services + 3rd party products to analyze security trends & identify high priority security issues
+                - findings are viewed from other resources, rather than set up directly in SH
+            - in config, can use JSON to define events, but setting a remediation action to AWS-PublishSNSNotification wouldn't send all the desired data, would only pass ResourceId
+- AWS Orgs
+    - How to manage tag enforcement at scale 
+        - config tag policies at org level & create resource creation request guardrails using SCPs 
+            - tag policies: offer centralized tag management at scale & integrated w AWS orgs
+            - resource reqest guardrails needed b/c some services don't support tags 
+            - AWS config can flag non-compliant resources, but cannot enforce tagging
+            - in RAM, tags can be applied to a resource share, but not to resources in the share
+            - resource groups tagging API allows for programmatic access to tagging functions of AWS resources, but does no enforcing
+- IAM
+    - devs need to create IAM roles + policies w/n dev AWS accts during IAM policy dev process. All teams receive different degrees of access through AD federation. Security team needs to ensure that devs don't have ability to grant themselves add'l unapproved access to IAM roles 
+        - Use IAM permissions boundaries for the federated roles that devs use
+            - can be applied to a role. Create a maximum permission that the role can use. No actions beyond permission boundary permitted
+            - SCP is not best in this scenario. It is used to control max perms for entire account. Will NOT effectively control max perms for specific role w/n accts 
+            - session policies injected inline at the time a user assumes a role. Cannot apply to the role as a whole. Session policies only affect the specific session
+- AMIs
+    - infosec mandated only approved AMIs can be used. How to enforce mandate
+        - deploy Config rules & check all running instances for compliance 
+- secrets manager
+    - RDS DB accessed by lambda functions. All the functions use the same DB user to access DB. Passwords must be rotated every 90 days. When password was manually updated, the functions broke b/c they were referencing env vars for the credentials. implement a secure pw storage + rotation solution 
+        - create RDS secret in Secrets Manager to store credentials. Create lambda rotation function to do auto rotate and schedule it to do every 45 days. Use an alternating-users rotation strategy. update functions to retrieve credentials from SM
+            - having two users available to access app at any time avoids potential downtime during rotation process. User pwds are rotated in an alternating pattern. apparently also prevents the DB user from resetting its own password
+            - having a single-user rotation strategy does not prevent lambda function of the app from being able to change password(?) + low risk of db denying access at time of pw rotation
+- S3
+    - encrypted s3 bucket. app dev has IAM policy that allows full access to bucket, but is unable to access objects in bucket 
+        - the bucket policy explicitly denies access to app dev 
+            - not ACL b/c they are legacy control & policies should be used instead. ACL can control access to buckets or individual objects for specific AWS accts or groups
+            - not KMS perms b/c the KMS key doesn't need to list app dev as admin for dev to access bucket. Dev WOULD need appropriate KMS perms to use key for encryption + decryption of objects 
+            - S3 bucket policy does not need to explicitly grant access to dev if they've got an IAM policy allowing access 
+- GuardDuty
+    - company uses AWS orgs to manage accts. Collects lots of logs. Wants to implement solution to detect anomalous activity in accts. Security team must get notifications for findings. lowest effort solution.
+        - configure GD for the org. designate security team's acct as delegated admin. use CW events (EventBridge) to subscribe to findings of suspicious activity
+            - GD creates event for CWE when any change in findings takes place. 
+                - finding changes that will create event include newly generated findings or newly aggregated findings 
+            - GD notifications to SNS would not contain info about whether query detected suspicious activity. GD does not need to and cannot copy logs from other AWS accts to conduct analysis & generate findings
+- CloudHSM
+    - company has web servers that implement end-to-end HTTPS sessions. They have invested in the generation of key materials for this purpose. But process is computationally heavy & affects web servers. Company wants to offload TLS processing. Want to import & control key materials on AWS. keys should only be available during standard business hours 
+        - create CloudHSM cluster that has HSMs in multiple AZs. Import key materials into cluster. Create & schedule AWS Lambda functions to remove all HSMs & to add appropriate HSMs in the cluster as required 
+            - KMS only supports symmetric encryption keys; need asymmetric keys to offload TLS processing 
+            - CloudHSM backups cannot be explicitly initiated. Also isn't a regional service 
+- VPC architecture
+    - company has three-teir architecture, but web server is timing out. Using NACLs, and only inbound traffic allowed
+        - edit rule for DB tier to only allow 3306 from app tier. Add a rule to the NACL that allows outbound traffic on all ephemeral ports to the private IPv4 address of app server 
+            - by default, new custom NACLs BLOCK ALL TRAFFIC
+            - web tier shouldn't be able to directly access DB tier
+- GuardDuty
+    - company subscribed to third-party threat intelligence list uploaded to S3. How to use the list across all company AWS accts 
+        - ensure GD is in administrator-member config. Add threat list to admin acct refercing the S3 object that contains the threat list
+            - only need the one admin acct accessing the S3 bucket 
+- IdP w CI/CD pipeline
+    - company uses external CI/CD system to manage resources in AWS. The system uses access key of an IAM user & policy attached directly to user. Company had a security breach that publicly exposed creds. Creds weren't frequently rotated. Just implemented external IdP that supports OpenID Connect (OIDC). How to create secure auth solution that uses the IDP
+        - Create an IAM OIDC identity provider. Register CI/CD system as audience to external IdP. Add CI/CD clientID to new IAM OIDC identity provider. Assign a new role to the eIdP that has appropriate perms. Configure CI/CD pipeline to assume role using AssumeRoleWithWebIdentity action
+        - CI/CD must be registered to eIdP instead of to the IAM ODIC. The CI/CD must be part of the audience of the eIdP to get creds from there. ClientID of CI/CD system must be added to IAM OIDC identity provider 
+            - when a thing is associated with an audience of an IdP, it receives a client ID, which is then provided to the IAM OIDC provider console 
+- EC2
+    - EC2 instances compromised multiple times. Want to capture memory dumps of compromised instances for future analysis. Just receive notification that EC2 instance running a windows AMI is compromised. How to collect memory dump for forensic analysis
+        - download and run EC2Rescue for Windows Server utility from AWS 
+            - can capture memory-dump files that exist on the instance. Can also capture event logs, config logs, and SSM agent logs
+            - SSM Agent does not interact w memory dumps; instead, it processes requests from SSM service and runs them on the EC2 instance 
+            - rebooting an instance erases RAM
+- ECS
+    - mission-critical web apps ran using ECS on EC2. security teams wants to inspect content of all traffic that is related to instances. inspection should be done passively & not affect network performance 
+        - use VPC traffic mirroring + Gateway Load Balancer w security appliances to analyze the traffic 
+            - packets from all network interfaces in the cluster can be mirrored to GWLB. GWLB can distribute packets to security appliances that run on EC2 instances for deep-packet (i.e. content) inspection to provide an out of band solution 
+            - gateway load balancer help easily deploy, scale, and manage third-party virtual appliances 
+            - VPC flow logs do not inspect content 
+            - directly using a GWLB in-line with the traffic would impact network performance 
+- IAM
+    - users are able to assume an IAM role that allows full access to EC2 and RDS. A user who's able to assume that role also needs full S3 access. Best way to do that
+        - create new IAM role that grants full access to S3, EC2 and RDS resources. Have user assume new role 
+        - can't use session policy b/c it limits perms IAM entities already allow; not able to add more perms 
+        - can't assign S3 perms to user b/c when they assume role, their own credentials are NOT used
+- Control Tower + Guard Duty
+    - team uses CT to organize accounts + GD to monitor resources. Team must design automated detection and rememdiation process for GD findings. Process should gather forensics on instance to understanding findings more completely. All instances run in ASGs
+        - create EventBridge rule to detect desired GD findings. Set up lambda function as target to capture metadata on instance. Turn on termination protection on instance. Isolate instance by putting on fully restrictive SG. Detatch instance from ASGs. Deregister from any ALBs. Snapshot volumes. Quarantine instance. 
+            - can't use Detective, which processes TBs of event data records to identify root cause of security findings or suspicious activities, but CANNOT perform actions against EC2 instance 
+- KMS
+    - app ran across multiple EC2s. App must encrypt all data. Must rotate key every 30 days 
+        - use an alias that targets a customer managed key. Create new key every 30 days + update the alias
+            - can use the alias to refer to specific key in app code. During the rotation, in KMS can update alias to use a new KMS key 
+            - can't use KMS managed key b/c key rotation interval can't be user-adjusted. 
+            - for CMKs, can enable rotation, but automatically can only be done once a year 
+            - can only import key material into a KMS key once 
+- IAM
+    - unauthorized activities were performed by user's IAM access key & malicious activity may have occured. What to do to reduce risk? 
+        - Use AWS IAM console to identify IAM user associated w access key. Generate a credential report. Use data in credential report to identiy the IAM user. Deactivate all access keys associate w user. Create deny all IAM policy. Attach policy to user 
+            - can't use IAM Access Analyzer to identify user that is associated w access key credentials; it identifies AWS resources that are shared w external entities, validate IAM policies, and generate IAM policies based on CT activity
+            - don't delete the user
+- S3 
+    - company has unencrypted S3 bucket w millions of objects, some of which contain PII. multiple apps access the objects. Security engineer must provide report that identifies sensitive data. Must also ensure all current & future objects are encrypted 
+        - Run Macie discovery job w appropriate managed + custom data identifiers. Review Macie findings to generate report. Turn on default encryption for S3 bucket. Use S3 inventory report + S3 Batch Operations job to encrypt existing objects in bucket 
+            - S3 batch operations job w a copy operation can copy existing unencrypted objects + write the objects back to the same bucket as encrypted objects 
+            - need custom data identifies to collect customer account numbers 
+            - creating a new bucket and copying everything over would be more effort
+- Security Hub
+    - company wants to establish central dashboard. It should aggregate security findings from AWS service + third party solutions across accts and regions. also want a SIEM. How to do w least operational overhead
+        - use AWS Security Hub as a single aggregation point. Use Amazon OpenSearch Service as SIEM w SH
+            - use SH w OSS to store findings for longer than 90 days
+            - can aggregate findings across multiple accts w/n one or multiple orgs
+            - can correlate SH findings w each other + log sources 
+            - SH is a cloud security posture management service and not SIEM solution
+                - SIEM solutions generate security findings + offenses. Must integrate SH w other services to see the data 
+            - using a third-party SIEM would have lots of operational overhead 
+- S3 
+    - company wants to use KMS CMK to encrypt all buckets in main region. Need a solution that will detect & rememdiate noncompliant S3 buckets & notify team of noncompliance. How to do w least operational effort 
+        - configure Config managed rule s3-default-encryption-kms. Create SSM automation runbook that turns on KMS encryption for the noncompliant buckets and publishes SNS message to security team. Assign runbook as auto remediation for config rule
+- IAM/secrets manager [this one was SUCH a reading compehension one]
+    - company has two accts. app exposes an API on an EC2 that runs in Acct1. Company secures API by requiring API key. Key not changed frequently. EC2s in Acct2 must have ability to use IAM role in Acct2 to allow instances to access API key that's required to make calls to app's API
+        - Store API key as encrypted secret in Secrets Manager using a CMK in Acct1. Configure resource-based policies for the secret + key that allow IAM role to use the secret and key. Attach identity-based policy + a trust policy that allow the use of the secret & the key in Acct1 to the IAM role 
+            - SM supports cross-acct access for secrets encrypted by KMS. Requires updates to resource-based policies for the secret + the key
+            - can only change resource-based policies on CMKs 
+- VPC Flow Logs
+    - company uses VPC flow logs to config multiple flow logs + publish data to S3. Use athena to evaluate log data for security threats. some queries that used specific fields in log data said columns could not be resolved. How to fix
+        - replace existing VPC flow logs w new flow logs. Use a custom log record format to include the specific fields in addition to other relevant fields 
+            - cannot modify existing flow log format 
+            - custom log record format is required to include vpc-id and subnet-id fields in data (default format doesn't include those)
+- ECS
+    - vulnerability discovered that exfiltrates data on port 5353 in batches at random intervals. While patch is being developed, how to identify compromised hosts & stop egress of data 
+        - create CW custom metric on VPC flow logs identifying egress traffic on port 5353 (to identify compromised hosts). Update NACLs to block port 5353 outbound (to stop egress)
+        - can't use inspector, which only performs package vulnerability scans on container images, but doesn't include egress access on a specific port 
+            - to scan network for instances where port is open, would have to run inspector network reachability package to identify open ports; to get add'l info about processes running on the port, would have to install inspector agent 
+        - can't use CT, since they don't contain traffic port info. SG rules can't deny traffic 
+- IAM 
+    - company outsourcing operational support to external company. How to allow access w minimal overhead
+        - federate IAM w external company's IdP. Create IAM role & attach policy w necessary perms
+        - cognito wouldn't be applicable, since it is for business-to-consumer web & mobile apps. If only cognito actions were denied in the access role, then the external company would have basically keys to the kingdom
+        - federated identities can only assume a role, and roles cannot be added to groups 
+- CloudTrail/Athena
+    - centralized S3 bucket collects CT logs from hundreds of accts. Create a solution that allows running ad-hoc queries against CT logs dating back to the start of logging. least admin overhead
+        - Athena. literally what it's designed for
+- IAM
+    - auditors from account B w unique IAM users need access to account A. Auditor-Alice requires read-only access to AcctA S3 bucket. Admin of AcctA uses console to create S3Audit IAM role that gives AcctB read-only access to S3 bucket. AccB admin attached policy to Auditors group to assume the role. How to improve access control most securely
+        - modify trust relationship to the S3Audit role to have the following principle
+            "arn:aws:iam::{AccountB}:user/Auditor-Alice"
+            - for a cross-acct IAM role, default trust policy gives ALL users in the other acct ability to assume role. Increase security by restricting default trust policy to authorized users
+- Direct Connect/VPN
+    - company needs dedicated & isolated internal channel to connect on-prem site to s3 buckets. requires data in transit to be encrypted w IPsec
+        - use DX link configured w public virtual interface to establish connection. Use site-to-site VPN tunnel w DX link to comply w IPsec
+            - b/c connection is to a public service, such as S3, must use public VIF
+            - DX does not support IPsec encryption by default
+            - private VIF is for connecting to VPC
+- SSM parameter store
+    - app hosted on EC2. should be able to access secure strings stored in SSM parameter store. When app tries to access secure string value, it fails
+        - EC2 instance role must have decrypt permissions on KMS key used to encrypt secret
+            - SSM PS is NOT used to decrypt the KMS key
+        - EC2 instance role must have perms to read the parameters in SSM PS
+- lambda
+    - lambda function outputs print statements to log for debugging. During tests, dev able to view log output in test tab. However, can't see logs in CW
+        - update function execution role to allow the function to create CW logs log group + log stream & upload log events to stream
+            - lambda needs the permissions, not the dev
+        - lambda functions can have resource-based policies, but they govern permissions to other AWS accts + service to invoke the function 
+- KMS
+    - EC2 instances in acct deployed across two regions. One in canada, one in US. must encrypt all new EBS volumes + snapshots. Must protect encryption keys from deletions. Prefer to use AWS service. Must have ability to share EBS snapshots in the home region w other accts in same region for troubleshooting. Security admin plans to implement EBS encryption by default in both regions. least operational effort
+        - create & use CMK as default KMS key for EBS encryption. Update policy of CMK to prevent key deletion. Use AWS managed keys as default KMS keys for EBS encryption in the Canadian region 
+            - CMKs allow sharing EBS snapshots across accounts 
+            - users cannot delete KMS managed keys, so they're protected from deletion by default 
+                - using CMKs when not needed & having to add deletion protection is unnecessarily complicated for this specific question
+- CloudFront/WAF
+    - company runs three web apps. One uses CFt to serve ALB. A plain ALB used for the second app. Uses API gateway w edge-optimized endpoint to serve third app. protect apps & deny requests from known malicious IP addresses
+        - create two WAF web ACLs. Associate one web ACL w CFt distribution. Associate other web ACL w second ALB + rest API
+            - Web ACLs can be global or regional; use global to protect CFt, use regional to protect ALB + edge-optimized REST API. 
+                - cannot associate a web ACL associated w a CFt dist w any other AWS resource type 
+- IAM
+    - IAM group created w small set of IAM users. Members must have restrcited access to new S3 bucket. Security admin plans to attach policy to group. Admin wants to verify overall effective access before providing access
+        - use IAM policy simulator in existing policies mode. Select all existing policies associated w IAM user in group. Create new IAM policy in policy simulator. Run simulation w all S3 actions selected. Repeat this process for each user in group
+            - to test policy directly attached to user + new policy, must select all existing policies for IAM user
+            - since each user may have different policies, have to do this for each user...
+            - in new policy mode, cannot select specific IAM users & existing policies that are attached to those users 
+- Cognito/AD
+    - company uses MS AD for on-prem & wants to use same mechanism for accessing AWS accts. a dev team wants to launch public-facing app that they need a separate authentication solution for. what combo to meet req's
+        - cognito user pools for app auth
+        - set up federated sign-in to AWS through ADFS and SAML
+        - don't use AD connector, which is a directory gateway used to redirect directory requests to on-prem AD. Can't use AD connector to access apps 
+- ECS
+    - cluster runs on 25 windows EC2s. need to run script on each instance to make req'd config changes as quickly as possible. how to do it w most secure access to instances 
+        - use SSM run command to run script on all the instances
+            - run command: gives users ability to remotely and securely manage config of EC2. eliminates need to interactively access instance
+            - instance connect uses SSH and doesn't support windows 
+            - can't use key pairs and RDP to start sessions b/c key pairs are for getting initial password decrypted + need to add SG to allow the new port 
+            - using SSM session manager would require security engineer to connect to each instance individually. it's best to automate and centralize change management
+- CFt/firewall manager
+    - company uses AWS orgs to manage three accts. Each acct has several CFt distros. Must protect all existing & new CFt distros to meet security reqs. company creates AWS WAF web ACL w appropriate rules in one acct. least effort solution
+        - create AWS Firewall Manager security policy for AWS WAF in same acct as existing web ACL. include existing web ACL in security policy. config policy action to auto remediate any noncpompliant resources. Include all CFt distros in FM policy scope 
+            - able to download web ACL as JSON document, but don't need to do so for this solution
+- VPC architecture
+    - company has three-tier web app. Recently discovered that second tier was unintentionally communicating w another EC2 in a peered VPC. prevent this comm in the future
+        - add outboound rule to AppSG to allow only traffic on port 1521 that is destined for the IP subnet of the DB instances 
+        - other options had only one-sided NACL rules, or outbound deny rule on SG
+- CT
+    - multiple prod accts. each acct have CT configured to log to central S3 bucket. Two prod acct trails aren't logging to the bucket. troubleshoot
+        - verify s3 bucket policy allows access for CT from prod AWS acct IDs. 
+            - to receive log files for org trail, bucket resource-based policy must be updated correctly
+        - confirm in CT console that each trail is active & healthy 
+        - confirm in CT console that s3 bucket name is set correctly
+            - CT console will display target bucket name
+        - in this particular question, AWS orgs not used, so global config for accts not possible
+            - it is possible in an organization, in the management/admin account, w sufficient permissions, to create an org trail & specify s3 bucket location. can enable log file validation and sns notifications
+        - log file prefix is just the prefix used for the logs, not the bucket the logs go to
+        - no need to make another CT if it's a permissions issue
+- CT
+    - aws orgs used to manage multiple accts. security has separate acct. company relies on CT log files to prove compliance w regulations. stores log files in S3 buckets in each acct. recently, CT log files deleted in a non-management acct. CT was turned off for some services in acct. solution that prevents deletion of log files & modifications to CT settings. least effort
+        - create encrypted S3 bucket. configure object lock + MFA delete in the org's mgmt acct. create org trail in mgmt acct 
+            - users in member accts will not have ability to make mods to trail
+- EKS
+    - EKS app in private subnets across AZs. app uses public internet to connect to AWS partner's custom DB solution on TCP/IP 27017. Devops engineer must secure app & ensure db connections don't leave AWS network. Connections must be accessible only by EKS cluster prods. traffic across the VPCs must be restricted to DB connections only. Partner offers PrivateLink + VPC peering options. Partner provides IPv4 CIDR range + endpoint service name for config
+        - create PL interface endpoint for the provided endpoint service w/n EKS cluster VPC. Assign SG to interface endpoint that allows inbound connections from EKS pod SG. update EKS pod SG to allow outbound connections to interface endpoint on 27017
+            - when using PL, VPC endpoints can make private connections from a VPC to supported AWS services, services that other AWS accts host (VPC endpoint services), and PL ready partners. PL connectors have unidirectional access only. 
+                - since EKS must initialize the connection, have to allow outbound traffic, and allow the stateful nature of SGs cover the rest 
+            - EKS cluster VPC resources must initialize DB connection to the endpoint service 
+- Cost Anomaly Detection
+    - company uses aws orgs to manage 50 accts. security team notified acct admin of data exfiltration activities by EC2 in member acct. Increased expenditure resulted from the incident. Security team must identify similar expenditure fluctuations in each member acct so acct admins can take immediate action
+        - use AWS Cost Anomaly Detection to create cost monitor that uses AWS services monitor type in each member acct. Create alert subscription w individual alerts to notify appropriate acct admins
+            - CAD uses ML to continuously monitor cost & usage to detect unusual spends. Cost monitor can analyze all AWS service independently or by member accts, cost allocation tags, or cost categories
+                - linked account cost monitor evaluates only the total spend of an individual member acct or group of member accts. 
+                    - does not evaluate AWS services independently for anomalies 
+- Service Catalog
+    - mgmt concerned when users launch products from service catalog, elevated IAM privileges will be required to create resources. mitigate concern
+        - add launch constraint to each product in portfolio
+            - launch constraints specify IAM role that SC assumes when end user launches, updates, or terminates a product
+            - used to assign role to portfolio so individual user does not need add'l privileges to create resources
+        - template constraints can be used to limit options available to end users when the launch a product. Do not specify assumed role 
+        - SC tag update contrains are used to allow/disallow end users to update tags on resources 
+- Macie/Security Hub
+    - company uses macie to exam s3 buckets across regions. security admin inspects all policy & sensitive data findings in each region separately & wants to unify all findings in home region. How?
+        - configure security hug in each relevant region, w home region as aggregation region. Update publication config in Macie to publish policy & sensitive data findings to SH. Use S3 buckets w sensitive data SH managed insight to inspect findings 
+            - by default, only policy findins are automatically published to SH; sensitive data publishing must be configured 
+- AD/IAM
+    - company wants to access AWS resources by using identities & groups defined in existing MS AD. What must company create in its AWS accts to map perms for AWS services to AD user attributes
+        - IAM roles
+            - can map user attributes in AD to IAM roles. Can create & attach policies to the roles based on job roles & control access to AWS resources
+        - not IAM groups or users. Cannot be used to federate users
+        - not w access keys, which are created at time of STS call, but invisible to the user 
+- S3/Config
+    - unapproved changes had been made to s3, so aws config was set up to record config changes to s3 buckets. s3 config changes are being made, but no SNS notifications are being sent. how to resolve issue
+        - configure policies attached to S3 buckets to allow AWS config to record changes to the buckets 
+            - don't use ACLs unless control to each object in a bucket must be individually managed 
+        - assign AWSConfigRole managed policy to the AWS config role
+            - config requires IAM perms to record config details about resources
+                - IAM users don't need admin access to config, plus need resource-based policy to grant access to AWS config
+- GuardDuty
+    - moving from ec2-hosted malware detection to GuardDuty Malware Protection ot scan for malware, automatically isolate EC2 instances, and preserve evidence of malware. Evidence of malware should be stored in attached EBS volumes upon detection
+        - configure snapshots retention setting in Malware Protection general settings
+            - can turn on snapshot retention to save EBS snapshot indefinitely when malware is  detected
+                - don't need lambda to do it since snapshot already created during malware scan
+        - create AWS lambda function to isolate EC2 instance if GD MP finding is received
+            - lambda function can isolate instance by invoking a no inbound/outboundd SG rule 
+        - can exclude resources w tag named GuardDutyExcluded = true (not helpful here)
+        - KMS CMK encryption is the only encryption that GD MP supports for EBS. Does not support EBS volumes encrypted w EBS managed key
+- CT 
+    - must create org trails in mgmt acct 
+- GD 
+    - create EB events when findings are located, don't need to do anything else 
+
+# AWS Partner Certification Readiness: Security Specialty | Week 5 content review 
+- data protection
+    - Macie
+        - detects growing list of sensitive data types, like PII
+        - provides ability to use regex to look for data 
+        - sends finding notifications through EventBridge which processes a rule, then can activate Step Functions 
+    - KMS
+        - behind the scenes, the service used for encryption and decryption
+        - only supports symmetric encryption 
+        - all key usage logged in CT
+            - if key suspected compromised, able to see where it has been used and how 
+        - behind the scenes, runs on FIPS 140-2 compliant HSMs 
+        - types of keys
+            - CMK: created by customer & gives access to creator for rotation
+                - rotation optional; auto rotation occurs once/year
+            - AWS managed keys: sit in customer acct, created by AWS for services in acct
+                - rotated roughly once a year 
+            - AWS owned keys: behind the scenes; customers don't touch them 
+    - CloudHSM
+        - generating & using your own encryption keys in AWS Cloud
+        - runs on dedicated hardware
+        - supports asymmetric keys as well 
+    - Certificate Manager (ACM)
+        - privision & manage SSL/TLS certs w AWS services + connected resources 
+        - automatically renews and rotates certificates 
+    - Private Certificate Authority
+    - Secrets Manager
+        - manage, retrieve, rotate credentials, keys, and secrets
+        - everything in here always encrypted by KMS 
+        - avoid hard-coding access credentials in apps 
+    - SSM Parameter Store 
+        - does not support rotating secrets 
+        - gives option to encrpyt or not
+- s3 buckets are now encrypted by default, as of >6 months ago 
+- SSM session manager
+    - allows approved people log into approved instances
+    - works through HTTPS
+    - logs everything that happens, i.e. file deletion, creation, etc 
+- s3 encryption at rest
+    - sse-s3 (server-side)
+        - once loaded in environment, gets encrypted
+        - key management & rotation handled by AWS
+    - sse-kms w CMK
+        - get all the upside and downsides of CMK
+    - sse-kms w aws-managed keys
+        - doesn't get used much, sse-s3 kinda does the same thing 
+    - can enforce particular type of encryption 
+- AWS Backup
+    - centralize & manage backup schedules from on-prem and cloud native envs at organization level
+        - can also backup across accts 
+        - backup vaults are where backups are stored, and vault can be copied to another acct
+            - must be in AWS orgs to do this 
+    - backup plans can select different resources on different timeframes 
+    - can assign resources by ARN or tags 
+    - backup location/storage is managed by AWS; doesn't use S3 
+## Management and Governance
+- services
+    - control tower
+        - automate the setup of new AWS multi-cloud envs
+        - will set up organization, accts, OUs, accts in OUs, turn on controls 
+            - in a pre-approved, best-practice sort of way 
+            - automates the IAM roles & perms required to move b/w accts as needed
+        - initial deployment
+            - creates org, populates structure of org
+                - security OU contains the following accts 
+                    - tooling (audit) account
+                        - all auditing tools, like config 
+                        - this would be the delegated admin account for config, GD
+                    - log archive account 
+                        - all centralized CloudTrail and config logs go to central s3 
+                        - the one place where it's known the logs haven't been altered 
+                - management OU
+                    - contains service catalog and AWS SSO
+                - sandbox OU
+        - account factory
+            - consistently set up add'l accts w/n Control Tower 
+            - control how accounts are set up
+        - can set up configuration rules in preventive or detective/remediate control categories to further manage compliance in env 
+        - can turn on guardrails in control tower that will apply to new accounts 
+        - security hub integration w control tower
+            - by default, CTwr turns on SH & begins reporting compliance 
+        - default OUs CTwr sets up is security, sandbox, and infrastructure OU (and management?)
+            - there are lots of other OU options available 
+        - cloudformation + stacksets + config/CTwr can ensure consistently created accounts & protect the resources created w/n 
+    - orgs
+    - config
+    - service catalog
+        - control who has access to what in setting up new infrastructure
+        - can define controls of launching
+        - go to the catalog and launch things rather than going to products in the console 
+        - integrates w license manager to manage licenses from aws marketplace
+        - control how resources are set up
+    - well-architected tool
+    - cloudformation 
+- why use multiple accts?
+    - separation of duties, minimize impact of breaches 
+
+# TLG Learning Stream
+- missed modules 1-4
+## module 5: security in S3, RDS, DDB, EBS
+- s3
+    - block public access   
+    - encryption types: SSE-S3, SSE-KMS, SSE-C
+    - access points
+    - macie (know of it, not necessarily deep knowledge); recognizes PII + keywords in S3 
+    - default encryption: all new objects get encrypted 
+    - versioning & MFA delete 
+- RDS
+    - snapshots
+    - encryption & how it's managed 
+    - read replicas vs multi-az
+- DDB
+    - default encryption
+    - global tables 
+- EBS 
+    - encryption, via KMS or KMS CMK
+    - snapshots; incremental point-in-time 
+- archival data
+    - S3 glacier    
+        - glacier vaults
+        - vault lock policy 

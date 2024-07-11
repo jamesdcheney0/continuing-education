@@ -2630,34 +2630,1939 @@ I kept getting the error `Test Endpoint failed: Application-Status: 1020912, App
 - systems manager explorer is an operational data dashboard for multiple accounts & regions 
 - integrates w CW dashboards & personal health dashboard 
 ### Managing Resource Groups
+- selection options
+    - manually: select instances manually
+    - tags: specify one or more key:value pairs & save as resource group
+    - resource groups: query-based on existing tags or resources group
+- resource group: collection of AWS resources in the same region that match a description
+    - can be based on tags, CFN stack
+- tag editor 
+    - define tags & what will become a resource group
+    - allows bulk editing & application of tags to resources in specific region
+- tag policy editor: help enforce tagging resources in a particular account, or the entire organization 
 ### AWS SSM Requirements and Building Blocks
+- SSM agent: software required to be installed & configured on instances for them to be 'managed instances'
+    - managed instance: instance w ability to communicate and operate w SSM 
+    - installed by default on Amazon Linux and AWS Windows AMIs 
+    - can also be installed on-prem and other cloud providers 
+- requires IAM role to be applied as instance profile for instance to be managed 
+    - pre-defined policies provided by AWS 
+        - AmazonEC2RoleForSSM
+- fleet manager
+    - all managed instances displayed in this console 
+    - instance actions: can connect to instance using session manager feature
+- session manager
+    - fully-managed capability that allows interactive browser-shell login for all instances
+    - does not require open inbound ports or SSH keys for connectivity
+    - uses TLS 1.2; security can be increased(?) by using own KMS keys 
+    - provides full logging & session auditing that can be sent to CW and CT
+    - IAM can be used to determine which users have access to which resources
 ### AWS SSM Operations
+- fleet manager, session manager 
 ### AWS SSM Run Command 
+- execute command on one or more instances
+- command defined in systems manager document
+    - written in JSON or YAML
+    - can be reused 
+    - accepts parameters
+    - enables running a shell script or performing administrative tasks 
+        - i.e. RunShellScript 
+            - can either write the shell commands, or point to a shell script on the instance 
+- rate control
+    - concurrency: number or % of targets on which to execute at the same time
+    - error thresholds: stop task after task fails on the specified number or % of targets 
+        - output can be sent to CW logs or SNS 
 ### AWS SSM Parameter Store
+- when executing run command, SSM PS provides storage for plain text and secrets data for the script 
+- integrated w KMS to encrypt values 
+- also integrates w CT
+- can create hierarchies of parameters 
+- track parameter changes w versions 
+- can be referenced by other AWS services
 ### Maintenance Windows 
+- maintenance can be done manually or scheduled at specific times for things that would be particularly disruptive 
+- once maintenance window is created, can register targets to that specific time
+- can register a number of tasks: run command, automation, lambda, step functions
+- can run any number of tasks against registered instances at any time defined by customer
 ### AWS SSM Document 
-### AWS SSM Feature Review
+- independent resources written in JSON or YAML and identify actions and paramters to use 
+- command document (most popular)
+    - used by run command to define actions to execute & defines values to use
+- state manager: apply configurations to instances
+- maintenance window: apply configs on a pre-defined schedule 
+- can run shell script, configure apps, perform adminsitrative tasks
+- there are 100+ pre-configured documents
+    - can modify document or use as-is
+- live in systems manager store 
 ### Patch Manager
+- automate patching of managed instances w security + reliability updates
+- apply updates to OS + apps running on managed instances
+- patch fleets of managed instances by OS type 
+- can scan managed instances for missing patches, can also automatically update if missing
+- integrates w CT, EventBridge, S3 config, IAM
+- patch baselines
+    - provides a list of predefined patch baselines for each OS
+    - determine which patches to include
+    - custom patch baselines allow to define specific patches for instances 
+    - AWS-AmazonLinuxDefaultPatchBaseline: automatically approves all OS patches that are classified as Security and Bugfix seven days after release 
+- patch groups: apply baselines by group (i.e. app vs prod)
+- resource tags: must use 'Patch Group' key and assign a value to it 
+- five ssm documents to help w patching instances 
+### State Manager
+- allows controlling how configurations are applied
+- can be used to enforce enterprise-wide compliance by continuously applying desired state
+- automation document: used to enforce state
+- network settings or boostrap instances can be config'd w software module at startup
+- maintains configuration consistency by reapplying configuration states 
+- association
+    - required to be created & assigned to managed instances
+    - defines state to maintain on instances
+    - elements
+        - document: define desire state
+            - can use shell script, ruby, python, ansible 
+        - target instance: where to apply state
+        - schedule: when state is applied
+- identifies & repairs instances in and across accounts 
+- supported as an event type and a target type in Amazon EventBridge rules
+- API interactions sent to CT 
+- can send output of commands ot CW logs or S3 
+- define who has access w IAM
+
 ## AWS Secrets Manager
 ### Using AWS Secrets Manager to Manage, Rotate, and Retrieve Secrets
+- AWS Secrets Manager
+    - store secrets securely
+    - app makes an API request to SM for the credentials 
+    - removes need to hard-code credentials in app & easier to rotate 
+    - secrets protected w KMS 
+        - can use IAM and resource-based policies to protect secrets 
+    - can share secrets b/w accounts 
+    - to rotate, a lambda function must be created. When creating secret, can have AWS create a function, or create a custom one 
+- retrieving secrets
+    - programmatically w SDK or CLI or manually on console 
+
 ## Parameter Store vs Secrets Manager
+- both prevent hardcoding info in apps & improve security posture
+- PS: part of SSM 
+    - centralized visibility & control
+    - main function to be central storage of parameters 
+        - security features can be added to the parameters 
+    - when setting up value, can create string list or secure string
+- SM: hold, protect, contain sensitive information
+    - allows services + apps to call for secret w API call 
+    - secret is meant to be hidden & protected; encrypted by default 
+- differences
+    - encryption
+        - PS: available, not enabled by default (must use secure string option)
+        - SM: default; cannot be disabled 
+    - rotation
+        - PS: does not support automated rotation lifecycles 
+            - would have to manually update values
+        - SM: designed w automated rotation in mind (to a degree)
+            - RDS, DocumentDB, and Redshift can all be automatically rotated 
+            - all other rotations need a lambda function
+    - use cases
+        - PS: db strings, product codes, plain text data strings, license keys, AMI-IDs, passwords, env vars
+            - non-secret stored in plain text, secret encrypted w KMS
+            - cannot share values b/w accounts 
+        - SM: store sensitive values
+            - able to securely share secrets across accounts 
+        - values are all referenceable from CFN
+    - sizes
+        - PS: standard (4KB), advanced (8KB [fee-based])
+            - pay for number of parameters & API calls to it per month 
+        - SM: flat max secret size of 10KB, useful for storing certificates 
+            - always charged for storage of each secret + number of API calls to it 
+
 ## AWS Service Catalog
+- make provisioning of IT stacks easier for end user + IT admins
+- allows end-users to pick resources they need from a list curated by IT admins 
+- products: IT service to make available on AWS
+    - comprised of one service up to a multiple-teir app 
+- create a product w CFN 
+    - upload CFN templates to SC, and it will run the stack when user requests it 
+    - add versions, tags, etc
+    - can easily update new version
+        - users can choose to upgrade to new version
+        - IT team can force the new version to override the previous & not allow further use of the previous one 
+- product portfolio
+    - collection of products w configuration information. Product owner added as POC 
+    - permissions controlled w IAM
+    - can be shared b/w accounts
+        - other accounts can be allowed to add add'l products to portfolio
+        - specify account ID to share w & provide ARN to other account 
+- user constrains
+    - have full control of what users have access to 
+    - limit scope & availability
+        - not retroactive
+    - launch constraints
+        - specific IAM role SC has when launching (so user doesn't need access)
+        - IAM role perm must have access to CFN, s3 storage location, and whatever resources created 
+    - notification restraints
+        - recieve SNS notifications about stack events
+        - displays what and where products are being deployed
+    - tag update constraints
+        - whether users can update tags on products 
+    - stack set constraint
+        - configure where products will launch (region, accounts)
+    - template constraint
+        - limit options available to end user (i.e. limiting avaiability of instance types for group)
+        - bound by portfolio they are defined in
+        - can validate that inputs are correct & CFN will launch correctly 
+    - service actions
+        - after users have created apps & want daily repeatable requests (i.e. db backups)
+        - allows users to request actions after their envs are built, rather than admin having to perform the add'l work. based on SSM automation documents 
+    - free up to 1,000 API calls/mo
+        - charged at $0.01 per 14 API calls 
+
 ## AWS Organizations
 ### AWS Organizations 
+- multi-account structure is helpful as organization scales
+- centralize management and billing of multiple accounts & enables maintaining security and compliance of accounts 
+- organization
+    - hierarchical architecture of multiple accounts
+- root: single account that sits at the top of the org
+- organizational units: containers that group accounts together
+    - can be nested under root or up to five deep under each other 
+- service control policies: control what policies & features are available w/n an account 
+- account management
+    - centrally manage AWS accounts from a master account
+        - can also create add'l accounts from master account 
+    - admins of master acct have powerful control over all the accounts below
+- consolidated billing
+    - option to consolidate billing to the root account 
+- categorization & grouping: can use organizational units to combine permissions of multiple accounts 
 ### Implementing AWS Organizations 
+- best practice for root account is using it only to manage the member accounts, and not run resources w/n
+    - root is able to create accounts, invite & remove, and adjust permissions for account
+- creating new accounts
+    - creation options
+        - enable all features: must be used for SCP 
+        - consolidating billing only
+    - once accounts have joined the org, the master account can sort them into org units 
+    - after clicking 'invite account' get an option to invite a new account or create a new account 
 ### Securing Your Organizations with Service Control Policies
+- security control policies 
+    - set boundaries w/n AWS accounts 
+    - overrides IAM/resource based access in member accounts 
+    - does not grant access; sets a guardrail for what is allowed 
+    - must deploy AWS organization with 'enable all features' 
+- after creating SCP, must then attach it to the desired account 
+- SCP inheritance 
+    - whatever SCPs overlap between the child and parent are allowed. If the child has more permissions provided by SCPs, the extra permissions will be denied since the parent does not have them
+- default SCP provides full access 
 ### Using AWS SSO to Simplify Access Across Your AWS Organization
+- AWS SSO: implement federated access control system to open a portal to users to access multiple accounts w/n organization 
+- key features
+    - HA
+    - personal portals for users
+    - integrates w CT, AWS orgs, IAM
+    - supports Azure AD & Okta AD. AWS user directory is an option also 
+- prerequesites 
+    - enable all features option selected in AWS orgs 
+    - must use root AWS Org account; can't user members 
+
 ## AWS Control Tower 
+- simple & powerful way to govern accounts in AWS
+- distribute, audit, manage, create accounts 
+- landing zone
+    - multi-account architcture
+    - follows security + compliance best practice
+    - automatically created from best-pracitces blueprints, which create the following: 
+        - root OU: 
+        - core OU: log archive + audit account (shared accounts)
+            - shared account w log account + audit account 
+        - custom OU(s): countain all the accounts that do the actual work & host resources
+    - deals w identity, federated access
+    - provides IAM w SSO
+        - can connect AD w SSO 
+- managing landing zone resources 
+    - Do not modify or delete any AWS IAM roles
+    - do not disallow usage of any regions through SCP or w AWS 
+- administration tips for setup
+    - set up LZ in region where most work is done; "home region"
+    - deploy new accounts from w/n home region
+    - for multi-region arch, place LZ in primary region
+    - do not move audit & other buckets from home region
+    - activate AWS STS 
+- guardrails 
+    - keep users and accounts within predefined bounds 
+    - implements preventative policies & detective policies 
+    - guardrails policies are easily human readable
+        - the technical part, i.e., the SCPs they rest on, are managed by AWS
+    - applied to an entire OU (like SCPs) & thus added to every account in that OU 
+    - there are 22 guardrails that are automatically added; deal w basic security concerns
+        - enforce logging, allow services to facilitate logging, encrypt logs, prevent users from turning off logs, prevent users from changing anything AWS Control Tower set up
+        - defensive in nature
+    - strongly recommended guardrails (13 available)
+        - not mandatory
+        - help enforce common best-practices for well-architected & multi-account envs
+        - lock down read/write to areas that are commonly exploited
+    - elective guardrails (5 available)
+    - can and will create resources in account (don't delete the resources)
+- provisioning accounts 
+    - enroll account
+        - most straight-forward; accounts fall w/n the guardrails and SCPs set up in the LZ
+        - cannot be added to an LZ that is in a drift state 
+    - account factory
+        - allow admins + SSO end users w/n LZ
+        - 'advanced' method; enroll account recommended
+        - option w/n service catalog 
+            - do not define tag options, notifications, or resource plan 
+    - lambda + IAM
+        - able to do all the above programmatically
+        - new account must be created w/n root account 
+        - needs AWSServiceCatalogEndUserFullAccess policy 
+- unmanaging a member account 
+    - performed in AWS Service Catalog
+    - will have to 'terminate' the account to remove it from the control tower
+    - does not remove user's access to account, only releases from CTwr purview 
+- drift management 
+    - generally there will be drift at some point, and CTwr will notify of what is out of compliance
+    - SNS drift notifications are provided
+    - drift issues can often be fixed with 'repair' button or manually in the console 
+- best practices
+    - do not update SCPs that are managed by CTwr. If wanting to update, create SCP and add to OU
+    - be careful moving outside accounts into AWS CTwr, which will put in a state of drift that will need to be addressed 
+    - nested OUs are not accessible from CTwr; CTwr only deals w top-level OUs 
+- comparisons (CTwr vs security hub)
+    - CTwr: primary destination for cloud administrators 
+        - more preventative approach (guardrails, limiting users)
+    - SH: primary destination for security + compliance professionals 
+        - detective service; provides reports, analysis, vulnerabilities 
+
 ## AWS Trusted Advisor
 ### What is Trusted Advisor
-### Using AWS TA to Monitor for Underutilized Resources
+- helps optimize infrastructure according to best-practices from AWS 
+- recommends improvements across AWS account to help optimize and streamline 
+- recommendation areas
+    - cost optimization
+        - only suggested deletion of accounts; use other resources for right-sizing instances 
+    - performance 
+        - can view under- and over-utilized resources
+            - checking for over-utilized resources requires opt-in to AWS Compute Optimizer 
+    - security
+    - fault tolerance 
+    - service limit (warns of 80% of service limit quota)
+- acts as an automatic auditor across account 
+- 115+ checks in the different categories
+    - list of checks that are available are based on the support level with AWS 
+    - business and enterprise support have full access to account 
+        - basic only gets some security checks + service limit checks 
+- features available to everyone
+    - trusted advisor notifications: tracks resource check changes + cost saving estimates over the course of a week
+    - exclude item: exclude certain resources 
+    - action links: hyperlinks associated w resources identified w/n checks 
+    - access mgmt: can grant different levels of access to TA
+    - refresh: data w/n TA automatically refereshed if data more than 24 hours old when viewed in console, or can be manually refreshed every 5 minutes 
+- uses AWSTrustedAdvisorServiceRoleSummary to view services 
+- check responses
+    - recommended action (red circle)
+    - potential issue, recommended investigation (orange triangle)
+    - no problems detected (green square)
+
 ## AWS License Manager
+- designed for management and control of licenses used both in the cloud and on-prem (i.e. microsoft, etc)
+- supports software set against vCPUs, physical cores, sockets, or number of machines 
+- license configurations: made of multiple customizable rules based on license agreements
+    - license counting type (vCPU vs physical cores)
+    - min + max allowed number of vCPUs or physical cores
+    - license count
+    - license count hard limit (soft limit will allow instance launch and send notification about breach)
+    - allowed tenancy: shared tenancy, dedicated tenancy/host
+    - customized rules help minimize licensing breaches, prevent EC2 instance launch, or send notification of limitations 
+- rule evaluation
+    - evaluated against EC2 compute resources based on software running on them
+- supported & integrated w EC2 instances, dedicated instances, dedicated hosts, spot instances, spot fleets, ASGs 
+- integrated w SSM & orgs 
+- AWS marketplace integrates w BYOL to AWS LM 
+
 ## AWS Managed Grafana
+- fully-managed service based on open-source Grafana analytics & visualization platform
+- use powerful data visualization + operational dashboarding capabilities of Grafana w/o needing to manage infrastructure
+- workspaces represent logically isolated Grafana servers
+- can manage user access 
+    - grant access to users via SSO/SAML & assign administrator, editor, or viewer privileges 
+- can connect to multiple data sources 
+- integrates w AWS orgs
+- can upgrade Amazon Managed Grafana workspace to Grafana Enterprise
+
 ## Amazon Managed Service for Prometheus
-## AWS Health
+- serverless service that monitors container metrics + fully compatible w Prometheus
+- monitor apps running on ECS, EKS, Fargate + any self-managed K8s clusters on-prem or in other cloud providers
+- automatically scales as containerized workloads scale up and down
+- provides multi-AZ deployments for HA
+- supports Prometheus Query Language (PromQL)
+- integrates w Amazon Managed Grafana
+
+## AWS Health Dashboard
 ### Overview of the AWS Health Dashboard
+- two categories
+    - service health: events that affect everyone 
+        - open and recent issues usually greyed out unless there are active notifications 
+        - service history
+    - your account health: events that affect specific account 
+- each ticket has a header and a description of the issue 
+- integrates w eventbridge to perform tasks based on health dashboard events 
 ### Reviewing Past Issues in the Health Dashboard
+- most of the time, there will be no open issues 
+- to view previous issues, go under service health > service history
+    - can define a specific date for events 
+- to view previous issues that affected the specific account under your account health > event log 
 ### Reacting To Account-Specific Health Events With AWS EventBridge
+- under eventbridge, make a new event based on an AWS event. Can search for samples of health events 
+- there's also a gui editor for forming the event, or can be written in straight JSON
 ### Enterprise-Level Services
+- if subscribed to business or enterprise support plan, get access to health API
+- health API can integrate w third-part apps, like Jira, Slack, Teams
+- can use AWS Health Aware; provides monitoring + gives notifications & events about AWS resources 
+
 ## AWS Proton
+- allows DevOps + platform engineers to create reusable self-service infra templates
+- environment templates 
+    - represent infra resources like VPCs that are shared b/w different apps + services
+- service templates
+    - represent services like lambda function or fargate clsuter that run w/n diff envs
+    - can define a deployment pipeline to support CI/CD
+- each template bundle consists of manifest, schema, and CFN yaml files that define a set of resources
+- devs choose from list of available service templates 
+
 ## AWS Resilience Hub
+- centralized location to track resilience of apps running on AWS 
+- use CFN stacks, resource groups, AppRegistry, or TF state file to define apps that can span multiple AWS regions & accounts
+- during regular assessments, RH will analyze app using best practices defined in the AWS well-architected framework to determine where issues may exist that could impact resiliency 
+- allows setting resiliency targets in terms of RTO and RPO 
+- generates recommendations that include suggested CW monitors + alarms to proactively identify when app's resiliency might be at risk 
+- integrates w AWS Fault Injection Simulator
+    - verify that app can meet resilience targets when subjected to unpredictable events & failures before they occur in production 
+
+## Knowledge Check part 1
+- AWS Config provides AWS-managed rules 
+- AWS Security Hub uses compliance checks 
+- most of the sections of a cloudformation template are pluralized 
+- CFN role in resource lifecycles: delegates resource creation to service wrappers around AWS endpoints & manages resource life cycle 
+    - CFN itself only checks for syntax issues, validating CFN scripts against JSON schema v4, and figuring out order in which resources are created 
+- the parent.json file in a CFN nested stack is the master stack template that interacts w the cloud 
+    - define resources & outputs + pointer to child stack template 
+- CFN: primary challenge of integrating into CI/CD is detecting when stack is finished building + looking for failures 
+- in CT, each API call represents a new event related to an object 
+- CFt layered caching caches content at origin server + CFt edge caches 
+- CFt integrates w AWS WAF for web app firewall protection
+    - does not automatically block DDoS attacks (although does provide some protection) and does not automatically block IPs
+    - encryption can be enabled, but not default 
+- AWS OpsWorks Stacks: group of instances or resources that can represent app servers or RDS instances that are managed together as a single cohesive unit 
+    - AWS OpsWorks for Puppet is managed puppet 
+    - CFt allows configuring caching behavior using HTTP headers 
+- AWS SSM patch manager: patches are defined with patch baselines 
+- AWS SSM resource group: collection of AWS resources in the same region that match a particular description 
+- AWS SSM state manager: define policies using automation documents 
+- AWS SSM fleet manager: provides visibility into details of each managed instance, under node management section of SSM console 
+- Amazon Managed Grafana integrates w AWS orgs to provide comprehensive view of resources 
+- AWS Service Catalogue: service action: end-user-available action that end users have explicitly received permission for 
+- TA provides recommendations for cost optimization, security, fault tolerance, performance 
+- AWS orgs: organization unit: one defined subset of a company's total AWS accounts 
+
+# Analytics
+## Amazon Kinesis
+### Amazon Kinesis Overview
+- design to connect, process, and analyze all the events involved in the cloud
+- integrates w IAM, KMS
+- composed of four services
+    - stream processing on binary-encoded data    
+        - Kinesis Video Streams
+    - stream processing on base64 encoded text data 
+        - Kinesis Data Streams
+        - Kinesis Data Firehose
+        - Kinesis Data Analytics 
+- layers of streaming
+    - source
+        - mobile devices
+        - metering
+        - click streams
+        - IoT sensors
+        - logs 
+    - stream ingestion
+        - data collected by 'producers': Kinesis agent, Kinesis producer library, SDK
+    - stream storage
+        - Kinesis data streams can store data for 24 hours to 365 days (as of nov 2020)
+            - 24 hours default
+        - data in a stream cannot be changed or removed, it only expires 
+    - stream processing
+        - managed by consumers; send data to destination layer 
+        - Kinesis data analytics
+        - Kinesis data firehose
+    - destination
+- Kinesis Video Streams
+    - stream binary-encoded data into AWS from millions of sources
+    - typically audio & video, but can be any time of binary time-series data
+    - data ingrest from smartphones, security cameras, edge devices, RADAR, LIDAR, drones, satellites, dash cams, etc
+    - supports WebRTC that allows two way streaming
+- Kinesis Data Streams 
+    - highly-customizable streaming solution available from AWS
+    - all parts involved w stream processing (data ingestion, monitoring, scaling, elasticity, consumption) done programmatically when creating stream 
+    - AWS will provision resources only when requested
+    - does NOT have the ability to autoscale
+    - to use, can use APIs, SDKs, CLI, kinesis agent for linux or windows 
+    - producers put data records into data stream
+        - can be created w SDK, agent, APIs, or kinesis producer library (KPL)
+    - kinesis data stream: set of shards 
+        - shards: contain a sequence of data records
+            - data records: contain sequence number, partition key, data blob 
+                - stored as an immutable sequence of bytes
+    - stream storage record: data records are immutable
+        - data is available in stream for a limited amount of time; 24 to 8,760 hours (previously was 1-7 days)
+            - after 7 days, data is billed per gb per month
+                - there is a charge for retrieving data for older than 7 days old with GetRecords api; free with but free w SubscribeToShard 
+        - retention period configured when creating a stream and can be updated w API calls 
+    - consumers
+        - Kinesis Data Streams apps: get records from KDS & process them
+        - custom apps can be created using SDKs, Kinesis API, or KCL (Kinesis Client Library)
+        - types of consumers
+            - classic
+                - pulls data from stream (polling mechanism)
+                - limit to amount of times to poll & amount of data that can be pulled from a shard
+            - enhanced fan out
+                - push method: consumers can subscribe to a shard
+                - data pushed automatically from the shard into a consumer app
+                - shard limits removed; every consumer gets 2 mbps/s per shard
+- Kinesis Data Firehose 
+    - fully managed streaming delivery service for data
+    - ingested data can be dynamically transformed, scaled automatically, and is automatically delivered to a data store 
+    - is not a streaming storage layer in the way that KDS are 
+    - uses producers to load data into streams in batches
+    - once inside the stream, the data is delivered to a data store (consumers not needed)
+    - buffer size in mb picked when firehose created
+        - 60-900 seconds
+        - data will leave when buffer is full or the timer expires
+        - 'near real-time'
+    - able to deliver to S3, Redshift, Elasticsearch, Splunk, Generic HTTP Endpoints, Datadog, MongoDB cloud, New Relic
+    - automatically scales as needed 
+    - convert format data from json to apache parquet or apache ORC
+        - parquet/ORC are columnar data formats that save space + enable faster queries compared to row-oriented formats like JSON
+    - can invoke lambda functions to transofmr incoming source-data & deliver transformed data to destination
+        - i.e. lambda could transform csv to json, then KDF processes it
+    - billing
+        - no free tier
+        - Costs incurred when data is inside firehose stream
+        - No bill for provisioned capacity, only used capacity
+- Kinesis Data Analytics 
+    - able to read from stream in real time & do aggregation & analysis on data while it is in motion
+    - leverages SQL queries or Spache Flink using Java or Scala to perform time-series analytics, feed real-time dashboards, and create real-time metrics
+        - when using KDF w KDA, data records can only be queried using SQL
+        - Apache Flink w Java & Scala apps only available for KDS
+    - has built-in templates & operators for common processing functions to organize, transform, aggregate, and analyze data at scale
+        - use cases: 
+            - ETL (extract, transform, load)
+                - goal is to enrich, organize, and transform data to match schema of Data Lake/Warehouse 
+            - generation of continuous metrics
+                - monitor & report how data is trending over time
+            - responsive real-time analytics 
+                - trigger alarms & send notifications when metrics hit predefined thresholds, or detects anomalies w ML
+- billing
+    - no free tier for any part of the service
+    - video streams billing is based on 
+        - volume of data ingested
+        - volume of data consumed 
+        - data stored across all video streams in account
+     - data streams
+        - hourly cost based on number of shards in KDS (whether or not data is actually in the stream)
+        - charge when producers put data into stream
+        - when optional extended data retion is enabled, hourly charge per shard for data stored in stream
+        - for consumers: charged dependent on whether or not Enhanced Fan Out is used
+            - if it is, charges are based on the amount of data & the number of consumers 
+    - firehose
+        - based on amount of data put into delivery stream
+        - amount of data converted by KDF
+        - if data sent to VPC, the amount of data delivered + hourly charge per AZ 
+    - analytics
+        - charges hourly rate based on the number of KPUs (kinesis processing units) used to run a streaming app 
+            - KPU: unit of stream processing capacity: 1 virtual CPU + 4 gb memory
+### Fundamentals of Stream Processing
+- stream processing: not all data is created equally, and its value changes over time
+- batch processing: predecessor of stream processing
+    - data stored in one spot, and all processed at the same time in one batch
+    - data collected, stored, analyzed in chunks of a fixed size on a regular schedule 
+    - schedule depends on frequency of data collection & related value of insight gained 
+    - moment of value
+        - data has value as transactions happen - at the moment
+        - data not useful if processed minutes, hours, or even days later 
+    - session states: collection of events or transactions that are related
+        - batch processing splits data into evenly spaced intervals of time and data
+        - while predictable, has no intelligence; data from one session may be processed across batches 
+    - designed to wait until a specific amount of data before processing starts 
+        - size of job is uniform; time period in each batch of data is inconsistent 
+    - built around data-in-rest architecture 
+- stream processing: created to address issue of latency, session boundaries, and inconsistent load
+    - information flows continuously w/o beginning or end; constant feed of events can be acted on 
+    - data streams generated by all types of sources in various types and volumes of data
+        - can be aggregated together to form a real-time stream of data  
+        - collection of related data and actions 
+    - computation occurs in the moment data is created or received 
+    - multiple streams can be processed at once
+    - consumers: apps that can process data from a stream
+        - can create new data streams 
+    - stream app
+        - producer: collects events and transactions and put into data stream
+        - data stream: stores the data itself
+        - consumer: access data streams, read data then act on it 
+- benefits of using streaming data
+    - some data naturally comes in a never-ending stream and is best processed while in flight 
+        - patterns can be detected, results inspected, and multiple streams examined in parallel 
+    - using streams, raw data can be processed in real-time & only retain info + insight that's useful (saves having to store massive amounts of data)
+    - streams flow w time
+        - naturally fits w time-series data + the detection of patterns over time 
+        - i.e. produced by IoT sensors 
+    - reactions in real time
+        - almost no lag time b/w events occuring & insights being derived + actions taken
+        - data is still meaningful + value
+    - decoupled architectures improve operational efficiency
+        - reduces the need for large + expensive shared DBs 
+            - each stream processing app maintains its own data & state
+        - naturally fits w/n microservices architecture 
+- streaming data augments batch processing; doesn't replace it 
+    - i.e. month-end billing, large scale reporting can still benefit from batch processing 
+- the question to ask: how important is it to have immediate insight? 
+    - companies need to recognize something important has happened & they need to act on it right away
+### A Streaming Framework
+- Amazon Kinesis as a Streaming Framework
+    - Kinesis is a collection of parts to process data in near real-time 
+- most popular usage is log analytics feeding into data lakes & IoT analytics (connected device like phone, tablet, or smart speaker)
+- events: e.g. search results, financial transactions, user data, app metrics, etc 
+- data processed dynamically while data in motion 
+- while in a stream, data can be processed, but not changed 
+    - data records are immutable
+        - if info needs to be updated, another record must be added 
+- streams can be architected to reflect how people use apps; streams can match real-world processes + how people interact w the data that surrounds them 
+- layers of real time streaming 
+    - RT stream source
+    - RT ingestion
+        - producer app tier that collects source data, formats & publishes data records to stream storage layer
+    - RT storage
+        - acts as high-speed buffer for data
+        - stream processing layer accesses stream storage layer using one or more consumers
+    - RT stream processing 
+        - consumers read + process streaming data in near-real time
+        - processing could include ETL, data aggregation, anomaly detection, analysis 
+    - destination
+        - data lake/warehouse
+        - s3
+        - database 
+- use cases for data streaming
+    - clickstream analytics: help retailers improve online sales 
+    - preventive maintenance: equipment providers and such to identify when to work on things
+    - fraud detection
+    - emotions analytics
+    - dynamic pricing engine: adjust price of product based on demand/availability/competition
+- challenges of stream processing 
+    - streaming apps have been 'high-touch' systems that have a large amount of human-interaction that makes them inconsistent & difficult to automate
+    - difficult to set up
+        - streaming apps have a number of 'moving parts' that tend to be brittle
+    - expensive
+        - to create, maintain, and scale streaming solutions built in on-prem data
+    - issues w scaling operations
+        - important to be able to increase & decrease the number of resources required to store & collect data
+- Kinesis: real time streaming as a service
+    - HA + durability a necessary part of the service, to minimize change of data loss 
+        - fully scalable + elastic
+    - AWS provisions resource automatically
+    - apps use APIs to publish + consume data
+    - highly integrated into AWS
+        - possible to create workflows w little or no code that perform stream processing at scale 
+### The Elements of a Kinesis Data Stream
+- streaming is more than moving lots of data at high place
+- creating a KDS: console, sdk, cli 
+    - after creating, can describe the stream & list shards
+        - each shard has a StartingHashKey and EndingHashKey. Each subsequent shard after the first one has a StartingHashKey that is +1 more than the EndingHashKey of the previous shard 
+            - i.e., shard 1 goes from 0 to 110239847012983750918263459081723409687123764918023765019872340987 and shard 2 starts at 110239847012983750918263459081723409687123764918023765019872340988
+        - every shard has a unique key range that does not overlap
+            - when a data record is put in a stream, it includes a partition key
+                - KDS processes the key & creates an MD5 hash value for it & assigns it to a shard
+- writing to a stream
+    - producer app puts data into stream as a series of data records
+        - data record: unit of info in stream, consists of partition key, sequence number, and data blob 
+            - partition key: determines the shard w/n KDS where data record will be written
+                - Kinesis calculates an MD5 hash value of the partition key & based on the value, decides which shard the record will be written to 
+            - sequence number: identifier unique w/n each shard
+                - ensures data is written in the order it expires 
+                - can put up to 1000 records, or 1MB data into a shard per second. 1MB is hard limit of amount of data 
+                    - AWS recommendation is to create logic to make random partition keys to split the traffic across shards
+                        - hot shard: if a data gets written to one shard more than others
+            - data blob
+                - sequence of Base64 encoded bytes that can be up to 1 MB
+                - opaque & immutable to KDS; Kinesis cannot inspect, interpret, or change data 
+    - resharding: how KDS scales up & down
+        - i.e. if writing 3k records/second, need 3 shards 
+        - once inside a shard, data records are immutable; cannot be edited or deleted
+- data retention
+    - default retention period is 24 hours
+        - until Nov 2020, max data retention was 168 hours (7 days)
+        - now, can be held for 8,760 hours (365 days)
+    - billing
+        - stream: <24 hours: standard charge
+        - 7-day extension: add'l charge
+        - data records stored beyond 24hr and up to 7 days: billed at add'l rate for each shard hour 
+        - after 7 days: data stored in a stream is billed per gb/mo up to a year
+            - retrieval of data older than 7 days
+                - GetRecords() API call: add'l charge
+                - SubscribeToShard() API calls: no charge
+                    - long-term data retrieval w enhanced fanout consumer
+    - stream can be reprocessed or replayed as often as needed
+        - multiple consumers can process the same data in a stream
+- kinesis data streams limits
+    - record max size of 1 MB
+    - each shard can accept 1,000 records/second
+    - default retention period 24
+    - size of data record can't be increased, but retention period can be extended to 7 days, then up to 365 days 
+- producers
+    - limited to writing 1 MB/s per shard OR 1,000 writes/s per shard 
+    - exceeding the write limits of a SINGLE shard produces the error 'ProvisionedThroughputExceededException'
+- consumers
+    - shared throughput consumer (aka classic or standard consumer)
+        - each shard supports 2MB/s read throughput
+        - limit of 5 API calls per second per shard across ALL consumers (max of 10MB/s for ALL consumers, b/c of API limit)
+            - each request can provide up to 10,000 records
+                - if exceeded, any requests in the next 5 seconds after that will return an error 
+        - possible to attach multiple consumers to the same stream, and all of them can have separate jobs 
+        - no more than 2-3 functions can efficiently connect to stream
+        - uses GetRecord() to PULL records out 
+        - a 5th consumer for a shard will add 1 second of latency (instead of the ~200ms of the first five, since they're all w/n the per second limits)
+            - latency b/w 200-1000ms
+    - enhanced fan-out consumer 
+        - EVERY consumer gets 2MB/s per shard; no sharing of bandwidth 
+            - no shard limit data/s
+        - uses SubscribedToShard() API and records are pushed to consumer at 2MB/s for 5 minutes 
+            - after the 5 minutes, consumer must make another request to keep receiving messages
+        - uses HTTP/2 to push data to consumers removes 2MB shard limit, 5 API calls/s limit, and ultimately increases ability for consumer apps to scale + reduce latency 
+            - HTTP/2
+                - major revision to HTTP networking protocol that changes framing of data from source to consumers
+                - binary protocol that enables new features designed to decrease latency and increase throughput 
+        - average latency ~70ms
+        - increased cost for the performance boost
+        - soft limit of 20 consumer apps registered per stream
+        - each consumer app can only be registered w one data stream at a time
+    - standard vs enhanced fan-out consumers
+        - standard
+            - for less than 5 consuming apps that can tolerate 200ms latency
+            - if minimizing cost is important
+        - enhanced fan-out
+            - for 5-10 apps simultaneously consuming the same stream & needing latency around 70ms
+            - can tolerate higher costs 
+- summary
+    - creating a stream: w console, sdk, cli
+    - charges accumulate as soon as stream is provisioned 
+    - stream must have unique name and at least one shard
+    - shard ID: unique to the shard
+    - has key ranges: do not overlap b/w records
+    - when data record written to stream, hashed w MD5 to figure out which shard to write to
+    - data written 1MB/s per shard or 1,000 writes per second
+    - standard (pull) vs enhanced fan-out (push) consumers 
+### Shard Capacity and Scaling
+- default shard quota is 500 shards per AWS account for US east, US west, and Europe
+- all other regions, the default shard quote is 200 shards per AWS account 
+- write limit: 1,000 records per second up to max 1MB/s
+- read limit: 5 transactions per second, up to 2MB/s per shard 
+- scaling a Kinesis stream
+    - total throughput of a stream is the sum of the capacity of its shards 
+    - KDS are elastic, but are NOT automatic or managed by AWS 
+- resharding
+    - scaling a KDS up or down
+    - shard splitting used to add throughput by adding one or more shards
+        - when a shard is closed, the existing data records will be deleted when they expire
+        - producer can't write to it, but consumer can read until shard expires 
+        - i.e., if shard 2 is hot and needs more capacity, shard 2 is split; it is closed, and the child shards 4 and 5 are created from it (in this case, there were originally 3 shards)
+        - after resharding, data records writes from parent are re-routed to children
+    - merging shards: remove capacity from data stream
+        - cold shards: shards w low utilization
+            - merge cold shards to reduce cost
+        - parent shards: changed to closed status
+        - child shards: write operations transferred to child 
+        - i.e., from example before: shards 1, 4, 5, 3 exist, and 5 & 3 are cold. Merging 5 & 3 produces a new shard, shard 6, which is a child shard 
+        - child shard manages traffic from parent shards + new traffic
+    - performed programmatically; API calls are 
+        - UpdateShardCount: updates shard count of specified stream to chosen # of shards (using SplitShard or MergeShard)
+            - asynchronous operation that can happen while stream is being used 
+            - data stream is in an updating status when adding the new shard
+                - data records can be written and read from a data stream when it is in an updating state 
+            - temporary shards are made when splitting or merge shards, and count toward the total shard limit of an account 
+            - AWS recommends a capacity target percentage increase of multiples of 25%. I.e. increase by 25%, 50%, 75%, or 100% 
+            - limitations
+                - cannot reshard a stream more than 10 times in a 24-hour period
+                - max number of new shards can only be double of the current number of shards in stream
+                - minimum number of shards (for the new, lower target) is half of the current number of shards in the stream 
+                - there is a max total of 10,000 shards that the author of the video discovered. It's not explicitly stated in documentation, but seems to be the hard limit 
+                - if a stream has more than 10,000 shards, it can only be scaled down if the number of shards is less than 10,000 
+- data routing, data persistence, and shard state after resharding 
+    - apps should assume that data is continually flowing through shards in a stream
+    - shard states
+        - open state: data records can be added & retrieved from shard
+        - closed state: data records available until expiry
+            - data records rerouted from parent to child shards
+        - expired state: after parent stream's retention period has expired
+            - data records no longer accessible 
+        - it is possible to read data from child shards immediately after resharding 
+            - if data is read from a child shard before the parent shard has been completely consumed, data could be out of order. This behavior NOT managed by AWS, and must be considered when creating consumer apps 
+            - if the order is important, make sure to consume all data from parent shard before reading from child shards 
+- scaling limitations
+    - can split & merge shards in an active stream
+        - only one split or merge operation can happen at a time
+        - each split or merge request takes some time to complete 
+            - if a stream has 1000 shards, and capacity needs to be doubled, will take 30,000 seconds to complete (>8 hours)
+                - if a large amount of capacity will be needed, provision it in advance
+- auto scaling 
+    - not a feature of KDS
+    - can be implermented programmatically using lambda + CW + AWS application autoscaling 
+- provisioning and cost considerations
+    - how many shards to provision?
+        - data to be ingested in MB
+        - amount of data to be consumed in MB
+        - of those two, the larger value must be used to determine required throughput 
+    - things to consider 
+        - average size of data records, rounded to the nearest KB
+        - number of records per second
+        - number of consumers
+        - to calculate bandwith to be ingested: number of records per second multiplied by average size of data record in KB
+        - to calculate amount of data to be consumed: incoming write bandwidth in KB multiplied by number of consumers = amount of data being consumed 
+        - to calculate number of shards needed, divide incoming write bandwidth by 1000 and outgoing read bandwidth by 2000, then take the larger number to identify total number of shards needed
+            - AWS has a tool that can perform these calculations & provide pricing info
+            - google something along the lines of "kinesis data streams pricing calculator"
+### Data in a Kinesis Data Stream
+- KDS is a type of streaming storage (a high-speed, ephemeral storage service)
+- KDS real-time data ingestion service from AWS
+    - more precisely, a stream storage layer 
+    - [layers of real-time data streaming: source, stream ingestion, stream storage, stream processing, destination]
+- data collected by producers in real-time and put into stream
+    - either kinesis agent, or using the kinesis producer library
+- KDS: require custom code to get data from stream
+- Kinesis Data Firehose does the stream ingestion, storage, and processing steps itself; can't use custom apps to directly consume data 
+- when creating a custom kinesis producer app 
+    - SDK can be used to send data directly into KDS
+    - CLI can be used to create stream
+        - shards (a unit of scale) must be included in command 
+- Kinesis Producer Library (KPL) and CLI use the same APIs 
+- putting data into KDS
+    - two API calls
+        - PutRecord() writes a single data record to a stream
+        - PutRecords() to write a batch of data records
+            - supports batches up to 500 records or 5MB in size
+            - batching records is preferred 
+            - partition key must be sent with the data
+            - reduces size and number of HTTP requests made to AWS
+                - by batching, can improve apps performance
+        - to create a record, must supply: stream name, partition key, data
+- KDS consumers 
+    - GetRecords()
+        - polling operation that can be made 5 times per second on a shard 
+        - max number of records that can be returned by a single request is 10,000 records or 10MB
+            - anything more than this will get throttled w ProvisionedThroughputExceededException error 
+            - 5 consumers can access a shard once per second 
+                - adding consumers to a shard lowers the available throughput for each consumer 
+        - consumers that exceed the throughput of the stream must have a backoff and retry operation built into them 
+    - GetShardIterator()
+        - specifies where to start reading data records 
+- how consumer apps work
+    - starts w a loop; use GetShardIterator() to get location of where to start in stream
+        - AT_SEQUENCE_NUMBER
+            - will provide stream status but not provide any details about the shards
+        - AFTER_SEQUENCE_NUMBER
+            - starts reading right after the position specified
+        - AT_TIMESTAMP
+            - starts reading from the stream at the specified time
+        - TRIM_HORIZON
+            - starts at the oldest record in the shard
+        - LATEST
+            - starts with the most recent record put into the shard 
+    - during the loop, GetRecords() returns NextShardIterator, which can be provided to GetRecords() to keep polling 
+    - anticipate failure & respond accordingly 
+        - the more distributed a system is, the greater range of areas errors can occur
+        - if a request fails due to retryable feailure, SDK retrys up to 3 times by default, using exponential backoff 
+            - when configuring a stream, backoff time can be adjusted 
+        - if the value of FailedRecordCount is greater than 1, then some part of the batch failed
+            - batches are not 'atomic' (atomic meaning either totally passes or totally fails); SDK will treat partial failures as a success & move on to the next request
+        - traffic spikes & network latency can cause records to arrive to the stream inconsistently
+        - network latency
+            - to reduce latency, always use interface VPC endpoint to keep data going to KDS inside the AWS network 
+        - backpressure in Kinesis
+            - resistance to flow that prevents the desired flow of data through a stream 
+            - can be caused by insufficient computer resources, throughput limits, architectural design 
+        - it is important to have proper error handling for partial failures
+            - must have a defined number of retries and sent to DLQ if there's continued failed 
+    - putting records into a KDS takes a fair amount of effort 
+        - KPL (Kinesis Producer Library)
+            - puts data into KDS
+            - simplifies the development of kinesis producer apps & allows programmers to achieve high write throughput to KDS 
+            - at the same time, manages exception & error handling 
+            - used to add multiple records to a single record to send fuller data records (e.g., instead of small messages of 50 bytes, aggregating them into something closer to 1MB)
+                - the service has no visibility to data in it, so data must be managed before it goes in & after it comes out 
+            - KCL (kinesis consumer library)
+                - used to unpack the multiple records for further processing by the consumer 
+            - licensed under the Amazon Software License, which basically allows full use without question of the software
+            - using KPL can improve throughput & lower costs
+            - designed to work w KDS, NOT firehose
+                - can add data from KPL to KDS then have a consumer of KDF
+            - has retry logic built in; automatically retries: there is a complete error handling mechanism to make retries at the appropriate time
+                - records put into a stream w KDL should always appear in a stream at least once 
+        - SDK 
+            - will put data into stream w PutRecord() and PutRecords()
+            - limitations (aren't particularly obvious)
+                - billed by the hour & supports 1k records/s 
+                - max data rate: 1MB/s (in base 10: 1,000 KB)
+        - KCL (Kinesis consumer library)
+            - de-aggregates records from KPL
+            - can load balance across multiple consumer app instances
+            - responds to consumer app instance failures by checkpointing records
+                - uses DDB to track sub-sequence number 
+                - inside DDB, there's one row for each shard in KDS
+                - it's possible to experience throttling related to too few DDB WCUs or RCUs (the fix is to use on-demand DDB)
+            - reacts to resharding operations 
+            - acts as intermediary b/w record processing logic & KDS 
+            - KDS APIs allow managing data streams
+                - KCL provides layer of abstraction around all the common tasks so that a consumer app is easier to make 
+- Kinesis data streamS (plural) identifies the service itself
+- kinesis data stream (singlular) is the stream storage service within the KDS service 
+### Kinesis Data Streams Security
+- IAM best practices
+    - roles for the following (w example perms)
+        - administrators
+            - create stream, delete stream, add/remove tags 
+        - stream resharding
+            - merge/split shards
+        - producers
+            - describe stream, put record/records
+        - consumers 
+            - get records, get shard iterator 
+- encrypting data inside streams
+    - encryption in flight w HTTPS endpoints
+        - FIPS endpoints available too 
+    - encryption at rest w KMS
+        - data encrypted before sent to stream layer & unencrypted after 
+        - can encrypt data client-side and decrypt at destination, but has far more overhead
+- KDSs w/n VPC
+    - use VPC endpoints to access KDSs
+        - endpoints are elastic 
+        - use a SG to govern access for the ENI assigned to the endpoint
+- AVOID CREATING AN RBE! 
+    - resume building event    
+### Real-Time Messaging & Kinesis Data Streams
+- real-time processing  
+    - performance level in computing where the data transfers & processing must complete in a very short time for the results to be meaningful
+    - can also read replayed records to multiple apps 
+- KDSs
+    - real-time data collection messaging service 
+    - process large data sets in real time 
+    - data record consistents of partition key, sequence number, actual data 
+        - partition key
+            - group data in a shard in a stream
+            - defines the shard the record belongs to
+        - sequence number
+            - unique per partition-key w/n shard
+            - help maintain the order of arrival for records
+            - increase over time for the same partition key
+        - actual data
+            - up to 1MB
+            - not inspected, interpreted, or changed in any way by KDS
+- KCL ensures that for every shard, there's a record processor running & processing the shard
+    - helps decouple the arch 
+    - use DDB to store control data, on per application processing data from stream
+    - can be run on ec2, elastic beanstalk, on-prem
+    - put-to-get latency of 1s in KDS
+        - KDS app can start consuming data ~1 second after it starts streaming 
+- streams can be on-demand or provisioned throughput
+    - on-demand: throughput adjusted based on need of app; billed on throughput actually used
+        - automatically scales up and down (as of November 2021) 
+    - provisioned throughput: manually define number of shards needed
+        - billed based on shard-hours 
+### Kinesis Data Firehose
+- can pick up large datasets, transform and load them to s3, DDB, amazon EMR, opensearch, splunk, data dog, redshift, http endpoints, and lots of others
+    - when loading to redshift, delivers data to S3, then redshift 
+- manages infrastructure, storage, networking and configuration for getting data to a destination
+- scales automatically
+- replicates data across three facilities in a region
+- buffer size: set a predefined size before loading data
+    - s3: 1MB-128MB
+    - OpenSearch: 1MB-100MB
+    - lambda functions: 0.2MB-3MB
+- buffer interval
+    - 60-900s
+- will store data up to 24 hours if delivery destination is unavailable 
+    - exception: if source is KDS, data will be retained according to stream config 
+- if data is transformed, can back up source data to S3
+- NOT real-time; expect latency of 60s+
+- pay for amount of data going through KDF
+- is the main delivery service used to get KDS records to AWS storage services
+- any app can produce messages for KDF to deliver to AWS storage services 
+- Kinesis agent
+    - pre-fabricated java app that collects & sends data to delivery stream
+    - can install on linux systems for web, log, and db servers
+    - agent available on github
+    - amazon linux, rhel, ms windows OS supported 
+## Kinesis Data Analytics 
+### Kinesis Data Analytics Introduction
+- use SQL to query data in KDS or KDF & store in S3, opensearch, or redshift
+- used for real-time analysis on KDS
+    - uses SQL to perform time-series analytics, populate real-time dashboards, and create real-time metrics
+- fully managed service w autoscaling
+- can create streams from the results of queries 
+- kinesis data analytics studio
+    - build streaming processing apps quickly
+- supports KDF, lambda, and KDS as destinations
+- billed for data consumption rate 
+### Kinesis Data Analytics In-depth Review
+- type of decision making that can be performed is based on the age of data
+    - realtime: preventative/predictive
+    - seconds: actionable
+    - minutes-hours: reactive
+    - months: historical reporting
+- real-time data sources: mobile devices (i.e. gps location), webpage user behavior, app logs, IoT (sensors collecting info about local env), social media
+- KDA scenarios
+    - time series analytics to kibana dashboard
+        - outcomes of KDA queries piped to kibana
+    - mobile app to redshift & quicksight
+        - mobile app uses javascript sdk to send clickstream analytics to KDS, through KDA, into KDS, ETL w lambda
+    - IoT real-time monitoring
+        - IoT thermostat communicates w IoT topic that publishes to KDS, input to KDA that delivers to another KDS, processed by lambda, then published to CW & react to data w alarms
+- KDA benefits
+    - real-time processing
+    - fully managed
+    - automatic elasticity
+    - SQL; able to re-use existing SQL skills 
+- concepts
+    - KDA app components
+        - input stream (typically from streaming data sources, like KDS)
+            - continuously read & process incoming data source streams 
+                - KDS or KDF
+                - can use reference table in S3 
+            - schema associated & applied w all incoming data 
+                - automatically derived at creation time
+                    - can override by defining custom schema or customizing default schema
+                - defines behavior of the data itself 
+                - every input must be associated w a data schema
+        - SQL processing logic (series of SQL statements that process input and produce output)
+            - implemented using one or several SQL statements
+            - outputs of one query can feed to another in-app stream
+            - querying patterns: fan out/in, aggregation, enhancement, filtering 
+            - KDA SQL editor provided in the console to create & save queries
+                - can start w predefined SQL templates, of which AWS provides a number of pre-defined searches 
+            - query structure 
+                - template defines data structure of output destination stream
+                    - default SOURCE_SQL_STREAM_001
+                    - default DESTINATION_SQL_STREAM
+                - directs outputs to stream from first statement
+                - populated w a insert statement 
+                    - always uses a pump, to make the insert statement continuous 
+                    - application pumps
+                        - take outputs from source streawm and put in-application stream
+                        - steps
+                            - define a stream to pump data into (can be w/n app)
+                            - define a new pump to insert data into the stream
+                - ROWTIME
+                    - records timestamp when KDA first inserts a row into the in-app stream
+                    - used to implement aggregation over tumbling time-based windows
+                - continuous queries
+                    - KDA runs queries continuously when data in transit
+                    - will get notified of all data changes that fit into data filter 
+                - query windows 
+                    - bound SQL queries with time or row based windows
+                    - define start and end of query
+                    - time based windows
+                        - specify window boundaries in terms of time (i.e. 1 minute or 10 minute window)
+                        - use time stamp application w/n stream that is constantly updated
+                    - row based windows
+                        - specify window size in terms of number of rows 
+                - types of windows
+                    - tumbling window
+                        - fixed size window where bounds do not overlap with windows before or after
+                        - used for time-based results (i.e. calculate # of clicks over last 10 minutes)
+                    - sliding windows
+                        - fixed size window where bounds DO overlap
+                        - record can be part of multiple windows & processed w each window
+                    - custom window
+                        - event correlation
+                        - i.e. session ids tracked per user
+        - output stream (hold intermediate results that can feed to other queries or other destinations)
+## Amazon OpenSearch Service
+- successor to ElasticSearch
+- full-managed service for deploying OpenSearch clusters
+- open-source search, analytics, and visualization suite created by Amazon that is based on Elasticsearch and Kibana (similar to ELK stack)
+- index & search large collections of data for search, monitoring, and analytics
+- provides Elasticsearch and OpenSearch APIs
+- integrates w visualization tools like Kibana & OpenSearch dashboards
+- cluster deployments across 2 or 3 AZs for HA
+- ingest streaming data from CW logs, KDF, S3, DDB, and other AWS services 
+- cost-effective tiered storage for read-only archive data (hot, warm, cold)
+- serverless option (OpenSearch serverless) that requires no infrastructure
+    - same durability as S3, and on-demand only 
+## Introduction to EMR
+- managed service designed to service vast data for a variety of workloads 
+- based on apache hadoop big data processing platform
+- abstracts & reduces the complexity of the infrastructure used with regular map reduce setups 
+- use cases
+    - log analysis
+    - web indexing
+    - data warehousing
+    - ML
+    - financial analyzing
+    - scientific simulation
+    - bioinformatics 
+- uses EC2 instances w hadoop to deliver petabyte-scale computing
+- a number of frameworks supported 
+### EMR Characteristics
+- save time & money over regular provisioning (hadoop cluster setup can be very laborious)
+- traditionally, have to obtain hardware/equipment to support max throughput of cluster
+- EMR: pay as you go, select instance types, flexible processing power (i.e. 100 nodes for an hour vs 10 nodes for 10 hours)
+- elasticity to grow/shrink resources as needed 
+- integrates w IAM, CT, S3, DDB, redshift, glacier, RDS
+    - also integrates w hadoop file system for in-cluster storage 
+### EMR Architecture
+- node: instance that forms the basis of the EMR cluster
+    - actual processing power thatn runs EMR jobs
+- master node
+    - only one per cluster; managed cluster & processes 
+    - keeps track of EMR jobs & contains hadoop log files
+- core node
+    - managed by the master node
+    - multiple can be provisioned into fleets 
+        - a fleet can support up to 5 different instance types 
+        - can use autoscaling
+    - data node daemon 
+        - managed data storage w/n HDFS
+    - task tracker daemon
+        - allows parallel processing to take place 
+- task node
+    - implement additional parallel processing with hdoop mapreduce tasks or apache spark executors 
+    - can use spot nodes for processing of jobs 
+- when provisioning cluster, have to keep in mind how much data to process
+- can deploy more clusters for more compute, or delete clusters when finished 
+- no limit on number of clusters
+- easy to resize a running cluster 
+## Filter and Query Data w Amazon Athena
+- use Athena to query data w/n S3 to search for specific entries 
+- 'SERDE': serializer, deserializer 
+- each query can be saved from the athena query editor 
+- history of queries also saved in the console 
+## Amazon QuickSight
+- easily visualize & analyze data 
+- can import data from other services into it and publish dashboards & analyisees 
+- QS workflow
+    - connect to your data (from cloud, on-prem, files, SaaS)
+    - get ready to analyze
+        - prepare data for analysis
+        - create a data set
+        - share w analysts 
+    - analyze
+        - exame data
+        - visualize & design
+            - QS will automatically recommend how to display data 
+        - share dashboard
+    - make better decisions
+        - quick insights 
+- typical workflow
+    - create new analysis
+    - add new or existing datasets
+    - choose fields to create the first chart
+    - add more charts, tables or insights to the analysis
+        - resize and rearrange them on one o rmore sheets
+        - use extended features to add variables, custom controls, colors, add'l pages & more
+        - can add fitlers on filters into the visualizations to create a graph and increasxe the usability of the widget 
+    - publish the analysis as a dashboard to share it w other people 
+
+# Cloud Academy Challenges
+## AWS DMS Challenge
+- SG on replication instance needed to allow any traffic from 5432 and SG on DB instance needed to allow 5432 from replication instance SG
+- have to have at least an include statement for the DB migration tasks 
+- after I changed to include the tables, I did a resume instead of a restart, I think. It led to some frustration 
+
+# Developer Tools 
+## Introduction to Continuous Integration
+- developers continually integrate code into central code repo 
+    - the longer devs wait to commit code, the less likely it is to work 
+    - build and test each change to code
+        - once test is successful, code pushed to source 
+- helps verify that code is one step closer to production-quality code 
+- important step b/c it tries to ensure the code the CD process uses is as good as possible 
+- CI is a process, and it's supported by users and software 
+    - it's only 'continuous' integration if developers are continuously integrating their code 
+### Creating a Development Environment 
+- having a dev env that copies prod reduces bugs 
+    - the goal is to have a dev env that replicates prod as closely as possible 
+- did an example with vagrant to create ubuntu vm w python. Why not docker...? 
+    - I mostly just skipped thru it
+### Version Control Systems
+- what is version control
+    - tracking changes to one or more files over time
+        - files can be anything (docs, config, images, code)
+    - every change from every dev made and can be tracked later 
+- types of VCS
+    - local version control (connect to server and checkout/edit code there)
+    - centralized version control (client-server)
+        - like a library, connect to server and copy file to local
+        - allow only specific users to access source code 
+        - had to use client tool to access the history on the server
+    - distributed version control
+        - when downloading the repo, get to see all the history
+        - central server generally has a canonical version of the code
+### Testing
+- why testing is important
+    - the more complicated the project, or the more critical the application, the more important testing code is 
+    - all code should be considered broken unless proven otherwise
+    - can't assume code 'just works'
+    - catches problems early 
+- what tests to include in CI process
+    - unit tests
+        - test a single unit of code
+        - if code elements function as expected
+        - unit tests need to be fast
+        - typically don't interact w external resources (like DBs, file systems, etc)
+            - partly b/c devs need immediate feedback, and mostly b/c it's just to test the logic of the code works properly 
+    - integration tests
+        - test interaction b/w components & outside resources 
+        - take longer to do and typically aren't done locally 
+    - anything that can improve code quality
+        - linters 
+            - quality assessment tools that can improve code quality by identifying known issues 
+        - code coverage tools
+            - assess how much of code is covered by tests 
+            - can be useful, but also a rabbit hole to go down
+        - source code analysis tools
+            - can look at source code and analyze dependencies for security vulnerabilities 
+            - catch low-hanging fruit before sending to CI/CD process
+### Database Schema Changes 
+- the challenge schema migrations pose 
+- the problem is that sometimes new code requires new columns to be created in the DB
+    - thus, schema changes must occur to ensure proper testing & implement changes 
+- most modern languages have some sort of library to handle schema migrations, but there also needs to be a strategy to it
+    - DB should be versioned
+    - there should only be one schema change per migration
+    - changes should be non-destructive
+        - i.e. add a new column, write to old/new column, ensure it's tested & working, then remove column later 
+    - new columns require sane defaults 
+### CI w Jenkins
+- keep build scripts in VCS to ensure repeatability and mutability of CI server 
+### Putting it All Together 
+- types of code conflicts
+    - merge conflicts
+    - dependency conflicts 
+    - logic conflicts 
+        - good unit tests can help identify issues
+    - build conflicts
+        - config file probably didn't merge properly
+    - the more time that goes b/w merging, the bigger problem integration can be 
+- best practices
+    - version control 
+    - automated build/test 
+        - build can mean compile code or install dependencies; end result should be working code either way 
+    - VCS and automated build/test can be brought together in a CI platform
+        - goal is to ensure code is always in a runnable state
+            - prioritize fixing things over making new code
+
+## Introduction to Continuous Delivery
+### What is Continuous Delivery 
+- CI responsible for code-level testing
+- CD deploys code to test env and runs acceptance test to make sure everything works
+    - upon failure, should notify devs & be worked on
+    - can also provide security audits + load tests 
+    - then moves on to UAT, then prod 
+- CD is about deploying the highest quality software possible 
+    - the goal is to make deployments so boring and predictable that they can be done by the least technical person on the team
+- CD: a way of building software, such that it can be deployed to a specified env whenever you want to and deploy only the highest quality versions to production
+- the value of CD
+    - increases quality
+    - improved cycle time 
+        - able to get new solutions to customers faster 
+    - better resource management
+    - reduce deployment risk 
+    - better customer feedback loops 
+### Coding for Continuous Delivery
+- code has to support being always deployable 
+- feature toggles
+    - develop code in modular and incremental way
+        - how to deal w features that span across multiple sprints
+    - release toggles
+        - allow devs to conditionally execute code based on the state of the toggle
+            - if feature is disabled, then tests skip it 
+        - meant to be short lived & not used indefinitely 
+        - can accumulate into technical debt; they have to be removed later when they're no longer needed
+            - tests also have to increase based on the toggles 
+    - useful in small, well-though doses
+- inversion of control (IoC)
+    - mechanism for increasing modularity of code 
+        - the more modular the code, the more testable it is 
+- secure coding practices   
+    - OWASP top 10 software vulnerabilities 
+        - injection issues
+            - malicious user able to add malicious input in a text field 
+            - SQL, ORM injection 
+            - if code accepts untrusted input, must assume that value is malicious & must sanitize it
+        - weak authentication & session management 
+            - a valid session token is as good as a username and password
+            - use HTTPS, SSL
+            - be wary of XSS 
+### Architecting for Continuous Delivery
+- monoliths
+    - singular app that contains all the modules needed to perform its job
+    - typically deployed as a whole
+    - can grow to a point where testing & deployments become very time consuming 
+    - can cause technology lock in, where it's easier to get things done quickly rather than correctly
+    - for new projects (greenfield development), usually helpful to start as a monolith to have a clear picture of where to start 
+        - it's okay to develop something with the knowledge it'll be replaced 
+- microservices
+    - discreet services that serve a specific purpose 
+    - in theory, refactoring should be simpler for future upgrades 
+    - can start w a monolith and break portions out into their own services (brownfield development)
+    - tend to be easier for devs b/c easier to understand each specific unit rather than having to understand an entire monolith
+        - however, can be more difficult to trace a request through the lifecycle 
+    - carefully consider the API implmenetation
+    - strongly consider the tech stack when starting. Using beta releases not necessarily going to be the most stable 
+### Mutable vs immutable Servers 
+- with configuration management tools (ansible, chef, puppet, etc), moved away from purely scripting server actions to 'phoenix servers'
+    - snowflake vs phoenix server
+        - snowflake: unique, fragile
+        - phoenix: can be burned down any time 
+            - all servers should be here and under version-controlled configuration management
+- mutable server
+    - configuration & settings change over time 
+    - pros
+        - if using configuration management, there are lots of great tools
+        - can be better for small teams that don't have capacity to make new machine images for every update
+        - ad hoc commands for things like security patching are simpler (don't have to remake image)
+        - having CM scripts under version control allows shared ownership
+    - cons
+        - when upgrade/deployment fails, server can be left in broken state
+        - not starting in known working configuration when deploying code
+        - depending on how config is implemented, may have to use CM tool to handle scaling (and lose out on functunality from cloud platforms)
+        - any change to the OS needs to be tested separately to ensure nothing breaks
+- immutable server
+    - server is only ever replaced, not upgraded in place
+    - pros
+        - once server is in known working state, can snapshot it then create image 
+            - gives higher level of trust in the deployment 
+        - can typically use deployment and scaling features from cloud platform (i.e. ASGs w AWS)
+        - if changes are deployed & they fail, can easily use previous server images 
+        - since ad hoc commands shouldn't be run, ensure that OS changes trigger the kickoff of the CD process (allows changes to be tested via automated testing)
+    - cons
+        - build times are longer b/c merging base OS w app & creating server image 
+            - the 'baking' process also creates server images that need to be stored & managed 
+        - change in the OS require a bake and redeploy
+        - need add'l CM tools for config'ing base image & to handle baking + deploying 
+### Deployment Methods
+- blue/green deployments
+    - deploy releases & minimize downtime 
+    - once deployment is complete, remove the previous env 
+- canary deployments
+    - deploy new env, then send a smaller group of users to the new instances 
+    - the goal is to identify issues early 
+    - best to monitor both envs and identify issues or that everything is going fine 
+### CD Tools 
+- continuous delivery/automation servers
+    - jenkins 
+        - open source CI server
+    - travis CI
+        - supports hosted version that's free for open-source projects
+    - TeamCity
+        - proprietary w limited free version (windows & linux)
+    - look for something that can be extended via plugins 
+- configuration management
+    - ansible
+        - write playbooks to run
+        - requires python
+    - chef
+        - ruby-based
+        - script tasks w full programming language (easier for programmers)
+    - puppet
+        - specify desired state & tell to match to state
+        - has its own language
+            - may be easier for non-devs
+    - powershell DSC
+- immutable server tools
+    - packer
+        - create image to bake & deploy base machine image 
+    - spinnaker 
+- containers
+    - LXC
+        - virtual env w operating-level virtualization
+    - docker 
+    - rocket 
+        - addresses security concerns of docker
+### Putting it All Together 
+- goal with testing is to prove images are NOT ready for prod
+    - if all the tests pass, then it's good! Assume it's not until otherwise proven 
+### Summary
+- code needs to be able to run, even if features aren't complete 
+- modular coding makes for code that's easier to test & maintain 
+- security needs to be considered thruout sw lifecycle
+- state most new dev as monolith app
+- gradually refactor monoliths that are too large into microservices
+- immutable servers are great. Mutable servers can also work, as long as you're careful to ensure they don't become snowflake servers 
+- there are options for no or low downtime deployments (blue/green, canary)
+- the list of tools that exists in DevOps/CD space is enormous 
+- CD process should make releases so boring that new changes may not even be noticed
+- all companies that are considered 'unicorns' are using CD practices 
+
+## Introduction to AWS CodeCommit
+- fully managed, git-based source control system
+    - can trigger other changes of pipeline 
+    - supports regular commands and language of other repository tools 
+    - cannect via 
+        - HTTPS
+            - popular port to have open
+            - must ensure IAM user has req'd creds by adding AWS CCM managed policy to user/group 
+            - generate HTTPS git creds in IAM console 
+        - SSH
+            - not always open port
+            - generate public-private key pair & upload public key to IAM user
+        - HTTPS (GRC)
+            - recommended if using temporory creds or creds from IdP
+            - install python to use 
+- encrypts data at transit & in rest by default 
+- access managed via IAM & can use it to manage fine-grained permissions 
+- pricing based on active users per month
+    - get 10GB and 2k git requests/mo
+### Triggers, Notifications, and Approval Rule Templates
+- repository notifications
+    - receive notification of events through chatbot to slack or SNS 
+        - can send basic or full details 
+- repository triggers
+    - take actions based on repo events
+    - SNS notifications or lambda functions
+    - don't use CW events rules to evaluate repo events
+    - limited to what they can do; very simplistic
+- integrates w EventBridge to provide greater notifications 
+    - to trigger a new pipeline run, fairly easy to do w EB
+- approval rule templates
+    - associate approval to repo
+    - specify how many approvals needed & which IAM users/roles needed to approve 
+
+## Intro to AWS CodeBuild 
+- connect services like codecommit, build, deploy
+- core concepts
+    - CodeBuild project
+        - specify where to get source code
+    - the Build Environment
+        - use custom or managed docker 
+            - upload custom containers to ECR or docker hub or other repo
+        - a handful of regions support windows server core 2019
+        - inserting build commands directly is quick way to run a small number of commands
+    - The BuildSpec File
+        - yaml-based files to specify what commands to run during certain phases 
+        - can manage yaml file in source control 
+    - Output
+        - can store in S3 and use S3 triggers to cause other actions to occur
+        - during postbuild can push to ECR repo
+- publishes events to cloudwatch 
+### The BuildSpec File
+- must be named buildspec.yml and stored in root directory of repo (can be overwritten where it is stored)
+- version is a required option
+- run-as: specify linux user to use
+- env: define env vars & retreive from SSM/SM
+- proxy: provide add'l settings
+- batch: specify instructions on batching builds
+- phases: (required): specify commands for build
+    - install, pre-build, build, post-build
+- reports: generate test reports for code tests
+- artifacts: specify where CB can find output artifact & how it can prepare to store in s3 
+- cache: helpful for dependencies or other files that won't often change from build to build 
+
+## Intro to AWS CodeDeploy
+- designed to make rolling out app changes simple & quick
+    - new features available to users ASAP & avoid downtime
+- application
+    - must be created; what platform to deploy code to 
+        - ec2/on-prem, lambda, ecs
+        - define deployment group w tags or groups or ASG
+- deployment configuration
+    - manage speed of deployment, in terms of how many of instances/servers/functions updated at once (or speed of traffic transfer)
+    - ec2 specify deployment type
+        - deploy in-place, green/blue
+    - AllAtOnce
+        - supported by all platforms
+        - attempt to deploy app to as many instances/containers in deployment group as possible
+        - shifts all traffic from old lambda function to new lambda function
+    - Canary
+        - direct a small amount of traffic to new function/container
+        - after testing/validating, then xfer all traffic to new
+    - linear
+        - direct small amount of traffic to new function/container
+        - incrementally increase amount of traffic to new resource over a define period of time 
+    - preset or custom configs can be used 
+- install code deploy agent on servers to integrate code deploy
+    - not required on lambda or ecs 
+    - communitcates w codedeploy for updates 
+- deployment uses info from deployment group + revision (packaged source code to deploy)
+    - must also create appspec.yml file 
+- integrates w CloudWatch & SNS
+### AppSpec File for EC2
+- run scripts & manage deployment
+- json or yml file that instructe CD how to execute deployment & enables deployment customization
+- different types for different OS
+    - EC2/in-prem
+        - verison: decided by AWS; 0.0
+        - os: windows or linux (OS of instance to deploy to)
+        - files: which files should be copied to instance 
+        - permissions: specify permissions for files 
+        - hooks: run scripts at different phases of deployment process 
+### AppSpec File for Lambda
+- lambda
+    - version: 0.0; decided by AWS
+    - resources: specify which lambda function and version to shift traffic to 
+        - the goal is to figure out which lambda function to update and which to use in validating 
+    - hooks: for each phase, runs lambda function to perform the action 
+- ECS
+    - version: 0.0
+    - resources
+        - the main goal is to define task definition, container & port where LB will reroute traffic to deployment, optional settings (like network config)
+
+## Introduction to AWS CodePipeline
+- fully managed continuous delivery system to manage build, test, and deployment of code 
+- features
+    - automation of build, test, and release
+    - manual approvals
+    - pipeline history reports
+    - pipeline status visualization
+- orchestrate phases of CI/CD setup
+    - integrates w CodeCommit, CodeBuild, CodeDeploy
+    - each stage can have one or many actions
+        - actions can run sequentially or in parallel 
+- by default, uses CloudWatch Events to check for updates & start the pipeline 
+- action types 
+    - approval
+        - used to add manual approval step
+        - useful to ensure sw release is tested by somebody 
+    - source
+        - specify location of source code 
+        - can pull from s3, codecommit, github 
+    - build
+        - specify how source code gets complied
+        - can perform w jenkins, codebuild, solano CI
+    - test
+        - specify how release should be tested before deployment
+        - can be config'd to use jenkins, codebuild, and several others
+    - deploy
+        - specify how release is to be deployed
+        - to ecs, CFn, codedeploy, elastic beanstalk
+    - invoke 
+        - provide further integration options & implement custom lambda functions that can be called from w/n pipeline 
+- service.json defines where to run build 
+- taskdef.json defines how to run build  
+
+## Introduction to AWS CodeStar
+- features
+    - preconfigured CICD workflow templates
+    - dashboard visualisation 
+    - team membership management
+    - issue and ticket tracking integration 
+- sits over and across everything from cloud9 through codepipeline
+- provisions projects that are AWS services that are clustered together for enabling specific apps 
+    - can filter for matching templates for specific service/usecase
+- uses cloudformation to create resources
+    - IAM user must allow the one-time creation of codestar service role 
+- dashboard view can be customized by adding/removing tiles 
+- when setting up codestar, can pick which ide will be used: cloud9, vscode, cli 
+- team management
+    - owner: add/remove resources, project members, and delete codestar projects
+    - contributor: add/remove resources 
+    - view: view codestar project dashboard 
+- extensions
+    - supports github issues and jira 
+
+## Why AWS X-Ray
+- challenge: 
+    - greater number of microservices making up applications lately
+    - distributed apps among multiple servers, regions, vpcs, azs
+    - identifying all the moving parts & addressing performance issues and following execution traversal 
+### Introducing AWS X-Ray
+- extract operational insights across distributed systems running at scale 
+- able to visualize complet and detailed service relationships. Able to see processing time, performance bottlenecks, and hotspots
+- Data flow
+    - trace requests -> records traces -> view service map -> analyze issues 
+    - underlying app must have/used x-ray SDK
+- components
+    - x-ray SDK: intstrument app code
+        - supports java, .net, and node.js (over time will likely add more)
+        - able to add to app w just four lines of code 
+    - x-ray daemon: collect local trace data, batch data, send over internet to AWS x-ray services. listens UDP 2000
+        - needs to be setup w perms to push data to AWS x-ray API
+            - can supply IAM role when deployed on EC2 or setting env vars for access/secret access keys 
+            - supports windows, osx, linux systems 
+    - x-ray API: receives collected telemetry from daemon
+    - other clients: can be integrated w AWS SDK, CLI, or other third-party clients
+    - x-ray console: where all visualization occurs 
+        - trace list
+            - find data from trace summary: analyze activity in app as it runs
+            - helpful for finding performance issues
+- instrumentation concepts
+    - segments: portions of the trace that correspond to a single service
+        - stitched together for form traces
+        - sends data about the work the app is doing: resource name, request, details about job done 
+    - subsegments: remote call or local compute sections w/n service
+        - downstream services 
+        - sampling: able to configure sampling rate, to ensure app remains performant 
+    - traces: end-to-end path of request thru app
+        - formed by correlating segments 
+        - provides timeline view for the request 
+    - filters: use filter expressions to view service map or traces for requests w performance issues or relate to specific requests
+        - quickly navigate and pinpoint hotspots in app 
+        - specify search criteria that filters against data in traces 
+    - annotations: business data added to trace - indexed for filtering 
+        - annotations added via calling the proper method in the x-ray SDK
+    - metadata: business data added to trace - NOT indexed for filtering
+        - added the same was as annotations 
+        - key-value pairs w data of any type 
+    - exceptions: app error message and/or stacktrace 
+- pricing
+    - perpetual free tier
+        - first 100,000 traces recorded each month from
+        - first 1,000,000 traces retrieved or scanned each month free 
+        - beyond that, traces recorded $5/1,000,000 recorded, $.50/1,000,000 retreived or scanned 
+
+## Operating Programmatically with AWS
+- APIs
+    - enable apps to comm thru published interfaces
+    - most AWS console actions invoke APIs
+    - all AWS API requests are logged in CT regardless of origination source 
+- SDKs
+    - language-specific APIs
+    - for developers already familiar with a coding language
+- CLI 
+    - make calls directly to AWS services from CLI 
+    - must be authorized to perform actions 
+    - supports use of scripts & can be part of CI/CD pipeline
+        - can be version controlled 
+        - scripts reduce the opportunity for human error 
+- IaC
+    - create stacks representing architecture
+        - can also use AWS templates
+    - repeatable & consistent 
+- automated processes are less error-prone than human touch 
+
+## What is the AWS CLI 
+- provides more flexibility to access and manage AWS resources 
+- need credentials to perform CLI commands
+    - access key/secret access key
+        - env vars or `aws configure`
+        - `aws configure import --csv file://xx` to import profiles other than simply `aws configure --profile xx`
+        - `export AWS_PROFILE=xx` to set profile for session 
+    - temporary credentials (roles, federation)
+        - `aws configure sso` to set up when users are federated 
+- Command structure
+    - `aws <service> <api-call> <parameters>`
+- output types
+    - json, yaml, yaml stream, table, text
+    - `--query 'Reservations[*].Instances[*].[InstanceId]`
+        - for all reserved instances, list InstanceId 
+        - to grab multiple things, `--query 'Reservations[*].Instances[*].{InstanceId,Placement.AvalabilityZone}`
+            - can label them and make the output pretty with `--query 'Reservations[*].Instances[*].{Id:InstanceId,AZ:Placement.AvalabilityZone} --output table`
+    - can return only certain things as well 
+        - `aws ec2 describe-instances --filter "Name=availability-zone,Values=us-west-2a`
+            - probably easier to just reference AWS docs to figure out what the names of things to filter on 
+            - can combine filter and query: `aws ec2 describe-instances --filter "Name=availability-zone,Values=us-west-2a --query 'Reservations[*].Instances[*].{Id:InstanceId,AZ:Placement.AvalabilityZone} --output table`
+- cli auto-prompt
+    - `aws dynamodb create-table --cli-auto-prompt` to get a guide to formatting commands
+    - wizards also available
+        - `aws iam wizard new-role`
+    - cli skeleton
+        - `aws dynamodb create-table --generate-cli-skeleton > input-skeleton.json`
+        - puts all empty parameters into the specified file 
+        - execute creation w `aws dynamodb create-table --cli-input-json file://xx`
+
+## AWS CDK
+- open-source framework that allows defining AWS resources and infrastructure in code
+- generates equivalent CFn templates at complie time
+- get benefits of CFn w/o maintaining YAML templates
+- supports programming languages (python, C#, java, etc) to use existing constructs
+- provides libraries called 'constructs' to define AWS resources
+- create & customize constructs for reuse and sharing
+- provides CLI for common tasks like creating new CDK apps + deploying to specific envs 
+
+## AWS CloudShell
+- browser-based linux shell experience w secure pre-authenticated access to CLI + other tools
+- easy to interact w AWS service w/o needing to set up local dev env first
+- security pro-config'd based on creds of user currently logged into console
+- access in any support region by clicking the icon in the top navigation
+- pre-config'd w CLI for AWS, beanstalk, ECS, SAM
+- can access Python + node.js & install add'l tools
+- home dir includes 1 GB persistent storage 
+
+## Amazon CodeGuru
+- dev tool that uses ML to exame app source code + identify issues that impact code quality, performance or security
+- CodeGuru Reviewer
+    - automated code review tool that can detect bugs, ussues, security vulns whenever new code is committed
+    - leverages CodeGuru Reviewer Security Detector
+        - analyzes code & provides recommendations based on OWASP top 10 & AWS best practices
+- CodeGuru Profiler
+    - continyously analyzes prod env and provides recommendations to improve perf and reuce cost
+    - works w lambda functions, apps on ec2, containers on ECS/EKS/fargate/on-prem
+    - can identify + detect anomalies in the behavior of deployed apps 
+
+## AWS Fault Injection Simulator
+- manage service that allows user to perform experiements that inject different types of faults into AWS workloads
+- based on the principles of chaos engineering
+- allows discovery of weaknesses and hidden issues w/n apps arch by running controlled experiments
+- experiment
+    - allows defining fault injection actions and targets
+    - once started, metrics collected & monitored via CW or EB
+    - observe what actions have been executed & the status of resources via console or APIs 
+
+    git clone https://git-codecommit.us-west-2.amazonaws.com/v1/repos/ca-app-james-new
+    student-at-408766137903
+    5fS4TnjkQ6hYZy6k08YONZLYW/lNL+y1tOdB0Dsu5v8=
+
+# Lab Challenge: AWS Developers Tool Suite
+- after I zipped up the app.zip file and uploaded to S3, codepipeline wasn't able to unzip it and see the files w/n. I don't know what changed. I tried zipping via CLI, via GUI, added just one of the files to S3. Wasn't working. 
+
+# Containers 
+## Introduction to Microservices, Containers, and ECS 
+- Problems of Monolithic Apps 
+    - every feature tightly coupled together    
+        - instead, microservices each do one specific thing well
+- container: fully encapsulated software package that contains everything required to run an app
+    - application able to be OS agnostic 
+    - doesn't have an OS built into the image, and can be very small 
+    - can be spun up pretty quickly
+- container orchestration services launch new containers from container images 
+- container image
+    - spins up and down images when needed
+- vm: contains guest OS plus the virtual machine in the package (can be GBs in size)
+    - takes a while to start OS then the app 
+- containerization in the cloud 
+    - ECS: fully managed container orchestration
+        - uses docker containers 
+        - two deployment methods
+            - cluster of EC2 instances w Docker agent on them
+                - increase & decrease amount of containers deployed depending on need 
+            - serverless (fargate)
+                - only exist when invoked & turn off when task is completed 
+- ECR
+    - host images in highly available & scalable way 
+    - can share images publicly 
+    - can configure lifecycle policies for container images 
+- task definitions
+    - used by ECS to know which images to use, resources, and setup for containers 
+        - reference URI from ECR 
+    - serverless & servered config is slightly different
+- ECS services
+    - manage, run, and maintain a specific number of task definitions in a cluster for a set time 
+    - can place containers behind ALB 
+- how to decide which route to go
+    - serverless always uses 100% available CPU & memory & is generally able to most effectively utilize available resources vs an EC2 that may or may not be optimized
+    - for long-runing workloads, servered makes sense. otherwise, serverless should be a consideration
+- maintenance 
+    - fargate only have to consider optimizing the software 
+- networking
+    - ECS EC2 mode 
+        - host, bridge (for port mapping), AWSVPC mode (ECS manage ENI per task)
+    - fargate only support AWSVPC mode 
+## ECS (EC2 Container Service)
+- run docker-enabled apps packaed as containers across cluster of ec2 
+    - don't have to manage cluster mgmt system
+    - AWS manages cluster management via fargate, if desired 
+- don't need to install mgmt or monitor sw for cluster 
+- launching
+    - fargate launch
+        - specify req'd CPU & memory
+        - networking + IAM policies
+        - containers image for app 
+    - EC2 launch
+        - responsible for patching and scaling instances
+        - specify instance type & how many containers should be in cluster 
+- monitoring
+    - done via cloudwatch 
+- ECS Clusters
+    - act as resource pool & aggregate CPU + memory
+    - dynamically scalable & multiple instances can be used
+    - only scales w/n a single region
+    - containers can be scheduled to be deployed across clusters
+    - instances w/n cluster have docker daemon & ECS agent installed 
+## ECR (Elastic Container Registry)
+- links closely w ECS
+- provides secure location to store & manage docker images
+- fully managed 
+- allows devs to push/pull/manage images centrally
+- components
+    - registry
+        - host and store docker images
+        - create image repositories 
+        - account will have read + write access by default to any images created w/n registry
+        - access to registry + images can be controlled via IAM policies & repository policies 
+        - docker client must be authenticated as AWS user via Authorization Token
+    - Authorization Token
+        - `aws ecr get-login-password --region <region> --no-include-email`
+            - output will be a docker login command to be pasted into cli 
+            - authorizes access to registry for 12 hours 
+    - Repository
+        - objects w/n registry that allow grouping and securing docker images
+        - can create multiple repos to organize & manage docker images 
+        - can use policies from IAM + repo policies to assign permissions to each repo 
+    - Repository Policy
+        - there are three managed policies that help manage access via IAM
+        - resource-based policies
+            - must add principle to the policy to determine who has access & what perms 
+            - AWS user must have access to `ecr:GetAuthorizationToken` API call 
+            - repo policies control what actions users can perform on the repos 
+    - Image
+        - use docker push or pull command to send/retrieve images 
+## EKS (Elastic Container Service for Kubernetes)
+- kubernetes
+    - open-source container orchestration tool designed to automate, deploy, scale, and operate containerized apps
+    - container-agnostic 
+- account owner only needs to provision and manage worker nodes
+- kubernetes control plane
+    - different componenets determine how everything communicates
+    - schedules containers onto nodes
+        - in this case, means the decision process of putting containers onto nodes based on how much available compute there is 
+    - tracks state of all k8s objects
+    - aws responsible for maintaining and scaling
+- worker nodes 
+    - node
+        - worker machine in k8s
+        - on-demand ec2 instance 
+        - includes sw to run containers
+    - for each node created, specific AMI used
+        - ensures Docker & the kubelet is installed for sec controls 
+    - once worker nodes are provisioned, can be connected to EKS using an endpoint 
+- working w EKS
+    - create EKS service role 
+        - IAM service role must allow EKS to provision and configure specific resources 
+        - must have AmazonEKSServicePolicy and AmazonEKSClusterPolicy
+    - create an EKS cluster VPC
+        - create and run a CFn stack based on a provided template 
+    - install kubectl and AWS-IAM-Authenticator (for authentication to EKS cluster) on CLI 
+    - create EKS cluster
+    - configure kubectl for EKS
+    - provision & configure worker nodes
+    - configure worker node to join EKS cluster 
+        - edit configuration map provided by AWS 
+## Amazon EKS Distro 
+- free, open-source distro of k8s, built & maintained by AWS
+- use same k8s versions & dependencies that are deployed by EKS, allowing to manually run your own k8s clusters
+- runs on-prem, in VMs, EC2, or other servers in other cloud providers
+- compatible w common OSs
+- install & manage k8s w/o worry about compatibility w diff versions, dependencies, or patches
+- AWS provides extended support after community support expires 
+## AWS App2Container
+- CLI tool that helps transform legacy ASP.NET or Java into containerized apps w/o req'ing changes to app source code
+- can be run on-prem, EC2, other cloud infra
+- can take advantage of benefits of containers
+- runs as tool installed on app server
+- inventory will I.D. all supported apps running on the server + config settings & dependencies
+- can create Dockerfile + container image for app
+    - provides commented guidance on how to update app & dependencies 
+- provides integration w codepipeline stages 
+## AWS Copilot
+- CLI tool that simplifies dev, deploy, and mgmt of containerized apps on AWS
+- incorporates best practice guidance for infra setup & deploy
+- build and deploy any container app w a Dockerfile
+- create, config, deploy robust, prod-ready containerized apps to ECS on Fargate 
+- `copilot init`, go through wizard, and it will set up infra necessary to mng service 
+- as part of deploy process, CP will build image, push to ECR, start deploying to ECS on fargate
+- once deploy finished, CP will output URL to the prod-ready service
+## Red Hat OpenShift Service on AWS (ROSA)
+- full-managed openshift service operated by Red Hat & billed on a single invoice thru AWS
+- provides family on containerization products for enterprise apps 
+- allows migrating on-prem OpenShift containerized apps to cloud to make it simple to provision & operate dedicated RHOS clusters on AWS
+- supports same APIs & deployment tooling as on-prem OpenShift clusters
+- each cluster comes w fully managed control plane + app nodes
+- jointly supported by RH & AWS; customers can contact either RH or AWS for support 
+
+## ECS lab
+notes: each task definition corresponds to a docker container 
+
+# Security, Identity, and Compliance
+## What is IAM
+- IAM
+    - identity management: define who you are 
+        - unique w/n IAM
+        - verify you are who you say you are
+    - authentication: authorization/access control
+    - manage, control, and govern access control to resources to AWS acct 
+- Features
+    - can only be as strong as it is configured by user 
+        - must define how secure access control procedures must be
+    - access management 
+        - users: objects that represent an identity 
+        - user groups: objects used to authorize members of the group access to resources 
+        - roles: temporary permissions; identity w associated permissions 
+            - designed to be assumed by identity or service 
+        - policies: JSON docs that define what can/can't be accessed 
+            - managed policies: library of usable policies
+            - inline policies must be explicitly defined per identity; can't easily be used with multiple identities 
+        - account settings
+            - set set password policy 
+        - security token service
+            - recommended to disable the regional endpoints that aren't expected to be used 
+    - access reports
+        - access analyzer: report of external sharing of resources 
+            - issues recorded in a report 
+        - credential report
+            - list of all IAM users & their credentials
+                - can identify when last logged in and if MFA is enabled among other things
+        - organizational activity
+            - able to see what users and services have been used
+        - service control policies
+            - lists what policies apply to the account & what identities are affected 
+## Cross-Account Access
+- access services w/n different AWS acct thru use of IAM roles 
+    - dev must consciously switch to & assume role to access other resources
+- steps in creating x-accts access
+    - trusted account (dev)
+        - after role & perms set, grant perms to devs to allow assumption of new role in trusting acct 
+            - sts:AssumeRole, arn of trusting account role 
+    - trusting account (prod)
+        - create new role here. Set dev acct as trusted entity 
+        - specify perms attached to newly created role that users in dev acct would assume to carry out req'd actions & tasks 
+## AWS IAM Policy Types
+- identity-based policies
+    - AWS-managed policies
+        - cover most common use cases for access to services
+    - customer-managed policies
+        - created by user/account owner/etc for add'l granularity 
+    - inline policies
+        - only exists w entity it is on
+        - not best practice to use; req's add'l admin 
+- resource-based policies
+    - principal must be defined 
+- permission boundaries
+    - do not grant permissions
+    - can only be associated w role or user
+    - define max perms that can apply to entity
+        - can be AWS or customer managed policy that defines the boundaries 
+- Organization SCPs
+    - do not grant permissions
+    - define boundary of maximum permissions for an AWS account or OU
+    - must enable all features when creating org to be able to use 
+    - in IAM, can view applicable SCPs in effect - but can't edit the SCP from IAM 
+## Policy Evaluation Logic
+- authentication 
+- context
+- policy evaluation
+    - deny overrules allow
+    - order of evaluation
+        - SCPs
+        - resource-based policies
+        - permission boundaries
+        - identity-based policies 
+- result 
+    - by default, all access denied
+## Use AWS identity Federation to Simplify Access at Scale 
+- identity federation
+    - two provider establish a level of trust that allows user to authenticate to the identity provider and access resources in the service provider 
+    - easily set up access control systems for ease of use for users & providers 
+- OAuth 2.0, OIDC, SAML 2.0 supported
+    - OAuth: open standard, commonly used
+    - ODIC: OpenID Connect (build on OAuth 2.0)
+    - SAML 2.0: standard for xchanging identities b/w sec domains 
+- AWS services
+    - AWS SSO (AWS Identity Center)
+        - can use built-in user directory or connect to supported providers (incl. on-prem MS AD) 
+        - manage users centrally for accts in org 
+        - users get single click access 
+    - AWS IAM
+        - config federated access to resources using diff providers per acct 
+            - avoid creating new users in new accts if only needing roles 
+    - Amazon Cognito
+        - enables secure authentication & access control for new users 
+        - able to scale to millions of new users 
+        - able to create custom portal
+        - two components
+            - user pools
+                - user dir: new users sign up or existing users log in w existing credentials
+            - identity pools 
+                - provide ability to access AWS resources w temp creds via STS
