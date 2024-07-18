@@ -1,4 +1,5 @@
-vi commands
+vi/vim commands
+vim supports using the mouse
 Notes
 General Buffer (GB) ~= clipboard
 Format of VI commands: [count][command] to repeat the effect of the command
@@ -12,6 +13,7 @@ O: open line above
 
 change commands 
 cw: change word - removes the rest of the characters in the word after the cursor
+ciw: change inner word - replace word cursor is currently in
 cc: change line - 'cut' the line and store in GB
 c$: change to end of line - 'cut' from the cursor to the end of the line and store in GB   
 r<character>: replace character where cursor is at with a new character
@@ -36,8 +38,8 @@ n: repeat search
 N: repeat search reverse
 <ctrl>l: redraw screen
 <ctrl>g: display current line number and file information
+gg: go to first line
 G: go to last line
-gg: go to the first line 
 <n>G: go to last line <n>
 :<n>: go to line <n>
 z<CR>: reposition window: cursor at top - not tracking on this one
@@ -59,7 +61,7 @@ $: end of line
 f<c>: find <c>
 ;: repeat find (find next <c>) - not sure how either of these c commands work
 
-deletion commands
+deletion commands (note: most of these will not delete the letter under the cursor)
 dd or <n>dd: delete line or delete <n> lines to GB
 dw: delete word to GB
 d<n>w: delete <n> words to GB
@@ -67,6 +69,9 @@ d): delete to end of sentence
 db: delete previous word
 D: delete to end of line
 x: delete character
+d0: delete to beginning of line 
+d$: delete from current position to end of word
+"+dd: delete to system clipboard (verify `:echo has ('clipboard')` returns 1) 
 
 recovering deletions
 p: put GB after cursor - tends to make a new line and put the pasted text there
@@ -84,12 +89,5 @@ yw: yank word to general buffer
 "A9dd: delete 9 lines; append to buffer a
 "ap: put text from general buffer a after the cursor
 J: join lines
-
-other
-set nu/set number to show line numbers 
-go to a specific line `:X` where X is the line number 
-command history: in command line mode, hit ctrl+f
-    navigate w j/k or arrow keys
-    enter will run the command again
-    ctrl-c will put it on the command line so it can be edited
-    another ctrl-c will take back to normal mode 
+"+yy: copy to system clipboard (copy b/w vim windows) 
+"+p: paste from system clipboard
