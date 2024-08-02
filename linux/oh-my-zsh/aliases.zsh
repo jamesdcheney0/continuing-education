@@ -37,3 +37,21 @@ function branch(){
   # Print the branch name to the terminal (optional)
   echo "Current branch: $branch_name"
 }
+
+instances() {
+  local env=$1
+  local app=$2
+
+  # Run the AWS CLI command and capture the output
+  aws-vault exec delos-gov-${env} -- aws ec2 describe-instances --filters "Name=tag:Name,Values=cust-delos-${env}-${app}*" \
+      --query 'Reservations[*].Instances[*].{Name: Tags[?Key==`Name`]|[0].Value, InstanceId: InstanceId, PrivateIp: PrivateIpAddress, LaunchTime: LaunchTime}' \
+      --output json | jq -r '.[][] | "Name: \(.Name)\nInstance ID: \(.InstanceId)\nPrivate IP: \(.PrivateIp)\nLaunch Time: \(.LaunchTime)\n"'
+}
+
+terminate() {
+  local env=$1
+  local instance_id=$2
+
+  # Run the AWS CLI command to terminate the instance
+  aws-vault exec delos-gov-${env} -- aws ec2 terminate-instances --instance-ids "$instance_id" --output json | jq -r '.TerminatingInstances[] | "Instance ID: \(.InstanceId)\nCurrent State: \(.CurrentState.Name)\nPrevious State: \(.PreviousState.Name)\n"'
+}
