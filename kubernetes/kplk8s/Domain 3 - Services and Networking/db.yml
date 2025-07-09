@@ -1,0 +1,7 @@
+apiVersion: kplabs.internal/v1
+kind: Database
+metadata:
+  name: my-database
+spec:
+  name: test-db
+  replicas: 3

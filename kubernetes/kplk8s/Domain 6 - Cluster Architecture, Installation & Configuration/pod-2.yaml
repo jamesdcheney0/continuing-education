@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: squish-pod
+spec:
+  containers:
+  - name: fail-container
+    image: nginx
+    resources:
+      requests:
+        memory: "10Mi"
+        cpu: "10m"
+      limits:
+        memory: "10Mi"
+        cpu: "10m"

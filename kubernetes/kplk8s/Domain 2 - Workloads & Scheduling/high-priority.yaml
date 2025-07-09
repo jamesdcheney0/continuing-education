@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: high-priority-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: high-priority
+  template:
+    metadata:
+      labels:
+        app: high-priority
+    spec:
+      priorityClassName: high-priority
+      containers:
+      - name: busybox
+        image: nginx
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "30m"

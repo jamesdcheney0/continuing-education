@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: new-ping-pod
+spec:
+ containers:
+ - name: ping-container
+   image: busybox:latest
+   command: 
+    - "ping"
+   args: 
+    - "-c"
+    - "60"
+    - "google.com"

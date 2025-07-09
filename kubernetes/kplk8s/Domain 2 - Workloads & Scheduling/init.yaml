@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+spec:
+  containers:
+  - name: app-container
+    image: nginx
+  initContainers:
+  - name: check-google
+    image: alpine/curl
+    command: ["ping", "-c", "10", "google.com"]
+  - name: check-kubernetes
+    image: alpine/curl
+    command: ["curl", "kbernetes.io"]

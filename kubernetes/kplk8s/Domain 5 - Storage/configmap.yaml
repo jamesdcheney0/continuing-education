@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: demo-configmap
+data:
+   DB_HOST: "172.31.10.30:3306"
+   DB_USER: "dbadmin"
+   DB_PASS: "db!2312$#"
+   APP_MODE: "production"
+   APP_CAPACITY: "100%"
+
+   large-data: |
+      This is Line 1
+      This is Line 2
+      This is Line 3

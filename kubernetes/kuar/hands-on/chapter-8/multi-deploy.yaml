@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: be-default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: be-default
+  template:
+    metadata:
+      labels:
+        app: be-default
+    spec:
+      containers:
+      - name: be-default
+        image: gcr.io/kuar-demo/kuard-amd64:blue
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: be-default
+spec:
+  selector:
+    app: be-default
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alpaca
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: alpaca
+  template:
+    metadata:
+      labels:
+        app: alpaca
+    spec:
+      containers:
+      - name: alpaca
+        image: gcr.io/kuar-demo/kuard-amd64:green
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alpaca
+spec:
+  selector:
+    app: alpaca
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bandicoot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bandicoot
+  template:
+    metadata:
+      labels:
+        app: bandicoot
+    spec:
+      containers:
+      - name: bandicoot
+        image: gcr.io/kuar-demo/kuard-amd64:purple
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bandicoot
+spec:
+  selector:
+    app: bandicoot
+  ports:
+  - port: 8080
+    targetPort: 8080

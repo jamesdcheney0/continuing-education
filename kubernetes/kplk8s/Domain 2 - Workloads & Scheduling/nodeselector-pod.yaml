@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kplabs-pod
+spec:
+  nodeSelector:
+    size: medium
+  containers:
+  - name: nginx-pod
+    image: nginx
