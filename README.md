@@ -27,7 +27,10 @@ My progress in developing technical skills and useful bits and bobs for speeding
     - After getting cert, start working on intro to terragrunt
     - BECAME HASHICORP CERTIFIED: TERRAFORM ASSOCIATE ON 20230224! 
 
-- Linux
+- Linux (unix-general things live here)
     - vi
         - https://www.atmos.albany.edu/daes/atmclasses/atm350/vi_cheat_sheet.pdf
     - vimtutor is also a great built-in resource for starting to learn vi/vim
+ 
+- macOS
+
