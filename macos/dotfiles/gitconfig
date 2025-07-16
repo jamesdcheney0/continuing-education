@@ -1,0 +1,17 @@
+[user]
+	name = James Cheney
+	email = james.cheney@di2e.net
+[credential]
+	helper = !aws codecommit credential-helper $@
+[credentials]
+	helper = UseHttpPath=true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[color "status"]
+  untracked = white dim
+  added = green
+  changed = yellow
+  branch = cyan
