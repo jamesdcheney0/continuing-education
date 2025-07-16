@@ -1,0 +1,66 @@
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/jamescheney/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+# Enable color support for ls and grep
+export CLICOLOR=1
+alias ls='ls -GFh'
+
+
+# Set prompt: username@hostname current_dir $
+#PS1="${GREEN}\u ${CYAN}\w${RESET} \$"
+#PS1="\[\033[38;5;115m\]\u \[\033[38;5;216m\]\w\$ \[\033[0m\]"
+export CLICOLOR=1
+export LSCOLORS="gxhxcxdxcxegedacagacad"
+alias ls='ls -Gp'
+
+# Save multi-line commands as single entry
+shopt -s cmdhist
+
+# Increase history size
+export HISTSIZE=5000
+export HISTFILESIZE=10000
+
+
+####### Setting Colors for the terminal
+# Get current branch in git repo
+parse_git_branch() {
+  local branch
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ -n "$branch" ]; then
+    local status=$(parse_git_dirty)
+    echo "[$branch$status]"
+  fi
+}
+
+parse_git_dirty() {
+  local status bits modified untracked ahead newfile renamed deleted
+
+  status=$(git status --porcelain 2>/dev/null)
+
+  modified=$(echo "$status" | grep '^ M' | wc -l | tr -d ' ')
+  untracked=$(echo "$status" | grep '^??' | wc -l | tr -d ' ')
+  newfile=$(echo "$status" | grep '^A ' | wc -l | tr -d ' ')
+  renamed=$(echo "$status" | grep '^R ' | wc -l | tr -d ' ')
+  deleted=$(echo "$status" | grep '^ D' | wc -l | tr -d ' ')
+
+  git status 2>/dev/null | grep -q "Your branch is ahead" && ahead=1 || ahead=0
+
+  bits=""
+  [ "$modified" -gt 0 ] && bits+="!$modified "
+  [ "$untracked" -gt 0 ] && bits+="?$untracked "
+  [ "$newfile" -gt 0 ] && bits+="+ "
+  [ "$deleted" -gt 0 ] && bits+="x "
+  [ "$renamed" -gt 0 ] && bits+="> "
+  [ "$ahead" -eq 1 ] && bits+="* "
+
+  # Trim trailing space
+  bits=$(echo "$bits" | sed 's/ *$//')
+
+  [ -n "$bits" ] && echo " $bits"
+}
+
+# Set prompt
+PROMPT_COMMAND='PS1="\[\033[38;5;221m\]\d \A \[\033[38;5;79m\]\u \[\033[38;5;39m\]\w \[\033[38;5;105m\]$(parse_git_branch)\[\033[0m\] \$ "'
+
+

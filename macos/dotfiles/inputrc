@@ -1,0 +1,7 @@
+# bash history search using term and up/down arrows to match commands starting with that term
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+
+# Ignore case for tab complete
+set completion-ignore-case on
+
