@@ -7,3 +7,11 @@
 ## displaylink
 - Turning off hardware acceleration in Google Chrome made it so I can watch the videos!!! 
 
+## dotfiles directory
+Copied the dotfiles from home to the dotfiles directory and ran this command to link them to where the os expects the dotfiles
+`ln -s /Users/jamescheney/Documents/1000-hours/macos/dotfiles/inputrc ~/.inputrc`
+
+source ~/.bashrc and ~/.bash_profile
+- source runs commands in whatever file it is pointed at
+bind -f ~/.inputrc
+
