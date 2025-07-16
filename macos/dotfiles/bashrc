@@ -60,7 +60,31 @@ parse_git_dirty() {
   [ -n "$bits" ] && echo " $bits"
 }
 
+shorten_path() {
+  local path="${PWD/#$HOME/~}"
+  local IFS='/'
+  read -ra parts <<< "$path"
+  local new_path=""
+  local count=${#parts[@]}
+
+  for ((i = 0; i < count; i++)); do
+    # Last two segments → full names
+    if (( i >= count - 2 )); then
+      new_path+="${parts[i]}/"
+    else
+      # Skip empty first segment (root)
+      if [[ -n "${parts[i]}" ]]; then
+        new_path+="${parts[i]:0:4}/" # 0:4 is a array slice to get four letters of the dir to display
+      fi
+    fi
+  done
+
+  # Remove trailing slash
+  echo "${new_path%/}"
+}
+
 # Set prompt
-PROMPT_COMMAND='PS1="\[\033[38;5;221m\]\d \A \[\033[38;5;79m\]\u \[\033[38;5;39m\]\w \[\033[38;5;105m\]$(parse_git_branch)\[\033[0m\] \$ "'
+PROMPT_COMMAND='PS1="\[\033[38;5;221m\]\d \A \[\033[38;5;79m\]\u \[\033[38;5;39m\]\$(shorten_path) \[\033[38;5;105m\]$(parse_git_branch)\[\033[0m\] \$ "'
+
 
 
