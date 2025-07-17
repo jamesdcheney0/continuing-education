@@ -88,7 +88,9 @@ shopt -s cmdhist
 export HISTSIZE=5000
 export HISTFILESIZE=10000
 
-# Enable kubectl completion
+# kubectl settings 
+
+## Enable kubectl completion
 [ -f ~/.kubectl_completion.sh ] && source ~/.kubectl_completion.sh
 
 alias k='kubectl'
@@ -96,8 +98,26 @@ complete -o default -F __start_kubectl k
 
 eval "$(fzf --bash)"
 
-alias cat='bat'
-
+# fzf settings
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 alias fz="fzf --style full --preview 'fzf-preview.sh {}' --bind 'focus:transform-header:file --brief {}'"
+
+# misc aliases
+alias cat='bat'
+alias gs='git status'
+alias gd='git diff'
+alias ga='git add'
+alias gc='git commit -m'
+
+# misc functions
+function gda {
+  if [[ -z "$1" ]]; then
+    echo "Error: No file provided"
+    return 1
+  fi
+  echo "Diffing and adding: $1"
+  git diff -- "$1"
+  git add -- "$1"
+}
+
