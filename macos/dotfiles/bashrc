@@ -1,26 +1,3 @@
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/jamescheney/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-
-# Enable color support for ls and grep
-export CLICOLOR=1
-alias ls='ls -GFh'
-
-
-# Set prompt: username@hostname current_dir $
-#PS1="${GREEN}\u ${CYAN}\w${RESET} \$"
-#PS1="\[\033[38;5;115m\]\u \[\033[38;5;216m\]\w\$ \[\033[0m\]"
-export CLICOLOR=1
-export LSCOLORS="gxhxcxdxcxegedacagacad"
-alias ls='ls -Gp'
-
-# Save multi-line commands as single entry
-shopt -s cmdhist
-
-# Increase history size
-export HISTSIZE=5000
-export HISTFILESIZE=10000
-
 
 ####### Setting Colors for the terminal
 # Get current branch in git repo
@@ -88,3 +65,35 @@ PROMPT_COMMAND='PS1="\[\033[38;5;221m\]\d \A \[\033[38;5;79m\]\u \[\033[38;5;39m
 
 
 
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/jamescheney/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+# Enable color support for ls and grep
+export CLICOLOR=1
+alias ls='ls -GFh'
+
+
+# Set prompt: username@hostname current_dir $
+#PS1="${GREEN}\u ${CYAN}\w${RESET} \$"
+#PS1="\[\033[38;5;115m\]\u \[\033[38;5;216m\]\w\$ \[\033[0m\]"
+export CLICOLOR=1
+export LSCOLORS="fxhxcxdxDxegedacagacad"
+alias ls='ls -Gp'
+
+# Save multi-line commands as single entry
+shopt -s cmdhist
+
+# Increase history size
+export HISTSIZE=5000
+export HISTFILESIZE=10000
+
+# Enable kubectl completion
+[ -f ~/.kubectl_completion.sh ] && source ~/.kubectl_completion.sh
+
+alias k='kubectl'
+complete -o default -F __start_kubectl k
+
+eval "$(fzf --bash)"
+
+alias cat='bat'
