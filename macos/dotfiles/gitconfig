@@ -1,6 +1,6 @@
 [user]
 	name = James Cheney
-	email = james.cheney@di2e.net
+	email = jamesdcheney0@gmail.com
 [credential]
 	helper = !aws codecommit credential-helper $@
 [credentials]
@@ -11,7 +11,7 @@
 	process = git-lfs filter-process
 	required = true
 [color "status"]
+  header = "#999999"
   untracked = white dim
   added = green
-  changed = yellow
-  branch = cyan
+  changed = red 
