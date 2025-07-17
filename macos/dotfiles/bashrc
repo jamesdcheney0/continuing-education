@@ -97,3 +97,7 @@ complete -o default -F __start_kubectl k
 eval "$(fzf --bash)"
 
 alias cat='bat'
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+alias fz="fzf --style full --preview 'fzf-preview.sh {}' --bind 'focus:transform-header:file --brief {}'"
