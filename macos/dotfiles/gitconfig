@@ -15,3 +15,20 @@
   untracked = white dim
   added = green
   changed = red 
+
+# Add colors for git diff via git-delta
+[include]
+  path = /Users/jamescheney/Documents/continuing-education/macos/dotfiles/themes.gitconfig
+
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    side-by-side = true
+    line-numbers = true
+    navigate = true
+    light = false
+    features = collared-trogon
