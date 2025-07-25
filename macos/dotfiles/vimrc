@@ -24,4 +24,8 @@ set backspace=indent,eol,start
 
 
 set number
+set showcmd
+set ruler
 color jellybeans
+
+
