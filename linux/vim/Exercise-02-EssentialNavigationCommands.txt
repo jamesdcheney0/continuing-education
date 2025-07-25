@@ -1,0 +1,81 @@
+Essential​ ​Navigation​ ​Commands
+Goal:
+The​ ​goal​ ​of​ ​this​ ​exercise​ ​is​ ​to​ ​practice​ ​moving​ ​around​ ​within​ ​a​ ​file.
+
+Instructions:
+Open​ ​the​ ​nav.txt​ ​file
+First,​ ​start​ ​a​ ​command​ ​line​ ​session​ ​on​ ​your​ ​local​ ​machine.​ ​ ​Next,​ ​use​ ​vim​ ​to​ ​open​ ​the​ ​"nav.txt"​ ​file
+that​ ​came​ ​in​ ​the​ ​course​ ​downloads.​ ​ ​To​ ​do​ ​that,​ ​navigate​ ​to​ ​the​ ​location​ ​of​ ​the​ ​file.​ ​ ​Remember​ ​this
+could​ ​be​ ​different​ ​for​ ​you​ ​depending​ ​on​ ​where​ ​you​ ​extracted​ ​the​ ​contents​ ​of​ ​the​ ​file.​ ​ ​This​ ​example
+assumes​ ​the​ ​course​ ​download​ ​was​ ​saved​ ​into​ ​your​ ​Downloads​ ​folder​ ​and​ ​extracted​ ​from​ ​there.
+cd​ ​Downloads
+cd​ ​vimclass
+vim​ ​nav.txt
+Practice​ ​moving​ ​the​ ​cursor​ ​by​ ​one​ ​line​ ​or​ ​one​ ​character
+
+Press​ ​the​ ​j​ ​key​ ​10​ ​times​ ​to​ ​move​ ​down​ ​10​ ​lines.​ ​ ​This​ ​will​ ​move​ ​you​ ​down​ ​to​ ​this​ ​line​ ​in​ ​the​ ​file:
+You​ ​can​ ​also​ ​press​ ​and​ ​hold​ ​a​ ​navigation​ ​key​ ​so​ ​that​ ​it​ ​repeats.
+Press​ ​the​ ​k​ ​4​ ​times​ ​to​ ​move​ ​up​ ​4​ ​lines.​ ​ ​This​ ​will​ ​move​ ​the​ ​cursor​ ​to​ ​the​ ​beginning​ ​of​ ​this​ ​line:
+To​ ​move​ ​to​ ​the​ ​right,​ ​press​ ​"l".
+Press​ ​the​ ​l​ ​key​ ​8​ ​times​ ​to​ ​move​ ​to​ ​the​ ​word​ ​"to."
+Press​ ​the​ ​j​ ​key​ ​2​ ​times​ ​to​ ​move​ ​to​ ​this​ ​line:
+http://www.LinuxTrainingAcademy.com
+
+To​ ​move​ ​to​ ​the​ ​left,​ ​press​ ​"h".
+Notice​ ​how​ ​the​ ​cursor​ ​is​ ​in​ ​the​ ​same​ ​column.​ ​ ​(The​ ​cursor​ ​is​ ​the​ ​same​ ​distance​ ​from​ ​the​ ​left​ ​of​ ​the
+line​ ​as​ ​it​ ​was​ ​before.)
+Now​ ​move​ ​the​ ​cursor​ ​to​ ​the​ ​beginning​ ​of​ ​the​ ​line​ ​by​ ​pressing​ ​the​ ​h​ ​key​ ​to​ ​that​ ​it​ ​repeats.
+Finally,​ ​move​ ​the​ ​cursor​ ​to​ ​the​ ​very​ ​top​ ​of​ ​the​ ​file​ ​by​ ​pressing​ ​and​ ​holding​ ​the​ ​k​ ​key​ ​so​ ​that​ ​it
+repeats.
+Practice​ ​moving​ ​the​ ​cursor​ ​by​ ​page
+Press​ ​Ctrl-f​ ​to​ ​move​ ​down​ ​one​ ​page.
+Press​ ​Ctrl-b​ ​to​ ​move​ ​back​ ​up​ ​one​ ​page.
+Hold​ ​down​ ​the​ ​Ctrl​ ​key​ ​and​ ​press​ ​f​ ​as​ ​many​ ​times​ ​as​ ​needed​ ​to​ ​get​ ​to​ ​the​ ​bottom​ ​of​ ​the​ ​file.​ ​ ​The
+number​ ​of​ ​times​ ​you​ ​need​ ​to​ ​page​ ​down​ ​will​ ​vary​ ​based​ ​on​ ​the​ ​size​ ​of​ ​your​ ​screen.​ ​ ​Remember​ ​that
+the​ ​tildes​ ​represents​ ​lines​ ​beyond​ ​the​ ​end​ ​of​ ​the​ ​file.
+This​ ​is​ ​what​ ​it​ ​might​ ​look​ ​like​ ​when​ ​you​ ​get​ ​to​ ​the​ ​bottom​ ​of​ ​the​ ​file.​ ​ ​(Again,​ ​this​ ​will​ ​vary​ ​based​ ​on
+your​ ​screen​ ​size.)​ ​ ​Notice​ ​the​ ​tildes.
+This​ ​training​ ​is​ ​being​ ​provided​ ​by​ ​LinuxTrainingAcademy.com.
+~
+~
+~
+~
+~
+~
+~
+~
+Move​ ​up​ ​one​ ​page​ ​by​ ​holding​ ​down​ ​the​ ​Ctrl​ ​key​ ​and​ ​pressing​ ​b​.
+Practice​ ​moving​ ​the​ ​cursor​ ​by​ ​word
+Place​ ​your​ ​cursor​ ​at​ ​the​ ​beginning​ ​of​ ​the​ ​following​ ​line.​ ​ ​One​ ​easy​ ​way​ ​to​ ​do​ ​this​ ​would​ ​be​ ​to​ ​press
+and​ ​hold​ ​the​ ​k​ ​key​ ​until​ ​you​ ​reach​ ​the​ ​line.​ ​ ​If​ ​you​ ​go​ ​above​ ​it,​ ​return​ ​to​ ​the​ ​line​ ​by​ ​pressing​ ​j​.
+​ ​ ​Far​ ​far​ ​away,​ ​behind​ ​the​ ​wild​ ​mountains,​ ​far​ ​from​ ​the​ ​countries​ ​Vokalia​ ​and
+
+http://www.LinuxTrainingAcademy.com
+
+Press​ ​lowercase​ ​w​ ​4​ ​times.​ ​ ​Your​ ​cursor​ ​will​ ​be​ ​at​ ​the​ ​first​ ​comma​ ​(,)​ ​in​ ​the​ ​line.​ ​ ​Press​ ​lowercase​ ​w​ ​5
+more​ ​times.​ ​ ​Your​ ​cursor​ ​will​ ​now​ ​be​ ​at​ ​the​ ​second​ ​command​ ​(,)​ ​in​ ​the​ ​line.
+Move​ ​back​ ​to​ ​the​ ​first​ ​word​ ​in​ ​the​ ​sentence​ ​(Far)​ ​by​ ​pressing​ ​the​ ​lowercase​ ​b​ ​key​ ​8​ ​times.​ ​ ​Notice
+how​ ​it​ ​also​ ​considers​ ​the​ ​comma​ ​to​ ​be​ ​a​ ​word.
+Now​ ​move​ ​forward​ ​to​ ​the​ ​word​ ​"behind"​ ​by​ ​pressing​ ​uppercase​ ​W​ ​3​ ​times.​ ​ ​Notice​ ​how​ ​your​ ​cursor
+does​ ​not​ ​stop​ ​at​ ​the​ ​comma.​ ​ ​Move​ ​forward​ ​to​ ​the​ ​word​ ​"far"​ ​by​ ​pressing​ ​uppercase​ ​W​ ​4​ ​more
+times.
+Return​ ​to​ ​the​ ​first​ ​word​ ​of​ ​the​ ​line​ ​by​ ​repeatedly​ ​pressing​ ​uppercase​ ​B​.​ ​ ​You'll​ ​need​ ​to​ ​press​ ​B​ ​7
+times​ ​to​ ​do​ ​this.
+Practice​ ​moving​ ​the​ ​cursor​ ​to​ ​a​ ​specific​ ​line​ ​number
+Go​ ​to​ ​the​ ​first​ ​line​ ​in​ ​the​ ​file​ ​by​ ​typing​ ​gg​.
+Go​ ​to​ ​the​ ​last​ ​line​ ​in​ ​the​ ​file​ ​by​ ​typing​ ​uppercase​ ​G​.
+Go​ ​back​ ​to​ ​the​ ​first​ ​line​ ​by​ ​typing​ ​1gg​.​ ​ ​Notice​ ​how​ ​it​ ​does​ ​the​ ​same​ ​thing​ ​as​ ​gg​.​ ​ ​Now,​ ​go​ ​to​ ​line​ ​29
+by​ ​typing​ ​29gg​.
+You​ ​can​ ​also​ ​use​ ​G​ ​to​ ​go​ ​to​ ​a​ ​specific​ ​line​ ​number.​ ​ ​Go​ ​to​ ​line​ ​3​ ​by​ ​typing​ ​3G​.
+Now​ ​use​ ​line​ ​mode​ ​to​ ​move​ ​to​ ​line​ ​44.​ ​ ​Type​ ​:44<ENTER>​.​ ​ ​Now​ ​move​ ​to​ ​the​ ​last​ ​line​ ​in​ ​the​ ​file​ ​by
+typing​ ​:$<ENTER>​.
+Confirm​ ​that​ ​you​ ​are​ ​indeed​ ​on​ ​the​ ​last​ ​line​ ​by​ ​typing​ ​Ctrl-G​ ​and​ ​displaying​ ​information​ ​about​ ​the
+file​ ​you're​ ​editing.​ ​ ​(You​ ​should​ ​see​ ​100%​ ​displayed​ ​on​ ​the​ ​status​ ​line.)
+Your​ ​turn
+If​ ​you're​ ​up​ ​to​ ​it,​ ​have​ ​some​ ​fun​ ​navigating​ ​around​ ​the​ ​file​ ​using​ ​what​ ​you​ ​know.
+Quit​ ​vim
+When​ ​you​ ​are​ ​done​ ​practicing​ ​your​ ​file​ ​navigation​ ​skills,​ ​quit​ ​with​ ​:q!<ENTER>​.
+
+http://www.LinuxTrainingAcademy.com
+
+
