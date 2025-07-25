@@ -88,10 +88,13 @@ shopt -s cmdhist
 export HISTSIZE=5000
 export HISTFILESIZE=10000
 
+# bash autocomplete. It randomly stopped working when I logged in on 20250722
+[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && source "/usr/local/etc/profile.d/bash_completion.sh"
+
 # kubectl settings 
 
 ## Enable kubectl completion
-[ -f ~/.kubectl_completion.sh ] && source ~/.kubectl_completion.sh
+[ -f /Users/jamescheney/.kubectl_completion.sh ] && source /Users/jamescheney/.kubectl_completion.sh
 
 alias k='kubectl'
 complete -o default -F __start_kubectl k
