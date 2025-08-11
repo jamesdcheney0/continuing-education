@@ -1,4 +1,3 @@
-
 ####### Setting Colors for the terminal
 # Get current branch in git repo
 parse_git_branch() {
@@ -40,13 +39,13 @@ parse_git_dirty() {
 shorten_path() {
   local path="${PWD/#$HOME/~}"
   local IFS='/'
-  read -ra parts <<< "$path"
+  read -ra parts <<<"$path"
   local new_path=""
   local count=${#parts[@]}
 
   for ((i = 0; i < count; i++)); do
     # Last two segments → full names
-    if (( i >= count - 2 )); then
+    if ((i >= count - 2)); then
       new_path+="${parts[i]}/"
     else
       # Skip empty first segment (root)
@@ -59,11 +58,11 @@ shorten_path() {
   # Remove trailing slash
   echo "${new_path%/}"
 }
+# if there's no results with fzf
+export FZF_CTRL_R_OPTS='--bind "enter:become:if [[ -n {} ]]; then echo {}; else echo {q}; fi"'
 
 # Set prompt
 PROMPT_COMMAND='PS1="\[\033[38;5;221m\]\d \A \[\033[38;5;79m\]\u \[\033[38;5;39m\]\$(shorten_path) \[\033[38;5;105m\]$(parse_git_branch)\[\033[0m\] \$ "'
-
-
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
 export PATH="/Users/jamescheney/.rd/bin:$PATH"
@@ -73,13 +72,12 @@ export PATH="/Users/jamescheney/.rd/bin:$PATH"
 export CLICOLOR=1
 alias ls='ls -GFh'
 
-
 # Set prompt: username@hostname current_dir $
 #PS1="${GREEN}\u ${CYAN}\w${RESET} \$"
 #PS1="\[\033[38;5;115m\]\u \[\033[38;5;216m\]\w\$ \[\033[0m\]"
-export CLICOLOR=1
-export LSCOLORS="fxhxcxdxDxegedacagacad"
-alias ls='ls -Gp'
+export clicolor=1
+export lscolors="fxhxcxdxdxegedacagacad"
+alias ls='ls -gp'
 
 # Save multi-line commands as single entry
 shopt -s cmdhist
@@ -91,7 +89,7 @@ export HISTFILESIZE=10000
 # bash autocomplete. It randomly stopped working when I logged in on 20250722
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && source "/usr/local/etc/profile.d/bash_completion.sh"
 
-# kubectl settings 
+# kubectl settings
 
 ## Enable kubectl completion
 [ -f /Users/jamescheney/.kubectl_completion.sh ] && source /Users/jamescheney/.kubectl_completion.sh
@@ -112,6 +110,7 @@ alias gs='git status'
 alias gd='git diff'
 alias ga='git add'
 alias gc='git commit -m'
+alias gp='git push'
 
 # misc functions
 function gda {
@@ -123,4 +122,3 @@ function gda {
   git diff -- "$1"
   git add -- "$1"
 }
-

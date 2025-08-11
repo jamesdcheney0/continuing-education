@@ -5,3 +5,8 @@
 # Ignore case for tab complete
 set completion-ignore-case on
 
+set editing-mode vi
+set keymap vi-insert
+
+# fzf style ctrl-r
+"\C-r": " \C-a\f\f"

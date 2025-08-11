@@ -5,4 +5,3 @@ export PATH="/Users/jamescheney/.rd/bin:$PATH"
 if [ -f ~/.bashrc ]; then
   source ~/.bashrc
 fi
-
