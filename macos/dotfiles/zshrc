@@ -148,6 +148,21 @@ bindkey '^[[B' history-search-forward
 # use vi mode
 bindkey -v
 
+# Apply bindings to both vi insert and command modes
+for keymap in viins vicmd; do
+  bindkey -M $keymap '^A' beginning-of-line        # Ctrl+A to start of line
+  bindkey -M $keymap '^E' end-of-line              # Ctrl+E to end of line
+  bindkey -M $keymap '^W' backward-kill-word      # Ctrl+W delete previous word
+  bindkey -M $keymap '^U' kill-whole-line          # Ctrl+U kill to beginning of line
+  bindkey -M $keymap '^K' kill-line-from-cursor    # Ctrl+K kill to end of line
+  bindkey -M $keymap '^[b' backward-word        # Alt+Left arrow (escape sequence) move back a word
+  bindkey -M $keymap '^[f' forward-word         # Alt+Right arrow move forward a word
+  bindkey -M $keymap '^[^?' backward-kill-word    # Option + Backspace (escape + DEL) delete previous word
+done
+
+# Optional: fix the delete key in some terminals
+bindkey '^?' backward-delete-char
+
 # add some colors
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 export CLICOLOR=1
