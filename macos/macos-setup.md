@@ -1,6 +1,10 @@
 # Notes about installation of things
 - in vim, changed tab to only do 4 spaces
     - set autoindent expandtab tabstop=4 shiftwidth=4
+## Favorite Apps
+- AutoRaise: focuses cursor on active window when switching with cmd tab
+- Viscosity: supports several different VPN connections. Lifetime license, spent $15. License details in my usual gmail
+
 ## Docker
 - had to install docker desktop `brew install --cask docker` rather than just brew install
 - then had to launch the docker app, then I was able to use docker commands on CLI
