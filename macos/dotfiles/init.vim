@@ -32,3 +32,5 @@ color jellybeans
 " and \p to yank and paste to/from clipboard
 vnoremap \y y:call system("pbcopy", getreg("\""))<CR>
 nnoremap \p :call setreg("\"", system("pbpaste"))<CR>p
+
+" Plug 'nanotech/jellybeans.vim'

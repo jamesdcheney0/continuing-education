@@ -80,6 +80,7 @@ fi
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
+
 export PATH="$PATH:/Users/jamescheney/"
 
 # source $ZSH/oh-my-zsh.sh
@@ -121,6 +122,14 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|[._-]=*'
 autoload -Uz compinit
 compinit
 
+# up to search 
+autoload -U up-line-or-beginning-search
+autoload -U down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey "$key[Up]" up-line-or-beginning-search
+bindkey "$key[Down]" down-line-or-beginning-search
+
 export PATH="/usr/local/krb5/bin:/usr/local/ossh/bin:$PATH"
 export KRB5_CONFIG=/usr/local/krb5/etc/krb5.conf
 export AWS_ROLE_SESSION_NAME="james.cheney"
@@ -141,9 +150,11 @@ HISTSIZE=10000
 SAVEHIST=10000
 setopt inc_append_history share_history
 
-# Enable history substring search with arrow keys
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
+# source history search
+source $(brew --prefix)/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
 
 # use vi mode
 bindkey -v
@@ -170,6 +181,10 @@ export LSCOLORS=ExFxBxDxCxegedabagacad
 
 # misc aliases
 alias cat='bat'
+alias vim='nvim'
+alias dotfiles='cd ~/Documents/continuing-education/macos/dotfiles/'
+
+# git aliases
 alias gs='git status'
 alias gd='git diff'
 alias ga='git add'
