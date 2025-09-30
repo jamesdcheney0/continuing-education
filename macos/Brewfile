@@ -1,22 +1,41 @@
 tap "hashicorp/tap"
 tap "kreuzwerker/taps"
 tap "zackelia/formulae"
+# Official Amazon AWS command-line interface
 brew "awscli"
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
+# Command-line tool for DigitalOcean
 brew "doctl"
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# GitHub command-line tool
 brew "gh"
+# Kubernetes command-line interface
 brew "kubernetes-cli"
+# Run a Kubernetes cluster locally
 brew "minikube"
+# Ambitious Vim-fork focused on extensibility and agility
+brew "neovim"
+# Interpreted, interactive, object-oriented programming language
 brew "python@3.9"
+# Tool to build, change, and version infrastructure
 brew "terraform", link: false
+# Terraform version manager inspired by rbenv
 brew "tfenv"
+# Terminal multiplexer
+brew "tmux"
+# Vi 'workalike' with many additional features
 brew "vim"
+# UNIX shell (command interpreter)
 brew "zsh"
+# Zsh port of Fish shell's history search
+brew "zsh-history-substring-search"
+# CLI to support with downloading and compiling terraform providers for Mac with M1 chip.
 brew "kreuzwerker/taps/m1-terraform-provider-helper"
+# Utility that prevents the system from going to sleep
 cask "caffeine"
+# Clipboard extension app
 cask "clipy"
-cask "docker-desktop"
-vscode "hashicorp.terraform"
-vscode "moocfi.test-my-code"
-vscode "ms-python.debugpy"
-vscode "ms-python.python"
-vscode "ms-python.vscode-pylance"
+# Control your tools with a few keystrokes
+cask "raycast"
