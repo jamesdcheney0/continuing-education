@@ -43,3 +43,4 @@ python/automate-the-boring-stuff/chapter-8-reading+writing-files/multiClipBoard.
 aws/sa-associate/cloudquest/*
 .DS_Store
 terragrunt/octo-setup.md
+kubernetes/kodekloud-cka
