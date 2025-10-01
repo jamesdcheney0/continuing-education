@@ -14,7 +14,8 @@ ln -sf "$DOTFILES_DIR/inputrc" "$HOME/.inputrc"
 ln -sf "$DOTFILES_DIR/themes.gitconfig" "$HOME/.themes.gitconfig"
 ln -sf "$DOTFILES_DIR/tmux.conf" "$HOME/.tmux.conf"
 #ln -sf "$DOTFILES_DIR/init.vim" "$HOME/.config/nvim/init.vim"
-ln -sf "$DOTFILES_DIR/lazy.lua" "$HOME/.config/nvim/lua/config/lazy.lua"
+ln -sf "$DOTFILES_DIR/nvim/lazy.lua" "$HOME/.config/nvim/lua/config/lazy.lua"
+ln -sf "$DOTFILES_DIR/nvim/copilot.lua" "$HOME/.config/nvim/lua/plugins/copilot.lua"
 
 # Vim colors
 mkdir -p "$HOME/.vim/colors"
@@ -29,13 +30,11 @@ else
   echo "TPM already installed at $HOME/.tmux/plugins/tpm"
 fi
 
-# install LazyVim
-# Backup current nvim files
-mv ~/.config/nvim ~/.config/nvim.bak
-mv ~/.local/share/nvim ~/.local/share/nvim.bak
-
-# clone the starter
-git clone https://github.com/LazyVim/starter ~/.config/nvim
+if [ ! -d "$HOME/.config/nvim" ]; then
+  git clone https://github.com/LazyVim/starter "$HOME/.config/nvim"
+else
+  echo "$HOME/.config/nvim already exists, skipping clone."
+fi
 
 # remote the starter .git folder
 rm -rf ~/.config/nvim/.git
