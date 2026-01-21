@@ -191,6 +191,8 @@ export LSCOLORS=ExFxBxDxCxegedabagacad
 alias cat='bat'
 alias vim='nvim'
 alias dotfiles='cd ~/Documents/continuing-education/macos/dotfiles/'
+# Deloitte specific to be able to escalate privileges from the CLI
+alias admin='sudo dseditgroup -o edit -a jcheney -t user wheel ; sudo dseditgroup -o edit -a jcheney -t user admin'
 
 # git aliases
 alias gs='git status'
