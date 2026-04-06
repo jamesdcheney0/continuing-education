@@ -175,6 +175,7 @@ done
 
 # Optional: fix the delete key in some terminals
 bindkey '^?' backward-delete-char
+setopt complete_aliases
 
 # add some colors
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
